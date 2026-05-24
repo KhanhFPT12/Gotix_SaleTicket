@@ -1,0 +1,124 @@
+.profile-page {
+  padding: var(--spacing-xl) 0 var(--spacing-3xl);
+  background-color: var(--bg-light);
+  min-height: calc(100vh - var(--header-height));
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: var(--spacing-xl);
+  align-items: flex-start;
+}
+
+.profile-card {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+}
+
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.profile-avatar-big {
+  width: 72px;
+  height: 72px;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.profile-email {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.profile-form h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-actions-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Side cards */
+.profile-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.profile-info-card {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+}
+
+.profile-info-card h4 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+}
+
+.info-row span:first-child {
+  color: var(--text-muted);
+}
+
+.info-row span:last-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.profile-sec-note {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+}

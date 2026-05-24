@@ -1,0 +1,281 @@
+.upgrade-pro-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+/* Hero */
+.pro-hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+.pro-hero-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #f5a623, #e8820c);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+}
+.pro-hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+}
+.pro-hero-sub {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Benefits */
+.pro-benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.pro-benefit-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+.pro-benefit-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.pro-benefit-card h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.pro-benefit-card p {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Current subscription */
+.pro-current-section {
+  margin-bottom: 2rem;
+}
+.pro-current-card {
+  background: linear-gradient(135deg, #fffbf0 0%, #fff8e8 100%);
+  border: 2px solid #f5a623;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+.pro-current-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.pro-badge-label {
+  background: linear-gradient(135deg, #f5a623, #e8820c);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.7rem;
+  border-radius: 12px;
+}
+.pro-current-status.active {
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pro-current-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.pro-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+.pro-info-row span { color: var(--color-text-muted); }
+.pro-renew-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0.75rem 0 0;
+}
+
+/* Plans */
+.pro-plans-section { margin-top: 1rem; }
+.pro-plans-section > h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+.pro-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.pro-plan-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.25rem 1rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+.pro-plan-card:hover {
+  border-color: var(--color-primary);
+}
+.pro-plan-card.selected {
+  border-color: #f5a623;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.18);
+}
+.pro-plan-card.popular {
+  border-color: #f5a623;
+}
+.pro-plan-popular {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f5a623;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.pro-plan-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.pro-plan-price {
+  margin-bottom: 0.2rem;
+}
+.pro-plan-amount {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #e8820c;
+}
+.pro-plan-per {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.pro-plan-per-day {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+.pro-plan-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  margin: 0 auto;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pro-plan-radio.checked {
+  border-color: #f5a623;
+  background: #f5a623;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* Upgrade action */
+.pro-upgrade-action {
+  text-align: center;
+}
+.pro-upgrade-btn {
+  background: linear-gradient(135deg, #f5a623, #e8820c);
+  border: none;
+  font-size: 1rem;
+  padding: 0.85rem 2.5rem;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.pro-upgrade-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.pro-upgrade-note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Cancel */
+.pro-cancel-section {
+  margin-top: 3rem;
+  text-align: center;
+}
+.pro-cancel-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.pro-cancel-link:hover { color: var(--color-danger, #e53e3e); }
+.pro-cancel-confirm {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.25rem 2rem;
+}
+.pro-cancel-confirm p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.pro-cancel-btns {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Success */
+.pro-success-card {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+  background: var(--color-surface);
+  border: 2px solid #f5a623;
+  border-radius: 20px;
+  padding: 3rem 2rem;
+}
+.pro-success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+.pro-success-card h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+.pro-success-card p {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+.pro-success-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .pro-hero-title { font-size: 1.5rem; }
+  .pro-plans-grid { grid-template-columns: repeat(2, 1fr); }
+}

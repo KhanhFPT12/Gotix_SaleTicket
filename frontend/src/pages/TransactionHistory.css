@@ -1,0 +1,47 @@
+.tx-history-page {
+  padding: var(--spacing-xl) 0 var(--spacing-3xl);
+  background-color: var(--bg-light);
+  min-height: calc(100vh - var(--header-height));
+}
+
+.tx-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.tabs-inline {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: var(--bg-white);
+}
+
+.tabs-inline .tab-btn {
+  padding: 8px var(--spacing-md);
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.tabs-inline .tab-btn:last-child {
+  border-right: none;
+}
+
+.tabs-inline .tab-btn.active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.tx-table-wrap {
+  overflow-x: auto;
+}

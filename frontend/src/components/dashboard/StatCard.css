@@ -1,0 +1,32 @@
+.stat-card {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-card-accent {
+  border-left: 3px solid var(--color-primary);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stat-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: 4px;
+}

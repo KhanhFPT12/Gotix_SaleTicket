@@ -1,0 +1,198 @@
+.auth-page {
+  min-height: calc(100vh - var(--header-height));
+  background-color: var(--bg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.auth-logo {
+  text-decoration: none;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.auth-logo-img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.auth-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.password-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forgot-link {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: var(--spacing-xs);
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-lg);
+}
+
+.auth-switch a {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+.auth-terms {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-md);
+  line-height: 1.6;
+}
+
+.auth-terms a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* Demo box */
+.auth-demo {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.demo-title {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demo-btns {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+/* Role select */
+.role-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.role-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.role-option input {
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.role-option.selected {
+  border-color: var(--color-primary);
+  background-color: #eef1f8;
+}
+
+.role-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.role-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* Register perks */
+.register-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--bg-light);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.perk-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.perk-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-success);
+  border-radius: 50%;
+  flex-shrink: 0;
+}

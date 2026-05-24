@@ -1,0 +1,8 @@
+.dashboard-layout {
+  min-height: 100vh;
+  background-color: var(--bg-light);
+}
+
+.dashboard-content {
+  padding: var(--spacing-xl) 0 var(--spacing-3xl);
+}

@@ -1,0 +1,66 @@
+/* Post CTA banner */
+.post-cta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--bg-white);
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--border-radius);
+}
+
+.post-cta-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.post-cta-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Posted tickets toolbar */
+.posted-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--bg-border);
+  background-color: var(--bg-light);
+}
+
+/* Pending note */
+.pending-note {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  background-color: #fff3e0;
+  border-top: 1px solid #ffe0b2;
+}
+
+/* Hover link in table */
+.hover-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.hover-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .post-cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .post-cta-banner .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
