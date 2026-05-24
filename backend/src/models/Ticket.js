@@ -27,7 +27,7 @@ const ticketSchema = new mongoose.Schema(
     originalPrice: { type: Number, required: true, min: 0 },
     resalePrice:   { type: Number, required: true, min: 0 },
     quantity:      { type: Number, required: true, min: 0 },
-    status:        { type: String, enum: ['available', 'reserved', 'sold', 'cancelled'], default: 'available' },
+    status:        { type: String, enum: ['available', 'reserved', 'sold', 'cancelled', 'expired', 'hidden'], default: 'available' },
     verifyStatus:  { type: String, enum: ['pending', 'verified', 'rejected'], default: 'pending' },
     ownerId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     ticketImage:   { type: String, default: '' },

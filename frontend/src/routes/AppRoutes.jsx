@@ -27,6 +27,8 @@ import AdminTickets      from "../pages/admin/AdminTickets";
 import AdminUsers        from "../pages/admin/AdminUsers";
 import AdminTransactions from "../pages/admin/AdminTransactions";
 import AdminReports      from "../pages/admin/AdminReports";
+import AdminAuditLogs    from "../pages/admin/AdminAuditLogs";
+import SavedTickets      from "../pages/SavedTickets";
 
 export default function AppRoutes() {
   return (
@@ -46,6 +48,7 @@ export default function AppRoutes() {
         <Route path="/transactions"    element={<ProtectedRoute><TransactionHistory /></ProtectedRoute>} />
         <Route path="/upgrade-pro"     element={<ProtectedRoute><UpgradePro /></ProtectedRoute>} />
         <Route path="/wallet"          element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+        <Route path="/saved-tickets"   element={<ProtectedRoute><SavedTickets /></ProtectedRoute>} />
         <Route path="/users/:id"       element={<PublicProfile />} />
 
         <Route path="*" element={<NotFound />} />
@@ -80,6 +83,7 @@ export default function AppRoutes() {
         <Route path="/admin/reports"      element={<AdminReports />} />
         <Route path="/admin/withdrawals"  element={<AdminWithdrawals />} />
         <Route path="/admin/topups"       element={<AdminTopUps />} />
+        <Route path="/admin/audit-logs"   element={<AdminAuditLogs />} />
       </Route>
     </Routes>
   );

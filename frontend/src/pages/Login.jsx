@@ -97,14 +97,6 @@ export default function Login() {
         <p className="auth-switch">
           Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
         </p>
-
-        <div className="auth-demo">
-          <p className="demo-title">Tài khoản demo</p>
-          <div className="demo-btns">
-            <button className="btn btn-ghost btn-sm" onClick={() => fillDemo("user")}>User</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => fillDemo("admin")}>Admin</button>
-          </div>
-        </div>
       </div>
     </div>
   );

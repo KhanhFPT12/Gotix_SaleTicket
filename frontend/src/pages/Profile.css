@@ -39,6 +39,10 @@
   flex-shrink: 0;
 }
 
+.profile-avatar-big:hover .avatar-overlay {
+  opacity: 1 !important;
+}
+
 .profile-name {
   font-size: var(--font-size-xl);
   font-weight: 700;

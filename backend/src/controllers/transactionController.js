@@ -1,6 +1,9 @@
 const Transaction = require('../models/Transaction');
 const Ticket = require('../models/Ticket');
+const User = require('../models/User');
 const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendingBalance } = require('../services/walletService');
+const { notify } = require('../services/notificationService');
+const emailService = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
 
 const createTransaction = async (req, res, next) => {
@@ -60,6 +63,15 @@ const payTransaction = async (req, res, next) => {
     tx.paymentStatus = 'paid';
     await tx.save();
 
+    // Notify seller
+    await notify({
+      receiverId: tx.sellerId,
+      title: 'Vé của bạn được mua',
+      message: `Có người vừa thanh toán mua vé. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đang chờ xác nhận.`,
+      type: 'ticket_sold',
+      relatedId: tx._id.toString(),
+    });
+
     return res.json(success('Xác nhận thanh toán thành công — tiền đang chờ xử lý', { transaction: tx }));
   } catch (err) {
     next(err);
@@ -85,6 +97,21 @@ const completeTransaction = async (req, res, next) => {
 
     tx.transactionStatus = 'completed';
     await tx.save();
+
+    // Notify seller + send email to buyer
+    await notify({
+      receiverId: tx.sellerId,
+      title: 'Giao dịch hoàn tất',
+      message: `Giao dịch hoàn tất. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đã vào ví khả dụng.`,
+      type: 'transaction_completed',
+      relatedId: tx._id.toString(),
+    });
+
+    const [buyer, ticket] = await Promise.all([
+      User.findById(tx.buyerId),
+      Ticket.findById(tx.ticketId),
+    ]);
+    if (buyer) await emailService.transactionCompleted(buyer, ticket, tx.totalPrice);
 
     return res.json(success('Giao dịch hoàn tất — tiền đã vào ví người bán', { transaction: tx }));
   } catch (err) {
@@ -116,6 +143,14 @@ const cancelTransaction = async (req, res, next) => {
     tx.transactionStatus = 'cancelled';
     tx.paymentStatus = 'failed';
     await tx.save();
+
+    await notify({
+      receiverId: tx.buyerId,
+      title: 'Giao dịch đã bị hủy',
+      message: 'Giao dịch của bạn đã được hủy.',
+      type: 'transaction_cancelled',
+      relatedId: tx._id.toString(),
+    });
 
     return res.json(success('Hủy giao dịch thành công', { transaction: tx }));
   } catch (err) {

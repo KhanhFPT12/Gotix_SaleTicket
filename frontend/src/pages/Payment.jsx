@@ -17,13 +17,15 @@ const STEP_LABELS = ["Xác nhận đơn", "Thanh toán", "Hoàn tất"];
 
 export default function Payment() {
   const { ticketId } = useParams();
-  const { tickets, addTransaction, completeTransaction } = useTickets();
+  const { tickets, addTransaction, payForTransaction } = useTickets();
   const [step, setStep]                 = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [qty, setQty]                   = useState(1);
   const [txId, setTxId]                 = useState(null);
   const [confirmError, setConfirmError] = useState("");
   const [confirming, setConfirming]     = useState(false);
+  const [paying, setPaying]             = useState(false);
+  const [payError, setPayError]         = useState("");
 
   const ticket = tickets.find((t) => t.id === ticketId);
 
@@ -59,8 +61,17 @@ export default function Payment() {
   }
 
   async function handlePaid() {
-    if (txId) await completeTransaction(txId);
-    setStep(2);
+    if (!txId) return;
+    setPayError("");
+    setPaying(true);
+    try {
+      await payForTransaction(txId);
+      setStep(2);
+    } catch (err) {
+      setPayError(err.message || "Xác nhận thanh toán thất bại. Vui lòng thử lại.");
+    } finally {
+      setPaying(false);
+    }
   }
 
   return (
@@ -157,9 +168,12 @@ export default function Payment() {
                     </div>
                   )}
                 </div>
+                {payError && <div className="alert alert-error mt-md">{payError}</div>}
                 <div className="payment-actions">
-                  <button className="btn btn-primary btn-lg" onClick={handlePaid}>Tôi đã thanh toán</button>
-                  <button className="btn btn-ghost" onClick={() => setStep(0)}>Quay lại</button>
+                  <button className="btn btn-primary btn-lg" onClick={handlePaid} disabled={paying}>
+                    {paying ? "Đang xử lý..." : "Tôi đã thanh toán"}
+                  </button>
+                  <button className="btn btn-ghost" onClick={() => setStep(0)} disabled={paying}>Quay lại</button>
                 </div>
               </div>
             )}

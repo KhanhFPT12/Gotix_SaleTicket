@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { apiPost, apiGet, setToken, getToken } from "../api/client";
+import { apiPost, apiGet, apiFetch, setToken, getToken } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -51,10 +51,25 @@ export function AuthProvider({ children }) {
   }
 
   async function updateProfile(data) {
-    const res = await apiGet("/users/profile");
-    if (!res.success) return;
-    const updated = { ...currentUser, ...data };
-    setCurrentUser(updated);
+    // data may contain a File (avatarFile); send as FormData
+    const formData = new FormData();
+    if (data.name)       formData.append("name", data.name);
+    if (data.phone)      formData.append("phone", data.phone);
+    if (data.avatarFile) formData.append("avatar", data.avatarFile);
+
+    const res = await apiFetch("/users/profile", { method: "PUT", body: formData });
+    if (!res.success) return { success: false, message: res.message };
+    setCurrentUser(res.data.user);
+    return { success: true };
+  }
+
+  async function changePassword(oldPassword, newPassword) {
+    const res = await apiFetch("/auth/change-password", {
+      method: "PUT",
+      body: JSON.stringify({ oldPassword, newPassword }),
+      headers: { "Content-Type": "application/json" },
+    });
+    return res;
   }
 
   async function refreshUser() {
@@ -63,7 +78,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, refreshUser }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

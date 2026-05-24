@@ -1,151 +1,180 @@
-import { useState } from "react";
-import { useTickets } from "../../context/TicketContext";
+import { useState, useEffect } from "react";
+import { apiGet, apiPatch } from "../../api/client";
 import "../../layouts/AdminLayout.css";
 
-const STATUS_CONFIG = {
-  pending:  { label: "Chờ xử lý", cls: "admin-badge-warning" },
-  resolved: { label: "Đã xử lý",  cls: "admin-badge-success" },
-  dismissed:{ label: "Bỏ qua",    cls: "admin-badge-neutral" },
+const STATUS_CFG = {
+  pending:             { label: "Chờ xử lý",       cls: "admin-badge-warning" },
+  requesting_evidence: { label: "Chờ bằng chứng", cls: "admin-badge-warning" },
+  resolved:            { label: "Đã xử lý",         cls: "admin-badge-success" },
+  rejected:            { label: "Từ chối",           cls: "admin-badge-neutral" },
 };
 
 const REASON_LABELS = {
-  "Nghi ngờ vé giả":   "Vé giả",
-  "Seller lừa đảo":    "Lừa đảo",
-  "Nội dung không phù hợp": "Nội dung xấu",
+  fake_ticket:         "Vé giả",
+  invalid_qr:          "QR không hợp lệ",
+  seller_unresponsive: "Người bán không phản hồi",
+  wrong_info:          "Sai thông tin vé",
+  transaction_issue:   "Giao dịch có vấn đề",
+  other:               "Khác",
 };
 
+function formatDate(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 export default function AdminReports() {
-  const { reports, resolveReport } = useTickets();
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [reports, setReports]     = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [filter, setFilter]       = useState("pending");
+  const [processing, setProcessing] = useState(null);
+  const [noteMap, setNoteMap]     = useState({});
 
-  const filtered = reports.filter(
-    (r) => filterStatus === "all" || r.status === filterStatus
-  );
+  async function load() {
+    setLoading(true);
+    const res = await apiGet(`/admin/reports?status=${filter}&limit=100`);
+    if (res.success) setReports(res.data.reports || []);
+    setLoading(false);
+  }
 
-  const pendingCount = reports.filter((r) => r.status === "pending").length;
+  useEffect(() => { load(); }, [filter]);
+
+  async function handle(id, action, extra = {}) {
+    setProcessing(id + action);
+    const note = noteMap[id] || "";
+    let res;
+    if (action === "resolve")
+      res = await apiPatch(`/reports/${id}/resolve`, { adminNote: note, resolution: note, ...extra });
+    else if (action === "reject")
+      res = await apiPatch(`/reports/${id}/reject`, { adminNote: note });
+    else if (action === "evidence")
+      res = await apiPatch(`/reports/${id}/request-evidence`, { adminNote: note });
+
+    if (res?.success) {
+      setReports(prev => prev.map(r => r._id === id ? res.data.report : r));
+    } else {
+      alert(res?.message || "Thao tác thất bại");
+    }
+    setProcessing(null);
+  }
+
+  const pendingCount = reports.filter(r => r.status === "pending").length;
 
   return (
     <div>
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Báo cáo</h1>
-        <p className="admin-page-subtitle">Xử lý các báo cáo vi phạm từ người dùng</p>
+        <h1 className="admin-page-title">Báo cáo & Tranh chấp</h1>
+        <p className="admin-page-subtitle">Xử lý báo cáo vi phạm, tranh chấp giao dịch từ người dùng</p>
       </div>
 
-      <div className="admin-stats-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-        <div className="admin-stat-card">
-          <p className="admin-stat-label">Tổng báo cáo</p>
-          <p className="admin-stat-value">{reports.length}</p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-label">Chờ xử lý</p>
-          <p className="admin-stat-value" style={{ color: pendingCount > 0 ? "#c2410c" : undefined }}>
-            {pendingCount}
-          </p>
-        </div>
-        <div className="admin-stat-card">
-          <p className="admin-stat-label">Đã xử lý</p>
-          <p className="admin-stat-value">{reports.filter((r) => r.status !== "pending").length}</p>
+      {/* Filter */}
+      <div className="admin-section" style={{ marginBottom: "1rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {Object.entries(STATUS_CFG).map(([s, cfg]) => (
+            <button
+              key={s}
+              className={`admin-btn ${filter === s ? "admin-btn-primary" : "admin-btn-neutral"}`}
+              onClick={() => setFilter(s)}
+            >
+              {cfg.label}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="admin-section">
-        <div className="admin-section-header">
-          <span className="admin-section-title">
-            Danh sách báo cáo
-            {pendingCount > 0 && (
-              <span className="admin-badge admin-badge-warning" style={{ marginLeft: 8 }}>
-                {pendingCount} chờ xử lý
-              </span>
-            )}
-          </span>
-          <div className="admin-section-actions">
-            <select
-              className="admin-search"
-              style={{ minWidth: 150 }}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">Tất cả ({reports.length})</option>
-              <option value="pending">Chờ xử lý ({pendingCount})</option>
-              <option value="resolved">Đã xử lý ({reports.filter(r => r.status === "resolved").length})</option>
-              <option value="dismissed">Bỏ qua ({reports.filter(r => r.status === "dismissed").length})</option>
-            </select>
-          </div>
-        </div>
-
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="admin-empty">Đang tải...</div>
+        ) : reports.length === 0 ? (
           <div className="admin-empty">Không có báo cáo nào.</div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Người báo cáo</th>
-                  <th>Vé bị báo cáo</th>
-                  <th>Lý do</th>
-                  <th>Mô tả</th>
-                  <th>Ngày</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((rp) => (
-                    <tr key={rp.id}>
-                      <td>
-                        <div className="admin-cell-main">{rp.reporter?.name || "–"}</div>
-                        <div className="admin-cell-sub">{rp.reporter?.email}</div>
-                      </td>
-                      <td>
-                        <div className="admin-cell-main">{rp.ticketTitle || rp.ticketId}</div>
-                      </td>
-                      <td>
-                        <span className="admin-badge admin-badge-error">
-                          {REASON_LABELS[rp.reason] || rp.reason}
-                        </span>
-                      </td>
-                      <td style={{ color: "#6b7280", maxWidth: 260, whiteSpace: "normal" }}>
-                        {rp.description}
-                      </td>
-                      <td style={{ color: "#6b7280" }}>{rp.createdAt}</td>
-                      <td>
-                        <span className={`admin-badge ${STATUS_CONFIG[rp.status]?.cls}`}>
-                          {STATUS_CONFIG[rp.status]?.label}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="admin-action-btns">
-                          {rp.status === "pending" && (
-                            <>
-                              <button
-                                className="admin-btn admin-btn-reject"
-                                onClick={() => resolveReport(rp.id, "resolved")}
-                              >
-                                Xử lý
-                              </button>
-                              <button
-                                className="admin-btn admin-btn-neutral"
-                                onClick={() => resolveReport(rp.id, "dismissed")}
-                              >
-                                Bỏ qua
-                              </button>
-                            </>
-                          )}
-                          {rp.status !== "pending" && (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Người báo cáo</th>
+                <th>Vé bị báo cáo</th>
+                <th>Lý do</th>
+                <th>Ngày tạo</th>
+                <th>Trạng thái</th>
+                {filter === "pending" && <th>Ghi chú / Hành động</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map(rp => (
+                <tr key={rp._id}>
+                  <td>
+                    <div className="admin-cell-main">{rp.reporterId?.name || "–"}</div>
+                    <div className="admin-cell-sub">{rp.reporterId?.email}</div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-main">{rp.ticketId?.title || rp.ticketId}</div>
+                    <div className="admin-cell-sub">{rp.ticketId?.category}</div>
+                  </td>
+                  <td>
+                    <span className="admin-badge admin-badge-error">
+                      {REASON_LABELS[rp.reason] || rp.reason}
+                    </span>
+                    {rp.description && <div className="admin-cell-sub" style={{ marginTop: 2 }}>{rp.description}</div>}
+                  </td>
+                  <td className="admin-cell-sub">{formatDate(rp.createdAt)}</td>
+                  <td>
+                    <span className={`admin-badge ${STATUS_CFG[rp.status]?.cls}`}>
+                      {STATUS_CFG[rp.status]?.label}
+                    </span>
+                    {rp.adminNote && <div className="admin-cell-sub" style={{ marginTop: 2 }}>{rp.adminNote}</div>}
+                    {rp.refundIssued && <div className="admin-cell-sub" style={{ color: "#16a34a" }}>Đã hoàn tiền</div>}
+                  </td>
+                  {filter === "pending" && (
+                    <td>
+                      {rp.status === "pending" || rp.status === "requesting_evidence" ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                          <input
+                            type="text"
+                            className="admin-input-sm"
+                            placeholder="Ghi chú admin"
+                            value={noteMap[rp._id] || ""}
+                            onChange={e => setNoteMap(m => ({ ...m, [rp._id]: e.target.value }))}
+                          />
+                          <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                             <button
-                              className="admin-btn admin-btn-neutral"
-                              onClick={() => resolveReport(rp.id, "pending")}
+                              className="admin-btn admin-btn-success admin-btn-sm"
+                              disabled={!!processing}
+                              onClick={() => handle(rp._id, "resolve", { lockTicket: true })}
                             >
-                              Mở lại
+                              Xử lý (Khóa vé)
                             </button>
-                          )}
+                            <button
+                              className="admin-btn admin-btn-success admin-btn-sm"
+                              disabled={!!processing}
+                              onClick={() => handle(rp._id, "resolve", { refund: !!rp.transactionId, lockTicket: true })}
+                            >
+                              Hoàn tiền & Khóa
+                            </button>
+                            <button
+                              className="admin-btn admin-btn-neutral admin-btn-sm"
+                              disabled={!!processing}
+                              onClick={() => handle(rp._id, "evidence")}
+                            >
+                              Yêu cầu bằng chứng
+                            </button>
+                            <button
+                              className="admin-btn admin-btn-danger admin-btn-sm"
+                              disabled={!!processing}
+                              onClick={() => handle(rp._id, "reject")}
+                            >
+                              Từ chối
+                            </button>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      ) : (
+                        <span className="admin-cell-sub">Đã xử lý · {formatDate(rp.resolvedAt)}</span>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

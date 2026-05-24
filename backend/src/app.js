@@ -15,6 +15,8 @@ const proRoutes = require('./routes/proRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const withdrawalRoutes = require('./routes/withdrawalRoutes');
 const topUpRoutes = require('./routes/topUpRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const favoriteRoutes = require('./routes/favoriteRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/pro', proRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/topups', topUpRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'GoTix API is running' });

@@ -181,3 +181,20 @@ export const apiGetMySubscription  = ()       => apiGet('/pro/my-subscription');
 export const apiUpgradePro         = (plan)   => apiPost('/pro/upgrade', { plan });
 export const apiCancelPro          = ()       => apiPost('/pro/cancel', {});
 export const apiGetPublicProfile   = (id)     => apiGet(`/users/public/${id}`);
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+export const apiGetNotifications  = (page = 1) => apiGet(`/notifications?page=${page}&limit=20`);
+export const apiMarkRead          = (id)       => apiPatch(`/notifications/${id}/read`, {});
+export const apiMarkAllRead       = ()         => apiPatch('/notifications/read-all', {});
+export const apiDeleteNotification= (id)       => apiDel(`/notifications/${id}`);
+
+export function normalizeNotification(n) {
+  if (!n) return null;
+  return { ...n, id: n._id?.toString() || n.id };
+}
+
+// ── Favorites ─────────────────────────────────────────────────────────────────
+export const apiToggleFavorite   = (ticketId) => apiPost(`/favorites/${ticketId}`, {});
+export const apiUnfavorite       = (ticketId) => apiDel(`/favorites/${ticketId}`);
+export const apiGetMyFavorites   = ()         => apiGet('/favorites/me');
+export const apiCheckFavorite    = (ticketId) => apiGet(`/favorites/check/${ticketId}`);

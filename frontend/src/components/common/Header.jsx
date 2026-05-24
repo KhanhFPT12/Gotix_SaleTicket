@@ -1,7 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { apiGetNotifications, apiMarkRead, apiMarkAllRead, normalizeNotification, resolveMediaUrl } from "../../api/client";
 import "./Header.css";
+
+function NotificationDropdown({ onClose }) {
+  const [notifications, setNotifications] = useState([]);
+  const [unread, setUnread]               = useState(0);
+  const [open, setOpen]                   = useState(false);
+  const ref = useRef(null);
+
+  async function load() {
+    const res = await apiGetNotifications();
+    if (res.success) {
+      setNotifications((res.data.notifications || []).map(normalizeNotification));
+      setUnread(res.data.unread || 0);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  // Poll every 30s
+  useEffect(() => {
+    const timer = setInterval(load, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  async function handleClick(n) {
+    if (!n.isRead) {
+      await apiMarkRead(n.id);
+      setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x));
+      setUnread(prev => Math.max(0, prev - 1));
+    }
+    if (n.link) { window.location.href = n.link; }
+    setOpen(false);
+  }
+
+  async function handleMarkAll() {
+    await apiMarkAllRead();
+    setNotifications(prev => prev.map(x => ({ ...x, isRead: true })));
+    setUnread(0);
+  }
+
+  return (
+    <div className="notif-wrap" ref={ref}>
+      <button className="notif-bell" onClick={() => setOpen(o => !o)} aria-label="Thông báo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+        {unread > 0 && <span className="notif-badge">{unread > 9 ? '9+' : unread}</span>}
+      </button>
+
+      {open && (
+        <div className="notif-dropdown">
+          <div className="notif-header">
+            <span>Thông báo</span>
+            {unread > 0 && (
+              <button className="notif-mark-all" onClick={handleMarkAll}>Đọc tất cả</button>
+            )}
+          </div>
+          <div className="notif-list">
+            {notifications.length === 0 ? (
+              <div className="notif-empty">Không có thông báo nào</div>
+            ) : notifications.map(n => (
+              <div
+                key={n.id}
+                className={`notif-item ${n.isRead ? '' : 'unread'}`}
+                onClick={() => handleClick(n)}
+              >
+                <div className="notif-title">{n.title}</div>
+                <div className="notif-msg">{n.message}</div>
+                <div className="notif-time">{new Date(n.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Header() {
   const { currentUser, logout } = useAuth();
@@ -46,10 +131,16 @@ export default function Header() {
                   + Đăng vé
                 </Link>
               )}
+
+              <NotificationDropdown />
+
               <div className="user-menu">
                 <button className="user-menu-trigger" onClick={() => setMenuOpen(!menuOpen)}>
                   <div className="user-avatar">
-                    {currentUser.name?.charAt(0).toUpperCase()}
+                    {currentUser.avatar
+                      ? <img src={resolveMediaUrl(currentUser.avatar)} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                      : currentUser.name?.charAt(0).toUpperCase()
+                    }
                   </div>
                   <span className="user-name hide-mobile">{currentUser.name?.split(" ").pop()}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -80,6 +171,9 @@ export default function Header() {
                       </Link>
                       <Link to="/wallet" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Ví tiền
+                      </Link>
+                      <Link to="/saved-tickets" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                        Vé đã lưu
                       </Link>
                       <Link to="/post-ticket" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Đăng vé

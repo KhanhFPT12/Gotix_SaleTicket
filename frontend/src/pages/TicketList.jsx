@@ -6,20 +6,23 @@ import TicketCard from "../components/tickets/TicketCard";
 import "./TicketList.css";
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "Mới nhất" },
-  { value: "price_asc", label: "Giá tăng dần" },
-  { value: "price_desc", label: "Giá giảm dần" },
-  { value: "date_asc", label: "Ngày sự kiện gần nhất" },
+  { value: "newest",       label: "Mới nhất" },
+  { value: "priceAsc",     label: "Giá tăng dần" },
+  { value: "priceDesc",    label: "Giá giảm dần" },
+  { value: "eventDateAsc", label: "Ngày sự kiện gần nhất" },
+  { value: "proFirst",     label: "Pro trước" },
 ];
 
 export default function TicketList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { tickets } = useTickets();
 
-  const [sort, setSort] = useState("newest");
+  const [sort, setSort]       = useState("newest");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [verified, setVerified] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo]     = useState("");
 
   const currentCategory = searchParams.get("category") || "";
   const currentCity = searchParams.get("city") || "";
@@ -34,10 +37,9 @@ export default function TicketList() {
 
   function clearFilters() {
     setSearchParams({});
-    setPriceMin("");
-    setPriceMax("");
-    setVerified(false);
-    setSort("newest");
+    setPriceMin(""); setPriceMax("");
+    setVerified(false); setSort("newest");
+    setDateFrom(""); setDateTo("");
   }
 
   const filtered = useMemo(() => {
@@ -54,23 +56,23 @@ export default function TicketList() {
     }
     if (currentCategory) list = list.filter((t) => t.category === currentCategory);
     if (currentCity) list = list.filter((t) => t.city === currentCity);
-    if (priceMin) list = list.filter((t) => t.passPrice >= Number(priceMin));
-    if (priceMax) list = list.filter((t) => t.passPrice <= Number(priceMax));
-    if (verified) list = list.filter((t) => t.verified);
+    if (priceMin)  list = list.filter(t => t.passPrice >= Number(priceMin));
+    if (priceMax)  list = list.filter(t => t.passPrice <= Number(priceMax));
+    if (verified)  list = list.filter(t => t.verified);
+    if (dateFrom)  list = list.filter(t => t.date >= dateFrom);
+    if (dateTo)    list = list.filter(t => t.date <= dateTo);
 
     switch (sort) {
-      case "price_asc":
-        return [...list].sort((a, b) => a.passPrice - b.passPrice);
-      case "price_desc":
-        return [...list].sort((a, b) => b.passPrice - a.passPrice);
-      case "date_asc":
-        return [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
-      default:
-        return [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      case "priceAsc":     return [...list].sort((a, b) => a.passPrice - b.passPrice);
+      case "priceDesc":    return [...list].sort((a, b) => b.passPrice - a.passPrice);
+      case "eventDateAsc": return [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
+      case "proFirst":     return [...list].sort((a, b) => (b.sellerIsPro ? 1 : 0) - (a.sellerIsPro ? 1 : 0));
+      case "oldest":       return [...list].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      default:             return [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-  }, [tickets, currentQ, currentCategory, currentCity, priceMin, priceMax, verified, sort]);
+  }, [tickets, currentQ, currentCategory, currentCity, priceMin, priceMax, verified, sort, dateFrom, dateTo]);
 
-  const hasActiveFilters = currentCategory || currentCity || currentQ || priceMin || priceMax || verified;
+  const hasActiveFilters = currentCategory || currentCity || currentQ || priceMin || priceMax || verified || dateFrom || dateTo;
 
   return (
     <div className="ticket-list-page">
@@ -187,14 +189,19 @@ export default function TicketList() {
               </div>
             </div>
 
+            {/* Date range */}
+            <div className="filter-section">
+              <label className="filter-label">Ngày sự kiện</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <input type="date" className="form-input" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                <input type="date" className="form-input" value={dateTo}   onChange={e => setDateTo(e.target.value)} />
+              </div>
+            </div>
+
             {/* Verified */}
             <div className="filter-section">
               <label className="filter-checkbox">
-                <input
-                  type="checkbox"
-                  checked={verified}
-                  onChange={(e) => setVerified(e.target.checked)}
-                />
+                <input type="checkbox" checked={verified} onChange={e => setVerified(e.target.checked)} />
                 <span>Chỉ vé đã xác minh</span>
               </label>
             </div>

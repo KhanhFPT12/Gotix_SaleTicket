@@ -1,12 +1,15 @@
 const { validationResult } = require('express-validator');
 const Ticket = require('../models/Ticket');
+const User = require('../models/User');
+const { notify } = require('../services/notificationService');
 const { success, error } = require('../utils/apiResponse');
 
 const getTickets = async (req, res, next) => {
   try {
     const {
-      search, category, location, verifyStatus,
+      search, category, location, verifyStatus, status: statusFilter,
       minPrice, maxPrice, sort,
+      dateFrom, dateTo,
       page = 1, limit = 12,
     } = req.query;
 
@@ -17,6 +20,7 @@ const getTickets = async (req, res, next) => {
       filter.status = 'available';
     } else {
       if (verifyStatus) filter.verifyStatus = verifyStatus;
+      if (statusFilter) filter.status = statusFilter;
     }
 
     if (search) filter.$text = { $search: search };
@@ -29,12 +33,19 @@ const getTickets = async (req, res, next) => {
       if (maxPrice) filter.resalePrice.$lte = Number(maxPrice);
     }
 
+    if (dateFrom || dateTo) {
+      filter.eventDate = {};
+      if (dateFrom) filter.eventDate.$gte = dateFrom;
+      if (dateTo)   filter.eventDate.$lte = dateTo;
+    }
+
     const sortMap = {
-      priceAsc:  { resalePrice: 1 },
-      priceDesc: { resalePrice: -1 },
-      oldest:    { createdAt: 1 },
-      eventDate: { eventDate: 1 },
-      newest:    { createdAt: -1 },
+      priceAsc:      { resalePrice: 1 },
+      priceDesc:     { resalePrice: -1 },
+      oldest:        { createdAt: 1 },
+      eventDateAsc:  { eventDate: 1 },
+      eventDate:     { eventDate: 1 },
+      newest:        { createdAt: -1 },
     };
     const secondarySort = sortMap[sort] || { createdAt: -1 };
 
@@ -135,6 +146,27 @@ const createTicket = async (req, res, next) => {
       data.qrImage = `/uploads/${req.files.qrImage[0].filename}`;
     }
     const ticket = await Ticket.create(data);
+
+    await notify({
+      receiverId: req.user.id,
+      title: 'Đăng vé thành công',
+      message: `Vé "${ticket.title}" đã được gửi, đang chờ admin xét duyệt.`,
+      type: 'ticket_submitted',
+      relatedId: ticket._id.toString(),
+    });
+
+    // Also notify all admins
+    const admins = await User.find({ role: 'admin' }, '_id');
+    for (const admin of admins) {
+      await notify({
+        receiverId: admin._id,
+        title: 'Vé mới chờ duyệt',
+        message: `Có vé mới "${ticket.title}" cần xét duyệt.`,
+        type: 'ticket_submitted',
+        relatedId: ticket._id.toString(),
+      });
+    }
+
     return res.status(201).json(success('Đăng vé thành công, đang chờ admin duyệt', { ticket }));
   } catch (err) {
     next(err);

@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema(
     availableBalance: { type: Number, default: 0, min: 0 },
     pendingBalance:   { type: Number, default: 0, min: 0 },
     totalRevenue:     { type: Number, default: 0, min: 0 },
+    violationCount: { type: Number, default: 0 },
+    trustScore:     { type: Number, default: 50 },
     isPro:       { type: Boolean, default: false },
     proPlan:     { type: String, enum: ['none', '1_month', '3_months', '6_months', '1_year'], default: 'none' },
     proStartDate: { type: Date },

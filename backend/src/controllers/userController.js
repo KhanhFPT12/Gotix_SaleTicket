@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Ticket = require('../models/Ticket');
 const Transaction = require('../models/Transaction');
 const Review = require('../models/Review');
+const trustScoreService = require('../services/trustScoreService');
 const { success, error } = require('../utils/apiResponse');
 
 const getProfile = async (req, res, next) => {
@@ -51,12 +52,21 @@ const getUserReviews = async (req, res, next) => {
 
 const getPublicProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id, 'name avatar rating reviewCount verified isPro proBadge createdAt');
+    const user = await User.findById(
+      req.params.id,
+      'name avatar rating reviewCount verified isPro proBadge createdAt trustScore violationCount'
+    );
     if (!user) return res.status(404).json(error('Không tìm thấy người dùng'));
 
-    const [totalPosted, totalSold, reviews] = await Promise.all([
+    // Recompute and save trustScore
+    const trustScore = await trustScoreService.update(req.params.id);
+
+    const [totalPosted, totalSold, activeListings, reviews] = await Promise.all([
       Ticket.countDocuments({ ownerId: req.params.id }),
       Transaction.countDocuments({ sellerId: req.params.id, transactionStatus: 'completed' }),
+      Ticket.find({ ownerId: req.params.id, verifyStatus: 'verified', status: 'available' })
+        .sort({ createdAt: -1 })
+        .limit(6),
       Review.find({ sellerId: req.params.id })
         .populate('buyerId', 'name avatar')
         .populate('ticketId', 'title category')
@@ -65,8 +75,9 @@ const getPublicProfile = async (req, res, next) => {
     ]);
 
     return res.json(success('Hồ sơ người dùng', {
-      user,
-      stats: { totalPosted, totalSold },
+      user: { ...user.toObject(), trustScore },
+      stats: { totalPosted, totalSold, totalSuccessful: totalSold },
+      activeListings,
       reviews,
     }));
   } catch (err) {

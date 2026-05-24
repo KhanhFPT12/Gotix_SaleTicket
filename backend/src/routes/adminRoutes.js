@@ -7,27 +7,28 @@ const {
   getProSubscriptions,
   getWithdrawals, approveWithdrawal, rejectWithdrawal,
   getTopUps, approveTopUp, rejectTopUp,
+  getAuditLogs,
 } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
-// All admin routes require authentication + admin role
 router.use(protect, requireRole('admin'));
 
-router.get('/dashboard', getDashboard);
-router.get('/users', getUsers);
-router.patch('/users/:id/status', updateUserStatus);
-router.get('/tickets/pending', getPendingTickets);
-router.patch('/tickets/:id/verify', adminVerifyTicket);
-router.get('/reports', getReports);
-router.patch('/reports/:id/resolve', resolveReport);
-router.get('/transactions', getTransactions);
-router.get('/pro-subscriptions', getProSubscriptions);
-router.get('/withdrawals', getWithdrawals);
+router.get('/dashboard',              getDashboard);
+router.get('/users',                  getUsers);
+router.patch('/users/:id/status',     updateUserStatus);
+router.get('/tickets/pending',        getPendingTickets);
+router.patch('/tickets/:id/verify',   adminVerifyTicket);
+router.get('/reports',                getReports);
+router.patch('/reports/:id/resolve',  resolveReport);
+router.get('/transactions',           getTransactions);
+router.get('/pro-subscriptions',      getProSubscriptions);
+router.get('/withdrawals',            getWithdrawals);
 router.patch('/withdrawals/:id/approve', approveWithdrawal);
-router.patch('/withdrawals/:id/reject', rejectWithdrawal);
-router.get('/topups', getTopUps);
-router.patch('/topups/:id/approve', approveTopUp);
-router.patch('/topups/:id/reject', rejectTopUp);
+router.patch('/withdrawals/:id/reject',  rejectWithdrawal);
+router.get('/topups',                 getTopUps);
+router.patch('/topups/:id/approve',   approveTopUp);
+router.patch('/topups/:id/reject',    rejectTopUp);
+router.get('/audit-logs',             getAuditLogs);
 
 module.exports = router;
