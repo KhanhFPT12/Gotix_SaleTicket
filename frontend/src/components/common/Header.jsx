@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useChat } from "../../context/ChatContext";
 import { apiGetNotifications, apiMarkRead, apiMarkAllRead, normalizeNotification, resolveMediaUrl } from "../../api/client";
 import "./Header.css";
 
@@ -88,6 +89,20 @@ function NotificationDropdown({ onClose }) {
   );
 }
 
+function ChatIcon() {
+  const { unreadTotal } = useChat();
+  return (
+    <Link to="/chat" className="chat-icon-btn" aria-label="Tin nhắn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      {unreadTotal > 0 && (
+        <span className="notif-badge">{unreadTotal > 9 ? "9+" : unreadTotal}</span>
+      )}
+    </Link>
+  );
+}
+
 export default function Header() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
@@ -133,6 +148,7 @@ export default function Header() {
               )}
 
               <NotificationDropdown />
+              <ChatIcon />
 
               <div className="user-menu">
                 <button className="user-menu-trigger" onClick={() => setMenuOpen(!menuOpen)}>

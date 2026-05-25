@@ -51,11 +51,12 @@ export function AuthProvider({ children }) {
   }
 
   async function updateProfile(data) {
-    // data may contain a File (avatarFile); send as FormData
     const formData = new FormData();
-    if (data.name)       formData.append("name", data.name);
-    if (data.phone)      formData.append("phone", data.phone);
-    if (data.avatarFile) formData.append("avatar", data.avatarFile);
+    if (data.name)              formData.append("name",     data.name);
+    if (data.phone !== undefined) formData.append("phone",  data.phone);
+    if (data.bio  !== undefined)  formData.append("bio",    data.bio);
+    if (data.location !== undefined) formData.append("location", data.location);
+    if (data.avatarFile)        formData.append("avatar",   data.avatarFile);
 
     const res = await apiFetch("/users/profile", { method: "PUT", body: formData });
     if (!res.success) return { success: false, message: res.message };

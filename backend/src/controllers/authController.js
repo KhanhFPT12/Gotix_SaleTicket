@@ -43,6 +43,7 @@ const login = async (req, res, next) => {
     res.cookie('token', token, COOKIE_OPTS);
     const userObj = user.toObject();
     delete userObj.password;
+    userObj.id = user._id.toString();
     return res.json(success('Đăng nhập thành công', { user: userObj, token }));
   } catch (err) {
     next(err);

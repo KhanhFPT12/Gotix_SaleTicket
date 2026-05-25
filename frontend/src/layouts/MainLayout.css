@@ -7,3 +7,16 @@
 .main-content {
   flex: 1;
 }
+
+/* Routes without footer (e.g. /chat) — layout tightly fills viewport */
+.main-layout--fullscreen {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-layout--fullscreen .main-content {
+  overflow: hidden;
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+}

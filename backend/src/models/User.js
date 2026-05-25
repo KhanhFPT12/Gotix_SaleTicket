@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     password:    { type: String, required: true, minlength: 6, select: false },
     phone:       { type: String, trim: true },
     avatar:      { type: String, default: '' },
+    bio:         { type: String, default: '', maxlength: 500 },
+    location:    { type: String, default: '', trim: true },
     role:        { type: String, enum: ['user', 'admin'], default: 'user' },
     rating:      { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },

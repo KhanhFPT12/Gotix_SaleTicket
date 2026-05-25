@@ -14,12 +14,12 @@ function formatDate(d) {
 }
 
 const REPORT_REASONS = [
-  { value: "fake_ticket",         label: "Vé giả" },
-  { value: "invalid_qr",          label: "QR không hợp lệ" },
+  { value: "fake_ticket", label: "Vé giả" },
+  { value: "invalid_qr", label: "QR không hợp lệ" },
   { value: "seller_unresponsive", label: "Người bán không phản hồi" },
-  { value: "wrong_info",          label: "Sai thông tin vé" },
-  { value: "transaction_issue",   label: "Giao dịch có vấn đề" },
-  { value: "other",               label: "Khác" },
+  { value: "wrong_info", label: "Sai thông tin vé" },
+  { value: "transaction_issue", label: "Giao dịch có vấn đề" },
+  { value: "other", label: "Khác" },
 ];
 
 function TrustBadge({ score }) {
@@ -90,6 +90,23 @@ export default function TicketDetail() {
     } catch { /* silent */ }
     setReportSent(true);
   }
+
+  async function handleChat(e) {
+    e.preventDefault();
+    try {
+      await apiPost('/reports', { ticketId: ticket.id, reason: reportReason, description: reportDesc });
+    } catch { /* silent */ }
+    setReportSent(true);
+  }
+
+  function handleChatSeller() {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    navigate(`/chat?sellerId=${ticket.sellerId}&ticketId=${ticket.id}`);
+  }
+
 
   return (
     <div className="ticket-detail-page">
@@ -190,16 +207,20 @@ export default function TicketDetail() {
             )}
 
             <div className="ticket-actions">
-              {currentUser?.id === ticket.sellerId ? (
+              {(currentUser?._id?.toString() ?? currentUser?.id) === ticket.sellerId ? (
                 <div className="alert alert-info">Đây là vé của bạn</div>
               ) : ticket.status === "approved" ? (
                 <>
                   <Link to={`/payment/${ticket.id}`} className="btn btn-accent btn-lg" style={{ flex: 1 }}>
                     Mua ngay
                   </Link>
-                  <Link to={`/chat?ticketId=${ticket.id}&sellerId=${ticket.sellerId}`} className="btn btn-outline btn-lg">
+                  <button
+                    type="button"
+                    onClick={handleChatSeller}
+                    className="btn btn-outline btn-lg"
+                  >
                     Chat người bán
-                  </Link>
+                  </button>
                 </>
               ) : (
                 <div className="alert alert-info">Vé đang chờ xét duyệt</div>
@@ -224,7 +245,7 @@ export default function TicketDetail() {
               </div>
             )}
 
-            {currentUser && currentUser.id !== ticket.sellerId && (
+            {currentUser && (currentUser?._id?.toString() ?? currentUser?.id) !== ticket.sellerId && (
               <div className="ticket-report-wrap">
                 {!reportOpen ? (
                   <button className="report-btn" onClick={() => setReportOpen(true)}>Báo cáo vé này</button>
