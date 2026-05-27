@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Auth.css";
@@ -14,11 +14,14 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || "/";
 
-  if (currentUser) {
-    const dest = currentUser.role === "admin" ? "/admin" : from === "/login" ? "/" : from;
-    navigate(dest, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (currentUser) {
+      const dest = currentUser.role === "admin" ? "/admin" : from === "/login" ? "/" : from;
+      navigate(dest, { replace: true });
+    }
+  }, [currentUser, navigate, from]);
+
+  if (currentUser) return null;
 
   async function handleSubmit(e) {
     e.preventDefault();

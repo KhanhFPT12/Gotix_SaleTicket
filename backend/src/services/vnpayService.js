@@ -31,9 +31,10 @@ const buildPaymentUrl = (req, transactionId, amount, returnUrlOverride) => {
   const expireDate = moment(date).add(15, 'minutes').format('YYYYMMDDHHmmss');
 
   const ipAddr = req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    req.connection.socket.remoteAddress || '127.0.0.1';
+    req.ip ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    req.connection?.socket?.remoteAddress || '127.0.0.1';
 
   let vnp_Params = {};
   vnp_Params['vnp_Version'] = '2.1.0';
