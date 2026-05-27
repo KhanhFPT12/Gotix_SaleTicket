@@ -1,6 +1,9 @@
 const TopUp = require('../models/TopUp');
+const User = require('../models/User');
 const adminBank = require('../config/adminBank');
 const { success, error } = require('../utils/apiResponse');
+const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
+const { notify } = require('../services/notificationService');
 
 function generateTransferCode(userId) {
   const uid   = userId.toString().slice(-5).toUpperCase();
@@ -30,9 +33,13 @@ const createTopUp = async (req, res, next) => {
       userId:       req.user.id,
       amount:       amt,
       transferCode,
+      status:       'pending',
     });
 
-    return res.status(201).json(success('Tạo lệnh nạp tiền thành công', { topUp, transferCode }));
+    const returnUrl = process.env.CLIENT_URL + '/topup-payment-result';
+    const url = buildPaymentUrl(req, topUp._id.toString(), amt, returnUrl);
+
+    return res.status(201).json(success('Tạo lệnh nạp tiền thành công', { topUp, transferCode, url }));
   } catch (err) {
     next(err);
   }
@@ -58,4 +65,48 @@ const getMyTopUps = async (req, res, next) => {
   }
 };
 
-module.exports = { getAdminBankInfo, createTopUp, getMyTopUps };
+const vnpayReturnTopUp = async (req, res, next) => {
+  try {
+    let vnp_Params = req.query;
+    const verifyResult = verifyReturnUrl(vnp_Params);
+
+    if (verifyResult.isSuccess) {
+      const topUpId = vnp_Params['vnp_TxnRef'];
+      const topUp = await TopUp.findById(topUpId);
+      
+      if (!topUp) {
+        return res.status(404).json(error('Không tìm thấy lệnh nạp tiền'));
+      }
+
+      if (topUp.status === 'pending') {
+        // Update user balance
+        await User.findByIdAndUpdate(topUp.userId, {
+          $inc: { availableBalance: topUp.amount, totalRevenue: topUp.amount },
+        });
+
+        // Update top-up status
+        topUp.status = 'approved';
+        topUp.processedAt = new Date();
+        // Since it's automated, processedBy could be left null or set to a system admin ID if necessary
+        await topUp.save();
+
+        // Send notification
+        await notify({
+          receiverId: topUp.userId,
+          title: 'Nạp tiền thành công',
+          message: `${topUp.amount?.toLocaleString('vi-VN')}đ đã được cộng vào ví của bạn từ VNPay.`,
+          type: 'wallet_credited',
+          relatedId: topUp._id.toString(),
+        });
+      }
+
+      return res.json(success('Nạp tiền thành công', { topUpId: topUp._id }));
+    } else {
+      return res.status(400).json(error('Thanh toán thất bại hoặc mã xác thực không hợp lệ', { code: verifyResult.code }));
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getAdminBankInfo, createTopUp, getMyTopUps, vnpayReturnTopUp };

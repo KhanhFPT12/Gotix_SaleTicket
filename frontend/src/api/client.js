@@ -169,6 +169,7 @@ export function normalizeTopUp(t) {
 export const apiPayTransaction      = (id)    => apiPatch(`/transactions/${id}/payment`, {});
 export const apiCompleteTransaction = (id)    => apiPatch(`/transactions/${id}/complete`, {});
 export const apiCancelTransaction   = (id)    => apiPatch(`/transactions/${id}/cancel`, {});
+export const apiCreateVnPayUrl      = (id)    => apiPost(`/transactions/${id}/vnpay/create-url`, {});
 
 export function normalizeProSubscription(s) {
   if (!s) return null;

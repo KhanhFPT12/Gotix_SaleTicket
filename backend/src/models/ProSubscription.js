@@ -9,7 +9,7 @@ const proSubscriptionSchema = new mongoose.Schema(
     startDate:       { type: Date, required: true },
     endDate:         { type: Date, required: true },
     paymentStatus:   { type: String, enum: ['pending', 'paid', 'failed', 'expired'], default: 'pending' },
-    status:          { type: String, enum: ['active', 'expired', 'cancelled'], default: 'active' },
+    status:          { type: String, enum: ['pending', 'active', 'expired', 'cancelled'], default: 'pending' },
   },
   { timestamps: true }
 );

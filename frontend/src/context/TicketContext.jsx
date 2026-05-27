@@ -7,6 +7,7 @@ import {
   apiGetMyWallet, apiGetWalletHistory, apiCreateWithdrawal, apiGetMyWithdrawals,
   apiCreateTopUp, apiGetMyTopUps,
   apiPayTransaction, apiCompleteTransaction, apiCancelTransaction,
+  apiCreateVnPayUrl,
 } from "../api/client";
 import { useAuth } from "./AuthContext";
 
@@ -180,6 +181,12 @@ export function TicketProvider({ children }) {
     return updated;
   }
 
+  async function createVnPayUrl(txId) {
+    const res = await apiCreateVnPayUrl(txId);
+    if (!res.success) throw new Error(res.message || "Lỗi tạo URL thanh toán");
+    return res.data.url;
+  }
+
   async function completeTransaction(txId) {
     const res = await apiCompleteTransaction(txId);
     if (!res.success) throw new Error(res.message);
@@ -204,7 +211,7 @@ export function TicketProvider({ children }) {
     if (!res.success) throw new Error(res.message || "Tạo lệnh nạp tiền thất bại");
     const tu = normalizeTopUp(res.data.topUp);
     setMyTopUps(prev => [tu, ...prev]);
-    return { topUp: tu, transferCode: res.data.transferCode };
+    return { topUp: tu, transferCode: res.data.transferCode, url: res.data.url };
   }
 
   async function createWithdrawal(data) {
@@ -283,6 +290,7 @@ export function TicketProvider({ children }) {
         adminTopUps,
         createTopUp,
         payForTransaction,
+        createVnPayUrl,
         completeTransaction,
         cancelTransactionById,
         createWithdrawal,

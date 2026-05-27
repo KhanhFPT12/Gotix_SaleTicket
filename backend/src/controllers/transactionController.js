@@ -5,6 +5,7 @@ const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendin
 const { notify } = require('../services/notificationService');
 const emailService = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
+const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
 
 const createTransaction = async (req, res, next) => {
   try {
@@ -201,7 +202,70 @@ const getTransactionById = async (req, res, next) => {
   }
 };
 
+const createVnPayUrl = async (req, res, next) => {
+  try {
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
+    if (tx.buyerId.toString() !== req.user.id) return res.status(403).json(error('Không có quyền'));
+    if (tx.paymentStatus === 'paid') return res.status(400).json(error('Giao dịch đã thanh toán rồi'));
+    if (tx.transactionStatus !== 'pending') return res.status(400).json(error('Giao dịch không ở trạng thái có thể thanh toán'));
+
+    // final total includes 2% platform fee on frontend, but we already have tx.totalPrice and tx.platformFee
+    const amountToPay = tx.totalPrice + tx.platformFee;
+    const url = buildPaymentUrl(req, tx._id.toString(), amountToPay);
+
+    return res.json(success('Tạo URL thanh toán thành công', { url }));
+  } catch (err) {
+    next(err);
+  }
+};
+
+const vnpayReturn = async (req, res, next) => {
+  try {
+    let vnp_Params = req.query;
+    const verifyResult = verifyReturnUrl(vnp_Params);
+
+    if (verifyResult.isSuccess) {
+      const txId = vnp_Params['vnp_TxnRef'];
+      const tx = await Transaction.findById(txId);
+      
+      if (!tx) {
+        return res.status(404).json(error('Không tìm thấy giao dịch'));
+      }
+
+      if (tx.paymentStatus !== 'paid' && tx.transactionStatus === 'pending') {
+        const ticket = await Ticket.findById(tx.ticketId);
+        if (ticket) {
+          ticket.quantity = Math.max(0, ticket.quantity - tx.quantity);
+          if (ticket.quantity === 0) ticket.status = 'sold';
+          await ticket.save();
+        }
+
+        await addPendingBalance(tx.sellerId, tx.sellerAmount);
+
+        tx.paymentStatus = 'paid';
+        await tx.save();
+
+        await notify({
+          receiverId: tx.sellerId,
+          title: 'Vé của bạn được mua',
+          message: `Có người vừa thanh toán mua vé qua VNPay. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đang chờ xác nhận.`,
+          type: 'ticket_sold',
+          relatedId: tx._id.toString(),
+        });
+      }
+
+      return res.json(success('Giao dịch thanh toán thành công', { transactionId: tx._id }));
+    } else {
+      return res.status(400).json(error('Thanh toán thất bại hoặc mã xác thực không hợp lệ', { code: verifyResult.code }));
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createTransaction, payTransaction, completeTransaction,
   cancelTransaction, getMyPurchases, getMySales, getTransactionById,
+  createVnPayUrl, vnpayReturn
 };

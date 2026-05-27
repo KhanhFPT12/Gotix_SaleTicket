@@ -29,7 +29,6 @@ export default function UpgradePro() {
   const [plans, setPlans]         = useState([]);
   const [selected, setSelected]   = useState("3_months");
   const [loading, setLoading]     = useState(false);
-  const [success, setSuccess]     = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
   useEffect(() => {
@@ -41,12 +40,13 @@ export default function UpgradePro() {
   async function handleUpgrade() {
     try {
       setLoading(true);
-      await upgradePro(selected);
-      if (refreshUser) await refreshUser();
-      setSuccess(true);
+      const res = await upgradePro(selected);
+      if (res && res.url) {
+        window.location.href = res.url;
+        return; // Redirecting to VNPay
+      }
     } catch (e) {
       alert(e.message);
-    } finally {
       setLoading(false);
     }
   }
@@ -64,21 +64,7 @@ export default function UpgradePro() {
     }
   }
 
-  if (success) {
-    return (
-      <div className="upgrade-pro-page">
-        <div className="pro-success-card">
-          <div className="pro-success-icon">🌟</div>
-          <h2>Chúc mừng! Bạn đã là GoTix Pro</h2>
-          <p>Tài khoản của bạn đã được nâng cấp thành công. Vé của bạn sẽ được ưu tiên hiển thị trên trang chủ.</p>
-          <div className="pro-success-actions">
-            <button className="btn btn-primary" onClick={() => navigate("/post-ticket")}>Đăng vé ngay</button>
-            <button className="btn btn-outline" onClick={() => navigate("/buyer")}>Về trang của tôi</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   const isPro = currentUser?.isPro;
 
@@ -164,7 +150,6 @@ export default function UpgradePro() {
           >
             {loading ? "Đang xử lý..." : isPro ? `Gia hạn gói ${PLAN_LABELS[selected]}` : `Nâng cấp Pro — ${formatPrice(plans.find(p => p.id === selected)?.price ?? 0)}`}
           </button>
-          <p className="pro-upgrade-note">Thanh toán mô phỏng — không trừ tiền thật</p>
         </div>
       </div>
 

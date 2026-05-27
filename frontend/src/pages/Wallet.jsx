@@ -80,8 +80,12 @@ export default function Wallet() {
     try {
       setTopUpLoading(true);
       const result = await createTopUp(amt);
-      setCurrentTopUp(result);
-      setTopUpStep("qr");
+      if (result && result.url) {
+        window.location.href = result.url;
+        return;
+      } else {
+        throw new Error("Không thể tạo URL thanh toán. Vui lòng kiểm tra lại Server Backend.");
+      }
     } catch (e) {
       setTopUpError(e.message);
     } finally {
@@ -232,7 +236,7 @@ export default function Wallet() {
                   <>
                     <h3 className="topup-title">Nạp tiền vào ví</h3>
                     <p className="topup-subtitle">
-                      Chuyển khoản đến tài khoản GoTix theo mã lệnh — tiền sẽ được cộng vào ví sau khi admin xác nhận.
+                      Hệ thống sẽ chuyển hướng bạn đến cổng thanh toán VNPay để hoàn tất giao dịch.
                     </p>
 
                     <form onSubmit={handleCreateTopUp}>
@@ -356,19 +360,16 @@ export default function Wallet() {
                 )}
               </div>
 
-              {/* Right: how-it-works */}
               <div className="topup-guide card">
                 <h4>Cách nạp tiền</h4>
                 <ol className="topup-steps">
                   <li>Nhập số tiền muốn nạp và bấm <strong>Tạo lệnh nạp tiền</strong></li>
-                  <li>Quét QR hoặc chuyển khoản thủ công đến tài khoản GoTix</li>
-                  <li>Nhập đúng <strong>nội dung chuyển khoản</strong> (mã lệnh) để xác nhận</li>
-                  <li>Bấm <strong>Tôi đã chuyển khoản</strong> sau khi hoàn tất</li>
-                  <li>Admin xác nhận và tiền sẽ vào ví trong <strong>15 phút – 2 giờ</strong></li>
+                  <li>Hệ thống sẽ chuyển hướng sang thanh toán VNPay</li>
+                  <li>Tiến hành thanh toán bảo mật trên cổng VNPay</li>
+                  <li>Tiền sẽ được cộng vào ví tự động ngay sau khi thanh toán thành công</li>
                 </ol>
                 <div className="topup-guide-note">
                   <p>Số tiền nạp tối thiểu: <strong>10.000đ</strong></p>
-                  <p>Hỗ trợ: tất cả ngân hàng nội địa</p>
                 </div>
               </div>
             </div>
