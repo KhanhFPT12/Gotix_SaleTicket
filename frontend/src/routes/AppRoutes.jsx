@@ -14,6 +14,9 @@ import UserDashboard from "../pages/BuyerDashboard";
 import Profile from "../pages/Profile";
 import Chat from "../pages/Chat";
 import Payment from "../pages/Payment";
+import PaymentResult from "../pages/PaymentResult";
+import ProPaymentResult from "../pages/ProPaymentResult";
+import TopUpPaymentResult from "../pages/TopUpPaymentResult";
 import TransactionHistory from "../pages/TransactionHistory";
 import UpgradePro from "../pages/UpgradePro";
 import PublicProfile from "../pages/PublicProfile";
@@ -45,6 +48,9 @@ export default function AppRoutes() {
         <Route path="/profile"         element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/chat"            element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/payment/:ticketId" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/payment-result"  element={<ProtectedRoute><PaymentResult /></ProtectedRoute>} />
+        <Route path="/pro-payment-result" element={<ProtectedRoute><ProPaymentResult /></ProtectedRoute>} />
+        <Route path="/topup-payment-result" element={<ProtectedRoute><TopUpPaymentResult /></ProtectedRoute>} />
         <Route path="/transactions"    element={<ProtectedRoute><TransactionHistory /></ProtectedRoute>} />
         <Route path="/upgrade-pro"     element={<ProtectedRoute><UpgradePro /></ProtectedRoute>} />
         <Route path="/wallet"          element={<ProtectedRoute><Wallet /></ProtectedRoute>} />

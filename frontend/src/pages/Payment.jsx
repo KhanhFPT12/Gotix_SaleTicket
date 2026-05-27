@@ -17,7 +17,7 @@ const STEP_LABELS = ["Xác nhận đơn", "Thanh toán", "Hoàn tất"];
 
 export default function Payment() {
   const { ticketId } = useParams();
-  const { tickets, addTransaction, payForTransaction } = useTickets();
+  const { tickets, addTransaction, payForTransaction, createVnPayUrl } = useTickets();
   const [step, setStep]                 = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [qty, setQty]                   = useState(1);
@@ -65,14 +65,21 @@ export default function Payment() {
     setPayError("");
     setPaying(true);
     try {
-      await payForTransaction(txId);
-      setStep(2);
+      if (paymentMethod === "vnpay") {
+        const url = await createVnPayUrl(txId);
+        window.location.href = url;
+        return; // Redirecting...
+      } else {
+        await payForTransaction(txId);
+        setStep(2);
+      }
     } catch (err) {
       setPayError(err.message || "Xác nhận thanh toán thất bại. Vui lòng thử lại.");
     } finally {
       setPaying(false);
     }
   }
+
 
   return (
     <div className="payment-page">
@@ -157,21 +164,33 @@ export default function Payment() {
                       <p className="instruction-warn">Nhập đúng nội dung chuyển khoản để hệ thống xác nhận tự động.</p>
                     </>
                   )}
-                  {(paymentMethod === "momo" || paymentMethod === "vnpay") && (
+                  {paymentMethod === "momo" && (
                     <div className="qr-mock">
                       <div className="qr-box">
-                        <p>QR {paymentMethod === "momo" ? "Momo" : "VNPay"}</p>
+                        <p>QR Momo</p>
                         <div className="qr-placeholder"><span>Quét QR</span></div>
                         <p className="qr-amount">{formatPrice(finalTotal)}</p>
                       </div>
                       <p className="instruction-note">Mở ứng dụng và quét mã QR để thanh toán.</p>
                     </div>
                   )}
+                  {paymentMethod === "vnpay" && (
+                    <div className="qr-mock">
+                      <div className="qr-box" style={{ borderColor: '#005baa' }}>
+                        <p style={{ color: '#005baa', fontWeight: 'bold' }}>Thanh toán qua VNPay</p>
+                        <div className="qr-placeholder" style={{ background: '#f0f8ff', color: '#005baa' }}>
+                          <span>Chuyển hướng...</span>
+                        </div>
+                        <p className="qr-amount">{formatPrice(finalTotal)}</p>
+                      </div>
+                      <p className="instruction-note">Nhấn nút bên dưới để chuyển đến cổng thanh toán an toàn của VNPay.</p>
+                    </div>
+                  )}
                 </div>
                 {payError && <div className="alert alert-error mt-md">{payError}</div>}
                 <div className="payment-actions">
                   <button className="btn btn-primary btn-lg" onClick={handlePaid} disabled={paying}>
-                    {paying ? "Đang xử lý..." : "Tôi đã thanh toán"}
+                    {paying ? "Đang xử lý..." : paymentMethod === 'vnpay' ? "Thanh toán qua VNPay" : "Tôi đã thanh toán"}
                   </button>
                   <button className="btn btn-ghost" onClick={() => setStep(0)} disabled={paying}>Quay lại</button>
                 </div>

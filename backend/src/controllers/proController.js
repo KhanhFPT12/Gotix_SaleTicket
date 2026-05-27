@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const ProSubscription = require('../models/ProSubscription');
 const { success, error } = require('../utils/apiResponse');
+const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
 
 const PLANS = [
   { id: '1_month',   label: '1 Tháng',   durationInDays: 30,  price: 39000  },
@@ -41,19 +42,14 @@ const upgradePro = async (req, res, next) => {
       durationInDays: planInfo.durationInDays,
       startDate,
       endDate,
-      paymentStatus: 'paid',
-      status: 'active',
+      paymentStatus: 'pending',
+      status: 'pending',
     });
 
-    await User.findByIdAndUpdate(req.user.id, {
-      isPro: true,
-      proPlan: planInfo.id,
-      proStartDate: startDate,
-      proEndDate: endDate,
-    });
+    const returnUrl = process.env.CLIENT_URL + '/pro-payment-result';
+    const url = buildPaymentUrl(req, subscription._id.toString(), planInfo.price, returnUrl);
 
-    const updatedUser = await User.findById(req.user.id);
-    return res.json(success('Nâng cấp Pro thành công', { subscription, user: updatedUser }));
+    return res.json(success('Tạo URL thanh toán thành công', { url }));
   } catch (err) {
     next(err);
   }
@@ -107,4 +103,39 @@ const cancelPro = async (req, res, next) => {
   }
 };
 
-module.exports = { getPlans, upgradePro, getMySubscription, cancelPro };
+const vnpayReturnPro = async (req, res, next) => {
+  try {
+    let vnp_Params = req.query;
+    const verifyResult = verifyReturnUrl(vnp_Params);
+
+    if (verifyResult.isSuccess) {
+      const subId = vnp_Params['vnp_TxnRef'];
+      const subscription = await ProSubscription.findById(subId);
+      
+      if (!subscription) {
+        return res.status(404).json(error('Không tìm thấy giao dịch nâng cấp'));
+      }
+
+      if (subscription.paymentStatus !== 'paid' && subscription.status === 'pending') {
+        subscription.paymentStatus = 'paid';
+        subscription.status = 'active';
+        await subscription.save();
+
+        await User.findByIdAndUpdate(subscription.userId, {
+          isPro: true,
+          proPlan: subscription.plan,
+          proStartDate: subscription.startDate,
+          proEndDate: subscription.endDate,
+        });
+      }
+
+      return res.json(success('Nâng cấp Pro thành công', { subscriptionId: subscription._id }));
+    } else {
+      return res.status(400).json(error('Thanh toán thất bại hoặc mã xác thực không hợp lệ', { code: verifyResult.code }));
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getPlans, upgradePro, getMySubscription, cancelPro, vnpayReturnPro };
