@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { apiToggleFavorite, apiUnfavorite } from "../../api/client";
 import { TICKET_CATEGORIES } from "../../data/mockData";
@@ -26,9 +26,17 @@ export default function TicketCard({ ticket, initialSaved = false }) {
   const { currentUser } = useAuth();
   const [saved, setSaved] = useState(initialSaved);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const category = TICKET_CATEGORIES.find((c) => c.id === ticket.category);
   const discount = Math.round(((ticket.originalPrice - ticket.passPrice) / ticket.originalPrice) * 100);
+
+  const handleCardClick = (e) => {
+    if (e.target.closest('.ticket-fav-btn') || e.target.closest('.seller-link')) {
+      return;
+    }
+    navigate(`/tickets/${ticket.id}`);
+  };
 
   async function handleFavorite(e) {
     e.preventDefault();
@@ -49,7 +57,7 @@ export default function TicketCard({ ticket, initialSaved = false }) {
   }
 
   return (
-    <Link to={`/tickets/${ticket.id}`} className="ticket-card">
+    <div onClick={handleCardClick} className="ticket-card" style={{ cursor: "pointer" }}>
       <div className="ticket-card-image">
         {ticket.images?.[0] ? (
           <img src={ticket.images[0]} alt={ticket.title} />
@@ -123,6 +131,6 @@ export default function TicketCard({ ticket, initialSaved = false }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
