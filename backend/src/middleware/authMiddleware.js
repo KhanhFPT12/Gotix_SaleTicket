@@ -18,7 +18,7 @@ const protect = async (req, res, next) => {
     if (!user || !user.isActive) {
       return res.status(401).json(error('Token không hợp lệ hoặc tài khoản bị khóa'));
     }
-    req.user = { id: user._id.toString(), role: user.role, email: user.email };
+    req.user = { id: user._id.toString(), role: user.role, email: user.email, name: user.name };
     next();
   } catch {
     return res.status(401).json(error('Token không hợp lệ'));

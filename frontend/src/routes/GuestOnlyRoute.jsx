@@ -17,7 +17,10 @@ export default function GuestOnlyRoute({ children }) {
   }
 
   if (currentUser) {
-    return <Navigate to={currentUser.role === "admin" ? "/admin" : "/"} replace />;
+    const dest = currentUser.role === "admin"   ? "/admin"
+               : currentUser.role === "support" ? "/staff/support"
+               : "/";
+    return <Navigate to={dest} replace />;
   }
 
   return children;

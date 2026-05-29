@@ -207,6 +207,20 @@
   border-color: #B7791F;
 }
 
+/* ── Support Icon ──────────────────────────────────────────────── */
+.support-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-primary, #2563eb);
+  text-decoration: none;
+  background: #eff6ff;
+  transition: background 0.15s;
+}
+.support-icon-btn:hover { background: #dbeafe; }
+
 /* ── Chat Icon ─────────────────────────────────────────────────── */
 .chat-icon-btn {
   position: relative;

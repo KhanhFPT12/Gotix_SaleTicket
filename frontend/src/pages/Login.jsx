@@ -37,7 +37,8 @@ export default function Login() {
         return;
       }
       const role = result.user.role;
-      if (role === "admin") navigate("/admin", { replace: true });
+      if (role === "admin")   navigate("/admin", { replace: true });
+      else if (role === "support") navigate("/staff/support", { replace: true });
       else navigate(from === "/login" ? "/" : from, { replace: true });
     } catch {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");

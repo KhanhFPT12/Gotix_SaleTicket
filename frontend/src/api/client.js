@@ -193,10 +193,17 @@ export const apiGetMyTickets        = ()            => apiGet('/support/my-ticke
 export const apiCreateSupportTicket = (data)        => apiPost('/support/tickets', data);
 export const apiGetSupportMessages  = (id)          => apiGet(`/support/tickets/${id}/messages`);
 export const apiSendSupportMessage  = (id, data)    => apiFetch(`/support/tickets/${id}/messages`, { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) });
-export const apiAdminGetTickets     = (params = {}) => apiGet('/support/admin/tickets?' + new URLSearchParams(params));
-export const apiAdminGetMessages    = (id)          => apiGet(`/support/admin/tickets/${id}/messages`);
-export const apiAdminSendMessage    = (id, data)    => apiFetch(`/support/admin/tickets/${id}/messages`, { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) });
-export const apiAdminUpdateStatus   = (id, status)  => apiPatch(`/support/admin/tickets/${id}/status`, { status });
+export const apiStaffGetTickets     = (params = {}) => apiGet('/support/staff/tickets?' + new URLSearchParams(params));
+export const apiStaffGetMessages    = (id)          => apiGet(`/support/staff/tickets/${id}/messages`);
+export const apiStaffSendMessage    = (id, data)    => apiFetch(`/support/staff/tickets/${id}/messages`, { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) });
+export const apiStaffUpdateStatus   = (id, status)  => apiPatch(`/support/staff/tickets/${id}/status`, { status });
+export const apiStaffUpdatePriority = (id, priority)=> apiPatch(`/support/staff/tickets/${id}/priority`, { priority });
+export const apiStaffAssign         = (id, staffId) => apiPatch(`/support/staff/tickets/${id}/assign`, { assignedTo: staffId });
+// backward compat
+export const apiAdminGetTickets     = apiStaffGetTickets;
+export const apiAdminGetMessages    = apiStaffGetMessages;
+export const apiAdminSendMessage    = apiStaffSendMessage;
+export const apiAdminUpdateStatus   = apiStaffUpdateStatus;
 
 // ── Auth verification ─────────────────────────────────────────────────────────
 export const apiVerifyEmail        = (token) => apiGet(`/auth/verify-email/${token}`);

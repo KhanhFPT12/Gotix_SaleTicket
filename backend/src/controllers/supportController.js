@@ -15,7 +15,7 @@ const getMyTickets = async (req, res, next) => {
 
 const createTicket = async (req, res, next) => {
   try {
-    const { subject, topic, message } = req.body;
+    const { subject, topic, priority, message } = req.body;
     if (!subject?.trim()) return res.status(400).json(error('Vui lòng nhập tiêu đề'));
     if (!topic)           return res.status(400).json(error('Vui lòng chọn chủ đề'));
 
@@ -23,6 +23,8 @@ const createTicket = async (req, res, next) => {
       userId: req.user.id,
       subject: subject.trim(),
       topic,
+      priority: priority || 'medium',
+      status: 'new',
     });
 
     if (message?.trim()) {
@@ -34,7 +36,7 @@ const createTicket = async (req, res, next) => {
       });
       ticket.lastMessage   = msg.content;
       ticket.lastMessageAt = msg.createdAt;
-      ticket.unreadByAdmin = 1;
+      ticket.unreadByStaff = 1;
       await ticket.save();
     }
 
@@ -63,7 +65,7 @@ const sendUserMessage = async (req, res, next) => {
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) return res.status(404).json(error('Không tìm thấy yêu cầu'));
     if (ticket.userId.toString() !== req.user.id) return res.status(403).json(error('Không có quyền'));
-    if (ticket.status === 'closed') return res.status(400).json(error('Yêu cầu đã đóng, vui lòng tạo yêu cầu mới'));
+    if (ticket.status === 'closed') return res.status(400).json(error('Yêu cầu đã đóng'));
 
     const content = req.body.content?.trim() || '';
     const image   = req.file ? `/uploads/${req.file.filename}` : '';
@@ -74,10 +76,11 @@ const sendUserMessage = async (req, res, next) => {
     });
     await msg.populate('senderId', 'name avatar role');
 
-    if (ticket.status === 'resolved') ticket.status = 'pending';
+    if (ticket.status === 'resolved' || ticket.status === 'waiting_customer') ticket.status = 'pending';
+    if (ticket.status === 'new') ticket.status = 'pending';
     ticket.lastMessage   = content || '[Hình ảnh]';
     ticket.lastMessageAt = msg.createdAt;
-    ticket.unreadByAdmin += 1;
+    ticket.unreadByStaff += 1;
     await ticket.save();
 
     getIo()?.to(`support:${ticket._id}`).emit('support_message', {
@@ -88,48 +91,63 @@ const sendUserMessage = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// ── ADMIN endpoints ───────────────────────────────────────────────────────────
+// ── STAFF / ADMIN endpoints ───────────────────────────────────────────────────
 
-const adminGetAllTickets = async (req, res, next) => {
+const staffGetAllTickets = async (req, res, next) => {
   try {
-    const { status, topic, search, page = 1, limit = 100 } = req.query;
+    const { status, topic, priority, assignedTo, search, page = 1, limit = 100 } = req.query;
     const filter = {};
-    if (status) filter.status = status;
-    if (topic)  filter.topic  = topic;
-    if (search) filter.subject = new RegExp(search, 'i');
+    if (status)     filter.status   = status;
+    if (topic)      filter.topic    = topic;
+    if (priority)   filter.priority = priority;
+    if (assignedTo === 'me') filter.assignedTo = req.user.id;
+    if (search)     filter.subject  = new RegExp(search, 'i');
 
     const skip = (Number(page) - 1) * Number(limit);
     const [tickets, total] = await Promise.all([
       SupportTicket.find(filter)
-        .populate('userId', 'name email avatar')
+        .populate('userId',     'name email avatar')
+        .populate('assignedTo', 'name avatar')
         .sort({ updatedAt: -1 })
         .skip(skip).limit(Number(limit)),
       SupportTicket.countDocuments(filter),
     ]);
 
+    // Stats
+    const [newCount, pendingCount, inProgressCount, waitingCount, resolvedCount] = await Promise.all([
+      SupportTicket.countDocuments({ status: 'new' }),
+      SupportTicket.countDocuments({ status: 'pending' }),
+      SupportTicket.countDocuments({ status: 'in_progress' }),
+      SupportTicket.countDocuments({ status: 'waiting_customer' }),
+      SupportTicket.countDocuments({ status: 'resolved' }),
+    ]);
+
     return res.json(success('Danh sách yêu cầu hỗ trợ', {
-      tickets, pagination: { total, page: Number(page), limit: Number(limit) },
+      tickets,
+      stats: { newCount, pendingCount, inProgressCount, waitingCount, resolvedCount },
+      pagination: { total, page: Number(page), limit: Number(limit) },
     }));
   } catch (err) { next(err); }
 };
 
-const adminGetMessages = async (req, res, next) => {
+const staffGetMessages = async (req, res, next) => {
   try {
     const ticket = await SupportTicket.findById(req.params.id)
-      .populate('userId', 'name email avatar');
+      .populate('userId',     'name email avatar')
+      .populate('assignedTo', 'name avatar');
     if (!ticket) return res.status(404).json(error('Không tìm thấy yêu cầu'));
 
     const messages = await SupportMessage.find({ ticketId: req.params.id })
       .populate('senderId', 'name avatar role')
       .sort({ createdAt: 1 });
 
-    await SupportTicket.findByIdAndUpdate(req.params.id, { unreadByAdmin: 0 });
+    await SupportTicket.findByIdAndUpdate(req.params.id, { unreadByStaff: 0 });
 
     return res.json(success('Tin nhắn hỗ trợ', { messages, ticket }));
   } catch (err) { next(err); }
 };
 
-const adminSendMessage = async (req, res, next) => {
+const staffSendMessage = async (req, res, next) => {
   try {
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) return res.status(404).json(error('Không tìm thấy yêu cầu'));
@@ -139,7 +157,10 @@ const adminSendMessage = async (req, res, next) => {
     const image   = req.file ? `/uploads/${req.file.filename}` : '';
     if (!content && !image) return res.status(400).json(error('Vui lòng nhập nội dung'));
 
-    if (ticket.status === 'pending') ticket.status = 'in_progress';
+    // Auto assign to current staff member if unassigned
+    if (!ticket.assignedTo) ticket.assignedTo = req.user.id;
+    // Auto set status
+    if (ticket.status === 'new' || ticket.status === 'pending') ticket.status = 'in_progress';
 
     const msg = await SupportMessage.create({
       ticketId: ticket._id, senderId: req.user.id, senderRole: 'admin', content, image,
@@ -159,12 +180,12 @@ const adminSendMessage = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-const adminUpdateStatus = async (req, res, next) => {
+const staffUpdateStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    if (!['pending','in_progress','resolved','closed'].includes(status)) {
-      return res.status(400).json(error('Trạng thái không hợp lệ'));
-    }
+    const valid = ['new','pending','in_progress','waiting_customer','resolved','closed'];
+    if (!valid.includes(status)) return res.status(400).json(error('Trạng thái không hợp lệ'));
+
     const ticket = await SupportTicket.findByIdAndUpdate(
       req.params.id, { status }, { new: true }
     ).populate('userId', 'name email avatar');
@@ -178,7 +199,38 @@ const adminUpdateStatus = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const staffUpdatePriority = async (req, res, next) => {
+  try {
+    const { priority } = req.body;
+    if (!['low','medium','high','urgent'].includes(priority)) {
+      return res.status(400).json(error('Độ ưu tiên không hợp lệ'));
+    }
+    const ticket = await SupportTicket.findByIdAndUpdate(
+      req.params.id, { priority }, { new: true }
+    );
+    if (!ticket) return res.status(404).json(error('Không tìm thấy yêu cầu'));
+    return res.json(success('Cập nhật độ ưu tiên thành công', { ticket }));
+  } catch (err) { next(err); }
+};
+
+const staffAssign = async (req, res, next) => {
+  try {
+    const assignedTo = req.body.assignedTo || req.user.id;
+    const ticket = await SupportTicket.findByIdAndUpdate(
+      req.params.id, { assignedTo }, { new: true }
+    ).populate('assignedTo', 'name avatar');
+    if (!ticket) return res.status(404).json(error('Không tìm thấy yêu cầu'));
+    return res.json(success('Phân công thành công', { ticket }));
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   getMyTickets, createTicket, getTicketMessages, sendUserMessage,
-  adminGetAllTickets, adminGetMessages, adminSendMessage, adminUpdateStatus,
+  staffGetAllTickets, staffGetMessages, staffSendMessage,
+  staffUpdateStatus, staffUpdatePriority, staffAssign,
+  // backward compat
+  adminGetAllTickets: staffGetAllTickets,
+  adminGetMessages:   staffGetMessages,
+  adminSendMessage:   staffSendMessage,
+  adminUpdateStatus:  staffUpdateStatus,
 };

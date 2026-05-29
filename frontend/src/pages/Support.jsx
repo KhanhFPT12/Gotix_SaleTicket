@@ -10,19 +10,24 @@ import "./Support.css";
 
 const TOPICS = {
   payment:      { label: "Thanh toán",     color: "#1d4ed8" },
+  buy_ticket:   { label: "Mua vé",         color: "#059669" },
+  pass_ticket:  { label: "Pass vé",        color: "#7c3aed" },
   ticket_issue: { label: "Vé lỗi",        color: "#dc2626" },
   not_received: { label: "Chưa nhận vé",  color: "#d97706" },
-  withdrawal:   { label: "Rút tiền",      color: "#7c3aed" },
-  account:      { label: "Tài khoản",     color: "#0891b2" },
+  withdrawal:   { label: "Rút tiền",      color: "#0891b2" },
+  account:      { label: "Tài khoản",     color: "#64748b" },
   report_user:  { label: "Báo cáo user",  color: "#be123c" },
-  other:        { label: "Khác",          color: "#64748b" },
+  fake_ticket:  { label: "Vé giả",        color: "#9f1239" },
+  other:        { label: "Khác",          color: "#94a3b8" },
 };
 
 const STATUS = {
-  pending:     { label: "Chờ xử lý",     cls: "sp-badge-pending"  },
-  in_progress: { label: "Đang xử lý",    cls: "sp-badge-progress" },
-  resolved:    { label: "Đã giải quyết", cls: "sp-badge-resolved" },
-  closed:      { label: "Đã đóng",       cls: "sp-badge-closed"   },
+  new:              { label: "Mới tạo",         cls: "sp-badge-new"      },
+  pending:          { label: "Chờ xử lý",       cls: "sp-badge-pending"  },
+  in_progress:      { label: "Đang xử lý",      cls: "sp-badge-progress" },
+  waiting_customer: { label: "Chờ bạn phản hồi",cls: "sp-badge-waiting"  },
+  resolved:         { label: "Đã giải quyết",   cls: "sp-badge-resolved" },
+  closed:           { label: "Đã đóng",         cls: "sp-badge-closed"   },
 };
 
 function formatTime(d) {

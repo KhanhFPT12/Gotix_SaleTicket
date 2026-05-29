@@ -83,8 +83,10 @@
   font-size: 11px; font-weight: 600;
   padding: 2px 8px; border-radius: 100px;
 }
+.sp-badge-new      { background: #dbeafe; color: #1e40af; }
 .sp-badge-pending  { background: #fef3c7; color: #92400e; }
-.sp-badge-progress { background: #dbeafe; color: #1e40af; }
+.sp-badge-progress { background: #ede9fe; color: #5b21b6; }
+.sp-badge-waiting  { background: #fce7f3; color: #9d174d; font-weight: 700; }
 .sp-badge-resolved { background: #dcfce7; color: #166534; }
 .sp-badge-closed   { background: var(--bg-muted); color: var(--color-text-muted); }
 
@@ -309,11 +311,51 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .sp-page { padding: 0; }
+
+  .sp-header {
+    padding: 12px 16px 8px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sp-header h1 { font-size: 1rem; }
+
   .sp-layout {
     grid-template-columns: 1fr;
-    height: calc(100vh - 180px);
+    flex: 1;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
+
   .sp-hidden-mobile { display: none !important; }
   .sp-back-btn { display: flex; }
   .sp-list { border-right: none; }
+
+  /* Larger touch targets on mobile */
+  .sp-ticket-item { padding: 14px 16px; }
+  .sp-send-btn    { width: 42px; height: 42px; }
+  .sp-attach-btn  { padding: 8px; }
+  .sp-input       { font-size: 16px; /* prevents iOS zoom */ }
+
+  /* Input area safe area for notch/home indicator */
+  .sp-input-area {
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  /* Messages scroll area */
+  .sp-messages { padding: 12px; }
+
+  /* Chat header on mobile */
+  .sp-chat-header { padding: 10px 12px; }
+  .sp-chat-title  { font-size: 0.82rem; }
+
+  /* Action bar */
+  .ss-action-bar { padding: 6px 12px; gap: 8px; overflow-x: auto; flex-wrap: nowrap; }
 }
+
+@media (max-width: 480px) {
+  .sp-layout { height: calc(100svh - 170px); }
+}
+

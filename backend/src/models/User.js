@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     avatar:      { type: String, default: '' },
     bio:         { type: String, default: '', maxlength: 500 },
     location:    { type: String, default: '', trim: true },
-    role:        { type: String, enum: ['user', 'admin'], default: 'user' },
+    role:        { type: String, enum: ['user', 'support', 'admin'], default: 'user' },
     rating:      { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
     verified:                 { type: Boolean, default: false },

@@ -39,8 +39,11 @@ import AdminProSubscriptions   from "../pages/admin/AdminProSubscriptions";
 import AdminSupport            from "../pages/admin/AdminSupport";
 import Support                 from "../pages/Support";
 import SupportLayout           from "../layouts/SupportLayout";
+import StaffLayout             from "../layouts/StaffLayout";
+import StaffSupport            from "../pages/staff/StaffSupport";
 
-const USER_ONLY = ["user"];
+const USER_ONLY    = ["user"];
+const SUPPORT_ONLY = ["support", "admin"];
 const ADMIN_ONLY = ["admin"];
 
 export default function AppRoutes() {
@@ -94,6 +97,15 @@ export default function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route path="/support" element={<Support />} />
+      </Route>
+
+      {/* ── Staff Support Center ── */}
+      <Route element={
+        <ProtectedRoute allowedRoles={SUPPORT_ONLY}>
+          <StaffLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="/staff/support" element={<StaffSupport />} />
       </Route>
 
       {/* ── User dashboard — user only ── */}
