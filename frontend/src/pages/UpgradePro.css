@@ -279,3 +279,55 @@
   .pro-hero-title { font-size: 1.5rem; }
   .pro-plans-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Pro QR payment panel ── */
+.pro-payment-wrap {
+  max-width: 480px;
+  margin: 2rem auto;
+}
+.pro-payment-card {
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 28px 28px 32px;
+}
+.pro-pay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pro-pay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary, #64748b);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+.pro-pay-back:hover { color: var(--text-primary, #1e293b); }
+.pro-pay-badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pro-pay-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0 0 20px;
+}
+

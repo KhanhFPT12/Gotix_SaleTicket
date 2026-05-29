@@ -2,7 +2,6 @@ const TopUp = require('../models/TopUp');
 const User = require('../models/User');
 const adminBank = require('../config/adminBank');
 const { success, error } = require('../utils/apiResponse');
-const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
 const { notify } = require('../services/notificationService');
 
 function generateTransferCode(userId) {
@@ -36,10 +35,7 @@ const createTopUp = async (req, res, next) => {
       status:       'pending',
     });
 
-    const returnUrl = process.env.CLIENT_URL + '/topup-payment-result';
-    const url = buildPaymentUrl(req, topUp._id.toString(), amt, returnUrl);
-
-    return res.status(201).json(success('Tạo lệnh nạp tiền thành công', { topUp, transferCode, url }));
+    return res.status(201).json(success('Tạo lệnh nạp tiền thành công', { topUp, transferCode }));
   } catch (err) {
     next(err);
   }

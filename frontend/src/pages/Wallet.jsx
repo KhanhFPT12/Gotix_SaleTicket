@@ -80,12 +80,8 @@ export default function Wallet() {
     try {
       setTopUpLoading(true);
       const result = await createTopUp(amt);
-      if (result && result.url) {
-        window.location.href = result.url;
-        return;
-      } else {
-        throw new Error("Không thể tạo URL thanh toán. Vui lòng kiểm tra lại Server Backend.");
-      }
+      setCurrentTopUp(result);
+      setTopUpStep("qr");
     } catch (e) {
       setTopUpError(e.message);
     } finally {
@@ -236,7 +232,7 @@ export default function Wallet() {
                   <>
                     <h3 className="topup-title">Nạp tiền vào ví</h3>
                     <p className="topup-subtitle">
-                      Hệ thống sẽ chuyển hướng bạn đến cổng thanh toán VNPay để hoàn tất giao dịch.
+                      Nhập số tiền và bấm tạo lệnh — hệ thống sẽ hiển thị mã QR chuyển khoản VietinBank cho bạn.
                     </p>
 
                     <form onSubmit={handleCreateTopUp}>
@@ -364,9 +360,9 @@ export default function Wallet() {
                 <h4>Cách nạp tiền</h4>
                 <ol className="topup-steps">
                   <li>Nhập số tiền muốn nạp và bấm <strong>Tạo lệnh nạp tiền</strong></li>
-                  <li>Hệ thống sẽ chuyển hướng sang thanh toán VNPay</li>
-                  <li>Tiến hành thanh toán bảo mật trên cổng VNPay</li>
-                  <li>Tiền sẽ được cộng vào ví tự động ngay sau khi thanh toán thành công</li>
+                  <li>Quét mã QR hoặc chuyển khoản theo thông tin hiển thị</li>
+                  <li>Ghi đúng <strong>nội dung chuyển khoản</strong> để hệ thống nhận diện</li>
+                  <li>Tiền sẽ được cộng vào ví sau khi GoTix xác nhận giao dịch</li>
                 </ol>
                 <div className="topup-guide-note">
                   <p>Số tiền nạp tối thiểu: <strong>10.000đ</strong></p>

@@ -14,27 +14,28 @@
   border-radius: 100px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(135deg, #6c63ff 0%, #4f46e5 50%, #7c3aed 100%);
+  background: #2563eb;
   color: #fff;
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.2px;
-  box-shadow: 0 4px 20px rgba(99, 91, 255, 0.5), 0 2px 8px rgba(0,0,0,0.2);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .ai-chatbot-fab:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 30px rgba(99, 91, 255, 0.6), 0 4px 12px rgba(0,0,0,0.25);
+  transform: translateY(-2px);
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .ai-chatbot-fab.open {
   padding: 0;
   width: 52px;
   justify-content: center;
-  background: linear-gradient(135deg, #4b5563, #374151);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  background: #64748b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .ai-fab-label {
@@ -49,7 +50,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #10b981;
+  background: #16a34a;
   border: 2px solid #fff;
   animation: ai-ping 2s ease-in-out infinite;
 }
@@ -69,10 +70,10 @@
   max-height: 620px;
   display: flex;
   flex-direction: column;
-  background: #0f0f1a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(99, 91, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   opacity: 0;
   transform: translateY(20px) scale(0.95);
@@ -93,8 +94,8 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(99, 91, 255, 0.25) 0%, rgba(124, 58, 237, 0.2) 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: #2563eb;
+  border-bottom: 1px solid #1d4ed8;
   flex-shrink: 0;
 }
 
@@ -103,7 +104,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6c63ff, #7c3aed);
+  background: #1d4ed8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,9 +118,9 @@
   right: 1px;
   width: 9px;
   height: 9px;
-  background: #10b981;
+  background: #4ade80;
   border-radius: 50%;
-  border: 2px solid #0f0f1a;
+  border: 2px solid #2563eb;
   animation: ai-ping 2.5s ease-in-out infinite;
 }
 
@@ -133,12 +134,12 @@
 .ai-chat-name {
   font-weight: 700;
   font-size: 14px;
-  color: #f0f0ff;
+  color: #ffffff;
 }
 
 .ai-chat-status {
   font-size: 11px;
-  color: #10b981;
+  color: #bfdbfe;
   font-weight: 500;
 }
 
@@ -147,8 +148,8 @@
   height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(255,255,255,0.08);
-  color: #9ca3af;
+  background: #1d4ed8;
+  color: #bfdbfe;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -158,8 +159,8 @@
 }
 
 .ai-chat-close:hover {
-  background: rgba(255,255,255,0.15);
-  color: #f0f0ff;
+  background: #1e40af;
+  color: #ffffff;
 }
 
 /* Messages */
@@ -171,7 +172,8 @@
   flex-direction: column;
   gap: 12px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(99, 91, 255, 0.3) transparent;
+  scrollbar-color: #cbd5e1 transparent;
+  background: #f8fafc;
 }
 
 .ai-chat-messages::-webkit-scrollbar {
@@ -181,7 +183,7 @@
   background: transparent;
 }
 .ai-chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(99, 91, 255, 0.35);
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
@@ -199,7 +201,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6c63ff, #7c3aed);
+  background: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,14 +226,14 @@
 }
 
 .ai-msg-bubble.ai {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255,255,255,0.07);
-  color: #e2e8f0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
   border-top-left-radius: 4px;
 }
 
 .ai-msg-bubble.user {
-  background: linear-gradient(135deg, #6c63ff, #7c3aed);
+  background: #2563eb;
   color: #fff;
   border-top-right-radius: 4px;
   text-align: right;
@@ -243,8 +245,8 @@
   align-items: center;
   gap: 5px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   border-top-left-radius: 4px;
 }
@@ -253,7 +255,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #6c63ff;
+  background: #2563eb;
   animation: ai-bounce 1.2s ease-in-out infinite;
 }
 
@@ -277,8 +279,8 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px 8px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   cursor: pointer;
   text-align: left;
@@ -288,10 +290,10 @@
 }
 
 .ai-ticket-card:hover {
-  background: rgba(108, 99, 255, 0.15);
-  border-color: rgba(108, 99, 255, 0.4);
+  background: #eff6ff;
+  border-color: #93c5fd;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
 }
 
 .ai-ticket-img {
@@ -301,7 +303,7 @@
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  background: rgba(255,255,255,0.06);
+  background: #e2e8f0;
 }
 
 .ai-ticket-img img {
@@ -317,14 +319,14 @@
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  background: linear-gradient(135deg, rgba(99, 91, 255, 0.2), rgba(124, 58, 237, 0.2));
+  background: #dbeafe;
 }
 
 .ai-ticket-cat-badge {
   position: absolute;
   bottom: 2px;
   left: 2px;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   font-size: 9px;
   padding: 1px 4px;
@@ -346,7 +348,7 @@
 .ai-ticket-title {
   font-size: 12px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #1e293b;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -360,7 +362,7 @@
   align-items: center;
   gap: 3px;
   font-size: 10.5px;
-  color: #9ca3af;
+  color: #64748b;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -370,12 +372,12 @@
 .ai-ticket-price {
   font-size: 12.5px;
   font-weight: 700;
-  color: #a78bfa;
+  color: #2563eb;
   margin: 0;
 }
 
 .ai-ticket-arrow {
-  color: #6c63ff;
+  color: #2563eb;
   flex-shrink: 0;
 }
 
@@ -383,10 +385,10 @@
 .ai-view-all-btn {
   width: 100%;
   padding: 8px;
-  border: 1px dashed rgba(108, 99, 255, 0.4);
+  border: 1px dashed #93c5fd;
   border-radius: 10px;
   background: transparent;
-  color: #818cf8;
+  color: #2563eb;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
@@ -394,9 +396,9 @@
 }
 
 .ai-view-all-btn:hover {
-  background: rgba(108, 99, 255, 0.1);
-  border-color: rgba(108, 99, 255, 0.7);
-  color: #a5b4fc;
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1d4ed8;
 }
 
 /* CTA Button */
@@ -404,7 +406,7 @@
   padding: 8px 16px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #6c63ff, #7c3aed);
+  background: #2563eb;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -414,8 +416,9 @@
 }
 
 .ai-cta-btn:hover {
+  background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 91, 255, 0.4);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
 
 /* Quick Suggestions */
@@ -425,15 +428,16 @@
   flex-wrap: wrap;
   gap: 6px;
   flex-shrink: 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .ai-suggestion-chip {
   padding: 5px 11px;
   border-radius: 100px;
-  border: 1px solid rgba(108, 99, 255, 0.3);
-  background: rgba(108, 99, 255, 0.08);
-  color: #a5b4fc;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -442,9 +446,9 @@
 }
 
 .ai-suggestion-chip:hover {
-  background: rgba(108, 99, 255, 0.2);
-  border-color: rgba(108, 99, 255, 0.6);
-  color: #c4b5fd;
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1d4ed8;
   transform: translateY(-1px);
 }
 
@@ -454,8 +458,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border-top: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.02);
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
   flex-shrink: 0;
 }
 
@@ -463,9 +467,9 @@
   flex: 1;
   padding: 9px 14px;
   border-radius: 100px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.06);
-  color: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
   font-size: 13.5px;
   outline: none;
   transition: border-color 0.2s;
@@ -473,13 +477,13 @@
 }
 
 .ai-chat-input::placeholder {
-  color: #6b7280;
+  color: #94a3b8;
   font-size: 13px;
 }
 
 .ai-chat-input:focus {
-  border-color: rgba(108, 99, 255, 0.6);
-  background: rgba(108, 99, 255, 0.07);
+  border-color: #2563eb;
+  background: #ffffff;
 }
 
 .ai-chat-send {
@@ -487,7 +491,7 @@
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #6c63ff, #7c3aed);
+  background: #2563eb;
   color: #fff;
   display: flex;
   align-items: center;
@@ -498,8 +502,9 @@
 }
 
 .ai-chat-send:hover:not(:disabled) {
+  background: #1d4ed8;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(99, 91, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 
 .ai-chat-send:disabled {
@@ -513,7 +518,7 @@
   position: fixed;
   inset: 0;
   z-index: 9997;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* Mobile responsive */
@@ -523,7 +528,7 @@
     right: 0;
     width: 100vw;
     max-height: 80vh;
-    border-radius: 20px 20px 0 0;
+    border-radius: 16px 16px 0 0;
     border-bottom: none;
   }
 
@@ -539,13 +544,11 @@
 
 /* ── Emotion Analysis Dashboard ────────────────────────────────────────────── */
 .ai-emotion-dashboard {
-  background: rgba(30, 30, 45, 0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 2px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -555,8 +558,8 @@
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: #94a3b8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 4px;
   text-transform: uppercase;
 }
@@ -575,29 +578,29 @@
 
 .ai-emotion-label {
   font-size: 9.5px;
-  color: #64748b;
+  color: #94a3b8;
   font-weight: 500;
 }
 
 .ai-emotion-value {
   font-size: 11.5px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1e293b;
 }
 
 .ai-emotion-value.emotion {
-  color: #a78bfa;
+  color: #7c3aed;
 }
 
 .ai-emotion-value.vibe {
-  color: #38bdf8;
+  color: #0284c7;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .ai-emotion-value.confidence {
-  color: #34d399;
+  color: #16a34a;
 }
 
 .ai-emotion-value.energy {
@@ -610,27 +613,27 @@
 }
 
 .ai-emotion-value.energy.high {
-  background: rgba(236, 72, 153, 0.15);
-  color: #f472b6;
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
 }
 
 .ai-emotion-value.energy.medium {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 
 .ai-emotion-value.energy.low {
-  background: rgba(14, 165, 233, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(14, 165, 233, 0.3);
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
 }
 
 /* Suggested tickets details additions */
 .ai-ticket-suggested-time {
   font-size: 10.5px;
-  color: #94a3b8;
+  color: #64748b;
   font-style: italic;
   margin: 2px 0 0;
 }
@@ -647,7 +650,7 @@
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 100px;
-  background: rgba(108, 99, 255, 0.12);
-  border: 1px solid rgba(108, 99, 255, 0.25);
-  color: #a5b4fc;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #2563eb;
 }

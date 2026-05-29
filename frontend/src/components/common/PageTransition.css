@@ -1,0 +1,55 @@
+/* ── Page Transition Overlay ─────────────────────────────────────── */
+
+.pt-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;   /* never block user interaction */
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* The ticket wrapper drives the horizontal fly animation */
+.pt-ticket-wrap {
+  animation: pt-fly 0.82s linear forwards;
+  will-change: transform, opacity;
+  line-height: 0;          /* prevent extra inline space below SVG */
+}
+
+/* Drop shadow on the SVG shape itself (CSS filter, not inline SVG filter) */
+.pt-ticket-svg {
+  display: block;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.13))
+          drop-shadow(0 1px 3px  rgba(0, 0, 0, 0.08));
+}
+
+/*
+  Keyframes:
+    - Start:  off-screen left  (-220px puts the 188px ticket fully hidden)
+    - 10%:    fade in quickly so the ticket appears clean
+    - 90%:    start fading out before it leaves the right edge
+    - End:    off-screen right (100vw + 50px clears any viewport)
+
+  timing: linear keeps speed consistent — feels like something physically
+  flying across, not easing in/out awkwardly.
+*/
+@keyframes pt-fly {
+  0%   { transform: translateX(-220px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 50px)); opacity: 0; }
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .pt-ticket-wrap {
+    animation: pt-fade-only 0.3s ease forwards;
+  }
+
+  @keyframes pt-fade-only {
+    0%   { opacity: 0; }
+    50%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}

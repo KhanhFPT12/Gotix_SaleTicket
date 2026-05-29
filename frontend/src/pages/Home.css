@@ -176,7 +176,38 @@
   text-decoration: underline;
 }
 
-/* Categories */
+/* Section tight */
+.section-tight {
+  padding: var(--spacing-xl) 0 var(--spacing-md);
+}
+
+/* Cinema quicklinks */
+.cinema-quicklinks {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cinema-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 100px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-white);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.cinema-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Categories (kept for compat) */
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);

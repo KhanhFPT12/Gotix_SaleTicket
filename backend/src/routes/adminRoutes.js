@@ -9,6 +9,7 @@ const {
   getTopUps, approveTopUp, rejectTopUp,
   getAuditLogs,
 } = require('../controllers/adminController');
+const { adminConfirmTransaction, adminRejectTransaction } = require('../controllers/transactionController');
 const { protect } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
@@ -21,7 +22,9 @@ router.get('/tickets/pending',        getPendingTickets);
 router.patch('/tickets/:id/verify',   adminVerifyTicket);
 router.get('/reports',                getReports);
 router.patch('/reports/:id/resolve',  resolveReport);
-router.get('/transactions',           getTransactions);
+router.get('/transactions',                        getTransactions);
+router.patch('/transactions/:id/confirm',          adminConfirmTransaction);
+router.patch('/transactions/:id/reject',           adminRejectTransaction);
 router.get('/pro-subscriptions',      getProSubscriptions);
 router.get('/withdrawals',            getWithdrawals);
 router.patch('/withdrawals/:id/approve', approveWithdrawal);

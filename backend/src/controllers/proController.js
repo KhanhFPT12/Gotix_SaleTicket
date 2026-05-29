@@ -1,33 +1,33 @@
-const User = require('../models/User');
+const User            = require('../models/User');
 const ProSubscription = require('../models/ProSubscription');
 const { success, error } = require('../utils/apiResponse');
-const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
+const { notify }      = require('../services/notificationService');
+
+const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
 const PLANS = [
-  { id: '1_month',   label: '1 Tháng',   durationInDays: 30,  price: 39000  },
-  { id: '3_months',  label: '3 Tháng',   durationInDays: 90,  price: 89000  },
-  { id: '6_months',  label: '6 Tháng',   durationInDays: 180, price: 149000 },
-  { id: '1_year',    label: '1 Năm',     durationInDays: 365, price: 299000 },
+  { id: '1_month',  label: '1 Tháng', durationInDays: 30,  price: 39000  },
+  { id: '3_months', label: '3 Tháng', durationInDays: 90,  price: 89000  },
+  { id: '6_months', label: '6 Tháng', durationInDays: 180, price: 149000 },
+  { id: '1_year',   label: '1 Năm',   durationInDays: 365, price: 299000 },
 ];
 
 const getPlans = async (req, res, next) => {
   try {
     return res.json(success('Danh sách gói Pro', { plans: PLANS }));
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 };
 
+// User selects a plan → create pending subscription, return QR info
 const upgradePro = async (req, res, next) => {
   try {
     const { plan } = req.body;
     const planInfo = PLANS.find(p => p.id === plan);
     if (!planInfo) return res.status(400).json(error('Gói không hợp lệ'));
 
-    const now = new Date();
+    const now  = new Date();
     const user = await User.findById(req.user.id);
 
-    // If already Pro and not expired, extend from current endDate
     const startDate = (user.isPro && user.proEndDate && user.proEndDate > now)
       ? user.proEndDate
       : now;
@@ -36,35 +36,113 @@ const upgradePro = async (req, res, next) => {
     endDate.setDate(endDate.getDate() + planInfo.durationInDays);
 
     const subscription = await ProSubscription.create({
-      userId: req.user.id,
-      plan: planInfo.id,
-      price: planInfo.price,
-      durationInDays: planInfo.durationInDays,
+      userId:           req.user.id,
+      plan:             planInfo.id,
+      price:            planInfo.price,
+      durationInDays:   planInfo.durationInDays,
       startDate,
       endDate,
-      paymentStatus: 'pending',
-      status: 'pending',
+      paymentNote:      req.user.name || '',
+      paymentExpiredAt: new Date(Date.now() + PAYMENT_EXPIRY_MS),
+      paymentStatus:    'pending_payment',
+      status:           'pending',
     });
 
-    const returnUrl = process.env.CLIENT_URL + '/pro-payment-result';
-    const url = buildPaymentUrl(req, subscription._id.toString(), planInfo.price, returnUrl);
+    return res.json(success('Tạo đơn nâng cấp Pro thành công', {
+      subscription,
+      paymentNote: subscription.paymentNote,
+    }));
+  } catch (err) { next(err); }
+};
 
-    return res.json(success('Tạo URL thanh toán thành công', { url }));
-  } catch (err) {
-    next(err);
-  }
+// User clicks "Tôi đã chuyển khoản"
+const confirmUserPaidPro = async (req, res, next) => {
+  try {
+    const sub = await ProSubscription.findById(req.params.id);
+    if (!sub) return res.status(404).json(error('Không tìm thấy đơn nâng cấp'));
+    if (sub.userId.toString() !== req.user.id) return res.status(403).json(error('Không có quyền'));
+    if (sub.paymentStatus !== 'pending_payment') {
+      return res.status(400).json(error('Đơn không ở trạng thái chờ thanh toán'));
+    }
+    if (sub.paymentExpiredAt && new Date() > sub.paymentExpiredAt) {
+      sub.paymentStatus = 'expired';
+      await sub.save();
+      return res.status(400).json(error('Đã hết thời gian thanh toán'));
+    }
+
+    sub.paymentStatus = 'waiting_admin_confirm';
+    await sub.save();
+
+    return res.json(success('Đã ghi nhận — chờ GoTix xác minh', { subscription: sub }));
+  } catch (err) { next(err); }
+};
+
+// Admin confirms payment received → activate Pro
+const adminConfirmPro = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json(error('Không có quyền'));
+
+    const sub = await ProSubscription.findById(req.params.id).populate('userId', 'name email');
+    if (!sub) return res.status(404).json(error('Không tìm thấy đơn nâng cấp'));
+    if (sub.paymentStatus !== 'waiting_admin_confirm') {
+      return res.status(400).json(error('Đơn không ở trạng thái chờ xác nhận'));
+    }
+
+    sub.paymentStatus = 'paid';
+    sub.status        = 'active';
+    await sub.save();
+
+    await User.findByIdAndUpdate(sub.userId, {
+      isPro:       true,
+      proPlan:     sub.plan,
+      proStartDate: sub.startDate,
+      proEndDate:   sub.endDate,
+    });
+
+    await notify({
+      receiverId: sub.userId._id ?? sub.userId,
+      title:   'Nâng cấp Pro thành công!',
+      message: `Tài khoản GoTix Pro của bạn đã được kích hoạt đến ${sub.endDate.toLocaleDateString('vi-VN')}.`,
+      type:    'pro_activated',
+      relatedId: sub._id.toString(),
+    });
+
+    return res.json(success('Xác nhận Pro thành công', { subscription: sub }));
+  } catch (err) { next(err); }
+};
+
+// Admin rejects
+const adminRejectPro = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json(error('Không có quyền'));
+
+    const sub = await ProSubscription.findById(req.params.id);
+    if (!sub) return res.status(404).json(error('Không tìm thấy đơn nâng cấp'));
+    if (!['waiting_admin_confirm', 'pending_payment'].includes(sub.paymentStatus)) {
+      return res.status(400).json(error('Không thể từ chối ở trạng thái này'));
+    }
+
+    sub.paymentStatus = 'failed';
+    sub.status        = 'cancelled';
+    await sub.save();
+
+    await notify({
+      receiverId: sub.userId,
+      title:   'Thanh toán Pro bị từ chối',
+      message: 'GoTix không xác nhận được giao dịch. Vui lòng liên hệ hỗ trợ.',
+      type:    'pro_failed',
+      relatedId: sub._id.toString(),
+    });
+
+    return res.json(success('Đã từ chối đơn nâng cấp Pro', { subscription: sub }));
+  } catch (err) { next(err); }
 };
 
 const getMySubscription = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-
-    // Auto-expire if past endDate
     if (user.isPro && user.proEndDate && user.proEndDate < new Date()) {
-      await User.findByIdAndUpdate(req.user.id, {
-        isPro: false,
-        proPlan: 'none',
-      });
+      await User.findByIdAndUpdate(req.user.id, { isPro: false, proPlan: 'none' });
       await ProSubscription.updateMany(
         { userId: req.user.id, status: 'active' },
         { status: 'expired', paymentStatus: 'expired' }
@@ -72,17 +150,13 @@ const getMySubscription = async (req, res, next) => {
       user.isPro = false;
       user.proPlan = 'none';
     }
-
     const subscription = await ProSubscription.findOne(
       { userId: req.user.id, status: 'active', paymentStatus: 'paid' },
       null,
       { sort: { createdAt: -1 } }
     );
-
     return res.json(success('Thông tin gói Pro', { user, subscription, plans: PLANS }));
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 };
 
 const cancelPro = async (req, res, next) => {
@@ -92,50 +166,28 @@ const cancelPro = async (req, res, next) => {
       { status: 'cancelled' }
     );
     await User.findByIdAndUpdate(req.user.id, {
-      isPro: false,
-      proPlan: 'none',
-      proEndDate: null,
-      proStartDate: null,
+      isPro: false, proPlan: 'none', proEndDate: null, proStartDate: null,
     });
     return res.json(success('Đã hủy gói Pro'));
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 };
 
-const vnpayReturnPro = async (req, res, next) => {
+// Admin: list all pending Pro subscriptions
+const getAdminProSubscriptions = async (req, res, next) => {
   try {
-    let vnp_Params = req.query;
-    const verifyResult = verifyReturnUrl(vnp_Params);
-
-    if (verifyResult.isSuccess) {
-      const subId = vnp_Params['vnp_TxnRef'];
-      const subscription = await ProSubscription.findById(subId);
-      
-      if (!subscription) {
-        return res.status(404).json(error('Không tìm thấy giao dịch nâng cấp'));
-      }
-
-      if (subscription.paymentStatus !== 'paid' && subscription.status === 'pending') {
-        subscription.paymentStatus = 'paid';
-        subscription.status = 'active';
-        await subscription.save();
-
-        await User.findByIdAndUpdate(subscription.userId, {
-          isPro: true,
-          proPlan: subscription.plan,
-          proStartDate: subscription.startDate,
-          proEndDate: subscription.endDate,
-        });
-      }
-
-      return res.json(success('Nâng cấp Pro thành công', { subscriptionId: subscription._id }));
-    } else {
-      return res.status(400).json(error('Thanh toán thất bại hoặc mã xác thực không hợp lệ', { code: verifyResult.code }));
-    }
-  } catch (err) {
-    next(err);
-  }
+    const { status } = req.query;
+    const filter = status ? { paymentStatus: status } : {};
+    const subs = await ProSubscription.find(filter)
+      .populate('userId', 'name email avatar')
+      .sort({ createdAt: -1 })
+      .limit(200);
+    return res.json(success('Danh sách đăng ký Pro', { subscriptions: subs }));
+  } catch (err) { next(err); }
 };
 
-module.exports = { getPlans, upgradePro, getMySubscription, cancelPro, vnpayReturnPro };
+module.exports = {
+  getPlans, upgradePro, confirmUserPaidPro,
+  adminConfirmPro, adminRejectPro,
+  getMySubscription, cancelPro,
+  getAdminProSubscriptions,
+};

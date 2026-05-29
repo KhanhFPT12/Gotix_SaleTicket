@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { TICKET_CATEGORIES, LOCATIONS } from "../data/mockData";
+import { LOCATIONS } from "../data/mockData";
 import { useTickets } from "../context/TicketContext";
 import TicketCard from "../components/tickets/TicketCard";
 import "./TicketList.css";
@@ -9,7 +9,7 @@ const SORT_OPTIONS = [
   { value: "newest",       label: "Mới nhất" },
   { value: "priceAsc",     label: "Giá tăng dần" },
   { value: "priceDesc",    label: "Giá giảm dần" },
-  { value: "eventDateAsc", label: "Ngày sự kiện gần nhất" },
+  { value: "eventDateAsc", label: "Suất chiếu gần nhất" },
   { value: "proFirst",     label: "Pro trước" },
 ];
 
@@ -17,21 +17,20 @@ export default function TicketList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { tickets } = useTickets();
 
-  const [sort, setSort]       = useState("newest");
+  const [sort,     setSort]     = useState("newest");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [verified, setVerified] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo]     = useState("");
+  const [dateTo,   setDateTo]   = useState("");
 
-  const currentCategory = searchParams.get("category") || "";
-  const currentCity = searchParams.get("city") || "";
-  const currentQ = searchParams.get("q") || "";
+  const currentQ      = searchParams.get("q")      || "";
+  const currentCity   = searchParams.get("city")   || "";
+  const currentCinema = searchParams.get("cinema") || "";
 
   function setFilter(key, value) {
     const next = new URLSearchParams(searchParams);
-    if (value) next.set(key, value);
-    else next.delete(key);
+    if (value) next.set(key, value); else next.delete(key);
     setSearchParams(next);
   }
 
@@ -43,60 +42,56 @@ export default function TicketList() {
   }
 
   const filtered = useMemo(() => {
-    let list = tickets.filter((t) => t.status === "approved");
+    let list = tickets.filter(t => t.status === "approved");
 
     if (currentQ) {
       const q = currentQ.toLowerCase();
-      list = list.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.location.toLowerCase().includes(q) ||
-          t.description?.toLowerCase().includes(q)
+      list = list.filter(t =>
+        (t.movieTitle || t.title || "").toLowerCase().includes(q) ||
+        (t.cinema     || "").toLowerCase().includes(q) ||
+        (t.description || "").toLowerCase().includes(q)
       );
     }
-    if (currentCategory) list = list.filter((t) => t.category === currentCategory);
-    if (currentCity) list = list.filter((t) => t.city === currentCity);
-    if (priceMin)  list = list.filter(t => t.passPrice >= Number(priceMin));
-    if (priceMax)  list = list.filter(t => t.passPrice <= Number(priceMax));
-    if (verified)  list = list.filter(t => t.verified);
-    if (dateFrom)  list = list.filter(t => t.date >= dateFrom);
-    if (dateTo)    list = list.filter(t => t.date <= dateTo);
+    if (currentCity)   list = list.filter(t => (t.city   || "").toLowerCase().includes(currentCity.toLowerCase()));
+    if (currentCinema) list = list.filter(t => (t.cinema || "").toLowerCase().includes(currentCinema.toLowerCase()));
+    if (priceMin)      list = list.filter(t => t.passPrice >= Number(priceMin));
+    if (priceMax)      list = list.filter(t => t.passPrice <= Number(priceMax));
+    if (verified)      list = list.filter(t => t.verified);
+    if (dateFrom)      list = list.filter(t => t.date >= dateFrom);
+    if (dateTo)        list = list.filter(t => t.date <= dateTo);
 
     switch (sort) {
       case "priceAsc":     return [...list].sort((a, b) => a.passPrice - b.passPrice);
       case "priceDesc":    return [...list].sort((a, b) => b.passPrice - a.passPrice);
       case "eventDateAsc": return [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
       case "proFirst":     return [...list].sort((a, b) => (b.sellerIsPro ? 1 : 0) - (a.sellerIsPro ? 1 : 0));
-      case "oldest":       return [...list].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       default:             return [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-  }, [tickets, currentQ, currentCategory, currentCity, priceMin, priceMax, verified, sort, dateFrom, dateTo]);
+  }, [tickets, currentQ, currentCity, currentCinema, priceMin, priceMax, verified, sort, dateFrom, dateTo]);
 
-  const hasActiveFilters = currentCategory || currentCity || currentQ || priceMin || priceMax || verified || dateFrom || dateTo;
+  const hasActiveFilters = currentQ || currentCity || currentCinema || priceMin || priceMax || verified || dateFrom || dateTo;
+
+  let pageTitle = "Vé phim đang pass";
+  if (currentQ)      pageTitle = `Kết quả cho "${currentQ}"`;
+  if (currentCinema) pageTitle = `Vé tại rạp ${currentCinema}`;
 
   return (
     <div className="ticket-list-page">
       <div className="container">
-        {/* Page header */}
+
         <div className="ticket-list-header">
           <div>
-            <h1 className="page-title">
-              {currentCategory
-                ? TICKET_CATEGORIES.find((c) => c.id === currentCategory)?.label || "Tất cả vé"
-                : currentQ
-                ? `Kết quả cho "${currentQ}"`
-                : "Tất cả vé"}
-            </h1>
-            <p className="result-count">{filtered.length} vé được tìm thấy</p>
+            <h1 className="page-title">{pageTitle}</h1>
+            <p className="result-count">{filtered.length} vé phim được tìm thấy</p>
           </div>
           <div className="sort-wrap">
             <label className="sort-label">Sắp xếp:</label>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={e => setSort(e.target.value)}
               className="form-select sort-select"
             >
-              {SORT_OPTIONS.map((o) => (
+              {SORT_OPTIONS.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
@@ -104,7 +99,7 @@ export default function TicketList() {
         </div>
 
         <div className="ticket-list-layout">
-          {/* Filters sidebar */}
+          {/* Filter sidebar */}
           <aside className="filter-sidebar">
             <div className="filter-header">
               <span className="filter-title">Bộ lọc</span>
@@ -113,92 +108,59 @@ export default function TicketList() {
               )}
             </div>
 
-            {/* Search */}
             <div className="filter-section">
-              <label className="filter-label">Từ khóa</label>
+              <label className="filter-label">Tên phim</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="Tên vé, địa điểm..."
+                placeholder="VD: Avengers, Inside Out..."
                 value={currentQ}
-                onChange={(e) => setFilter("q", e.target.value)}
+                onChange={e => setFilter("q", e.target.value)}
               />
             </div>
 
-            {/* Category */}
             <div className="filter-section">
-              <label className="filter-label">Danh mục</label>
-              <div className="filter-options">
-                <label className="filter-radio">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={!currentCategory}
-                    onChange={() => setFilter("category", "")}
-                  />
-                  <span>Tất cả</span>
-                </label>
-                {TICKET_CATEGORIES.map((cat) => (
-                  <label key={cat.id} className="filter-radio">
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={currentCategory === cat.id}
-                      onChange={() => setFilter("category", cat.id)}
-                    />
-                    <span>{cat.icon} {cat.label}</span>
-                  </label>
-                ))}
-              </div>
+              <label className="filter-label">Tên rạp</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="VD: CGV, BHD, Lotte..."
+                value={currentCinema}
+                onChange={e => setFilter("cinema", e.target.value)}
+              />
             </div>
 
-            {/* City */}
             <div className="filter-section">
               <label className="filter-label">Khu vực</label>
               <select
                 className="form-select"
                 value={currentCity}
-                onChange={(e) => setFilter("city", e.target.value)}
+                onChange={e => setFilter("city", e.target.value)}
               >
                 <option value="">Tất cả khu vực</option>
-                {LOCATIONS.map((loc) => (
+                {LOCATIONS.map(loc => (
                   <option key={loc} value={loc}>{loc}</option>
                 ))}
               </select>
             </div>
 
-            {/* Price */}
             <div className="filter-section">
-              <label className="filter-label">Giá (đ)</label>
-              <div className="price-range">
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="Từ"
-                  value={priceMin}
-                  onChange={(e) => setPriceMin(e.target.value)}
-                />
-                <span className="price-dash">–</span>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="Đến"
-                  value={priceMax}
-                  onChange={(e) => setPriceMax(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Date range */}
-            <div className="filter-section">
-              <label className="filter-label">Ngày sự kiện</label>
+              <label className="filter-label">Ngày chiếu</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <input type="date" className="form-input" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-                <input type="date" className="form-input" value={dateTo}   onChange={e => setDateTo(e.target.value)} />
+                <input type="date" className="form-input" placeholder="Từ ngày" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                <input type="date" className="form-input" placeholder="Đến ngày" value={dateTo}   onChange={e => setDateTo(e.target.value)} />
               </div>
             </div>
 
-            {/* Verified */}
+            <div className="filter-section">
+              <label className="filter-label">Giá pass (đ)</label>
+              <div className="price-range">
+                <input type="number" className="form-input" placeholder="Từ" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
+                <span className="price-dash">–</span>
+                <input type="number" className="form-input" placeholder="Đến" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
+              </div>
+            </div>
+
             <div className="filter-section">
               <label className="filter-checkbox">
                 <input type="checkbox" checked={verified} onChange={e => setVerified(e.target.checked)} />
@@ -211,8 +173,8 @@ export default function TicketList() {
           <div className="ticket-results">
             {filtered.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">🎫</div>
-                <h3>Không tìm thấy vé</h3>
+                <div className="empty-icon">🎬</div>
+                <h3>Không tìm thấy vé phim</h3>
                 <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
                 <button className="btn btn-outline mt-md" onClick={clearFilters}>
                   Xóa bộ lọc
@@ -220,13 +182,14 @@ export default function TicketList() {
               </div>
             ) : (
               <div className="results-grid">
-                {filtered.map((ticket) => (
+                {filtered.map(ticket => (
                   <TicketCard key={ticket.id} ticket={ticket} />
                 ))}
               </div>
             )}
           </div>
         </div>
+
       </div>
     </div>
   );

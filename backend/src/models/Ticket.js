@@ -22,6 +22,7 @@ const ticketSchema = new mongoose.Schema(
     category:      { type: String, required: true, enum: ['movie', 'concert', 'event', 'sport', 'workshop', 'bus', 'train'] },
     description:   { type: String, trim: true },
     location:      { type: String, required: true, trim: true },
+    city:          { type: String, trim: true },
     eventDate:     { type: String },
     eventTime:     { type: String },
     originalPrice: { type: Number, required: true, min: 0 },

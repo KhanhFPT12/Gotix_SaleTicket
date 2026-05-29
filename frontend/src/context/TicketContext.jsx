@@ -6,8 +6,9 @@ import {
   normalizeWithdrawal, normalizeTopUp,
   apiGetMyWallet, apiGetWalletHistory, apiCreateWithdrawal, apiGetMyWithdrawals,
   apiCreateTopUp, apiGetMyTopUps,
-  apiPayTransaction, apiCompleteTransaction, apiCancelTransaction,
-  apiCreateVnPayUrl,
+  apiConfirmUserPaid, apiAdminConfirmTransaction, apiAdminRejectTransaction,
+  apiCancelTransaction,
+  apiConfirmUserPaidPro, apiAdminConfirmPro, apiAdminRejectPro,
 } from "../api/client";
 import { useAuth } from "./AuthContext";
 
@@ -172,28 +173,30 @@ export function TicketProvider({ children }) {
     return review;
   }
 
-  async function payForTransaction(txId) {
-    const res = await apiPayTransaction(txId);
-    if (!res.success) throw new Error(res.message || "Thanh toán thất bại");
+  // User clicks "Tôi đã chuyển khoản"
+  async function confirmPayment(txId) {
+    const res = await apiConfirmUserPaid(txId);
+    if (!res.success) throw new Error(res.message || "Xác nhận thất bại");
     const updated = normalizeTransaction(res.data.transaction);
     setMyPurchases(prev => prev.map(t => t.id === txId ? updated : t));
-    await loadWallet();
     return updated;
   }
 
-  async function createVnPayUrl(txId) {
-    const res = await apiCreateVnPayUrl(txId);
-    if (!res.success) throw new Error(res.message || "Lỗi tạo URL thanh toán");
-    return res.data.url;
+  // Admin confirms money received
+  async function adminConfirmTx(txId) {
+    const res = await apiAdminConfirmTransaction(txId);
+    if (!res.success) throw new Error(res.message || "Xác nhận thất bại");
+    const updated = normalizeTransaction(res.data.transaction);
+    setTransactions(prev => prev.map(t => t.id === txId ? updated : t));
+    return updated;
   }
 
-  async function completeTransaction(txId) {
-    const res = await apiCompleteTransaction(txId);
-    if (!res.success) throw new Error(res.message);
+  // Admin rejects transaction
+  async function adminRejectTx(txId) {
+    const res = await apiAdminRejectTransaction(txId);
+    if (!res.success) throw new Error(res.message || "Từ chối thất bại");
     const updated = normalizeTransaction(res.data.transaction);
-    setMyPurchases(prev => prev.map(t => t.id === txId ? updated : t));
-    await loadTickets();
-    await loadWallet();
+    setTransactions(prev => prev.map(t => t.id === txId ? updated : t));
     return updated;
   }
 
@@ -226,7 +229,25 @@ export function TicketProvider({ children }) {
   async function upgradePro(plan) {
     const res = await apiUpgradePro(plan);
     if (!res.success) throw new Error(res.message || "Nâng cấp thất bại");
-    await loadMySubscription();
+    // Subscription is pending_payment — don't update mySubscription yet
+    return res.data; // { subscription, paymentNote }
+  }
+
+  async function confirmProPayment(subId) {
+    const res = await apiConfirmUserPaidPro(subId);
+    if (!res.success) throw new Error(res.message || "Xác nhận thất bại");
+    return res.data;
+  }
+
+  async function adminConfirmProSub(subId) {
+    const res = await apiAdminConfirmPro(subId);
+    if (!res.success) throw new Error(res.message || "Xác nhận thất bại");
+    return res.data;
+  }
+
+  async function adminRejectProSub(subId) {
+    const res = await apiAdminRejectPro(subId);
+    if (!res.success) throw new Error(res.message || "Từ chối thất bại");
     return res.data;
   }
 
@@ -281,6 +302,9 @@ export function TicketProvider({ children }) {
         mySubscription,
         upgradePro,
         cancelPro,
+        confirmProPayment,
+        adminConfirmProSub,
+        adminRejectProSub,
         refreshSubscription: loadMySubscription,
         // Wallet
         wallet,
@@ -289,9 +313,9 @@ export function TicketProvider({ children }) {
         myTopUps,
         adminTopUps,
         createTopUp,
-        payForTransaction,
-        createVnPayUrl,
-        completeTransaction,
+        confirmPayment,
+        adminConfirmTx,
+        adminRejectTx,
         cancelTransactionById,
         createWithdrawal,
         refreshWallet: loadWallet,

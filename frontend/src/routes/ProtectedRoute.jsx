@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Unauthorized from "../pages/Unauthorized";
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser, loading } = useAuth();
@@ -18,7 +19,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to="/" replace />;
+    return <Unauthorized />;
   }
 
   return children;

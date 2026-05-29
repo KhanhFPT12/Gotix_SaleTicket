@@ -125,12 +125,12 @@ export default function Header() {
 
         <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
           <Link to="/tickets" className={`nav-link ${isActive("/tickets") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
-            Tất cả vé
+            Vé phim đang pass
           </Link>
-          <Link to="/tickets?category=concert" className="nav-link" onClick={() => setMenuOpen(false)}>Concert</Link>
-          <Link to="/tickets?category=movie"   className="nav-link" onClick={() => setMenuOpen(false)}>Phim</Link>
-          <Link to="/tickets?category=sport"   className="nav-link" onClick={() => setMenuOpen(false)}>Thể thao</Link>
-          <Link to="/tickets?category=workshop" className="nav-link" onClick={() => setMenuOpen(false)}>Workshop</Link>
+          <Link to="/tickets?cinema=CGV"   className="nav-link" onClick={() => setMenuOpen(false)}>CGV</Link>
+          <Link to="/tickets?cinema=BHD"   className="nav-link" onClick={() => setMenuOpen(false)}>BHD Star</Link>
+          <Link to="/tickets?cinema=Lotte" className="nav-link" onClick={() => setMenuOpen(false)}>Lotte Cinema</Link>
+          <Link to="/tickets?cinema=Galaxy" className="nav-link" onClick={() => setMenuOpen(false)}>Galaxy</Link>
         </nav>
 
         <div className="header-actions">
@@ -143,7 +143,7 @@ export default function Header() {
               )}
               {currentUser.role !== "admin" && (
                 <Link to="/post-ticket" className="btn btn-outline btn-sm hide-mobile">
-                  + Đăng vé
+                  + Đăng vé phim
                 </Link>
               )}
 
@@ -192,7 +192,7 @@ export default function Header() {
                         Vé đã lưu
                       </Link>
                       <Link to="/post-ticket" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                        Đăng vé
+                        Đăng vé phim
                       </Link>
                       <Link to="/upgrade-pro" className="dropdown-item dropdown-item-pro" onClick={() => setMenuOpen(false)}>
                         {currentUser.isPro ? "Quản lý gói Pro" : "Nâng cấp Pro"}

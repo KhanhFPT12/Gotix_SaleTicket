@@ -48,33 +48,37 @@ export const apiDel  = (path)         => apiFetch(path, { method: 'DELETE' });
 export function normalizeTicket(t) {
   if (!t) return null;
   const ownerObj = t.ownerId && typeof t.ownerId === 'object' ? t.ownerId : null;
+  const details  = t.details || {};
   return {
     ...t,
     id: t._id?.toString() || t.id,
-    // Map ownerId → sellerId so existing frontend code keeps working
-    sellerId: ownerObj?._id?.toString() ?? t.ownerId?.toString?.() ?? '',
-    sellerName: ownerObj?.name ?? '',
-    sellerRating: ownerObj?.rating ?? 0,
+    sellerId:      ownerObj?._id?.toString() ?? t.ownerId?.toString?.() ?? '',
+    sellerName:    ownerObj?.name ?? '',
+    sellerRating:  ownerObj?.rating ?? 0,
     sellerVerified: ownerObj?.verified ?? false,
-    sellerIsPro: ownerObj?.isPro ?? false,
-    sellerBadge: ownerObj?.proBadge ?? 'GoTix Pro',
-    // Map backend price/date field names to frontend names
-    passPrice: t.resalePrice ?? t.passPrice ?? 0,
-    date: t.eventDate ?? t.date ?? '',
-    time: t.eventTime ?? t.time ?? '',
-    // Map ticketImage/qrImage → images[] with full URL
+    sellerIsPro:   ownerObj?.isPro ?? false,
+    sellerBadge:   ownerObj?.proBadge ?? 'GoTix Pro',
+    passPrice:     t.resalePrice ?? t.passPrice ?? 0,
+    date:          t.eventDate ?? t.date ?? '',
+    time:          t.eventTime ?? t.time ?? '',
     images: [
       t.ticketImage ? resolveMediaUrl(t.ticketImage) : null,
       t.qrImage     ? resolveMediaUrl(t.qrImage)     : null,
     ].filter(Boolean),
-    // Map verifyStatus → frontend status string
     status:
       t.status === 'sold' ? 'sold' :
       t.verifyStatus === 'verified' ? 'approved' :
       t.verifyStatus === 'rejected' ? 'rejected' :
       'pending',
-    verifyStatus: t.verifyStatus,
+    verifyStatus:   t.verifyStatus,
     originalStatus: t.status,
+    // Movie-specific fields
+    movieTitle:    details.movieTitle  || t.title    || '',
+    cinema:        details.cinemaName  || t.location || '',
+    cinemaAddress: details.cinemaAddress || '',
+    room:          details.room        || '',
+    seats:         details.seats       || [],
+    city:          t.city              || '',
   };
 }
 
@@ -85,24 +89,22 @@ export function normalizeTransaction(tx) {
   const ticketObj = tx.ticketId && typeof tx.ticketId === 'object' ? tx.ticketId : null;
   return {
     ...tx,
-    id:          tx._id?.toString() || tx.id,
-    buyerId:     buyerObj?._id?.toString()  ?? tx.buyerId?.toString?.()  ?? '',
-    sellerId:    sellerObj?._id?.toString() ?? tx.sellerId?.toString?.() ?? '',
-    buyer:       buyerObj,
-    seller:      sellerObj,
-    ticketId:    ticketObj?._id?.toString() ?? tx.ticketId?.toString?.() ?? '',
-    ticketTitle: ticketObj?.title ?? tx.ticketTitle ?? '',
-    ticketData:  ticketObj,
-    amount:        tx.totalPrice ?? tx.amount ?? 0,
-    platformFee:   tx.platformFee ?? 0,
-    sellerAmount:  tx.sellerAmount ?? 0,
-    sellerCredited: tx.sellerCredited ?? false,
-    paymentStatus: tx.paymentStatus ?? 'pending',
-    status:
-      tx.transactionStatus === 'completed' ? 'completed' :
-      tx.transactionStatus === 'cancelled' ? 'cancelled' :
-      'pending',
-    paymentMethod: tx.paymentMethod,
+    id:               tx._id?.toString() || tx.id,
+    buyerId:          buyerObj?._id?.toString()  ?? tx.buyerId?.toString?.()  ?? '',
+    sellerId:         sellerObj?._id?.toString() ?? tx.sellerId?.toString?.() ?? '',
+    buyer:            buyerObj,
+    seller:           sellerObj,
+    ticketId:         ticketObj?._id?.toString() ?? tx.ticketId?.toString?.() ?? '',
+    ticketTitle:      ticketObj?.title ?? tx.ticketTitle ?? '',
+    ticketData:       ticketObj,
+    amount:           tx.totalPrice ?? tx.amount ?? 0,
+    platformFee:      tx.platformFee ?? 0,
+    sellerAmount:     tx.sellerAmount ?? 0,
+    sellerCredited:   tx.sellerCredited ?? false,
+    paymentNote:      tx.paymentNote ?? '',
+    paymentExpiredAt: tx.paymentExpiredAt ?? null,
+    status:           tx.status ?? 'pending_payment',
+    paymentMethod:    tx.paymentMethod,
   };
 }
 
@@ -166,10 +168,10 @@ export function normalizeTopUp(t) {
 }
 
 // ── Transaction actions ───────────────────────────────────────────────────────
-export const apiPayTransaction      = (id)    => apiPatch(`/transactions/${id}/payment`, {});
-export const apiCompleteTransaction = (id)    => apiPatch(`/transactions/${id}/complete`, {});
-export const apiCancelTransaction   = (id)    => apiPatch(`/transactions/${id}/cancel`, {});
-export const apiCreateVnPayUrl      = (id)    => apiPost(`/transactions/${id}/vnpay/create-url`, {});
+export const apiConfirmUserPaid         = (id) => apiPatch(`/transactions/${id}/user-confirmed`, {});
+export const apiAdminConfirmTransaction = (id) => apiPatch(`/transactions/${id}/admin-confirm`, {});
+export const apiAdminRejectTransaction  = (id) => apiPatch(`/transactions/${id}/admin-reject`, {});
+export const apiCancelTransaction       = (id) => apiPatch(`/transactions/${id}/cancel`, {});
 
 export function normalizeProSubscription(s) {
   if (!s) return null;
@@ -177,11 +179,14 @@ export function normalizeProSubscription(s) {
 }
 
 // ── Pro API calls ─────────────────────────────────────────────────────────────
-export const apiGetProPlans        = ()       => apiGet('/pro/plans');
-export const apiGetMySubscription  = ()       => apiGet('/pro/my-subscription');
-export const apiUpgradePro         = (plan)   => apiPost('/pro/upgrade', { plan });
-export const apiCancelPro          = ()       => apiPost('/pro/cancel', {});
-export const apiGetPublicProfile   = (id)     => apiGet(`/users/public/${id}`);
+export const apiGetProPlans           = ()    => apiGet('/pro/plans');
+export const apiGetMySubscription     = ()    => apiGet('/pro/my-subscription');
+export const apiUpgradePro            = (plan)=> apiPost('/pro/upgrade', { plan });
+export const apiCancelPro             = ()    => apiPost('/pro/cancel', {});
+export const apiConfirmUserPaidPro    = (id)  => apiPatch(`/pro/${id}/user-confirmed`, {});
+export const apiAdminConfirmPro       = (id)  => apiPatch(`/pro/${id}/admin-confirm`, {});
+export const apiAdminRejectPro        = (id)  => apiPatch(`/pro/${id}/admin-reject`, {});
+export const apiGetPublicProfile      = (id)  => apiGet(`/users/public/${id}`);
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 export const apiGetNotifications  = (page = 1) => apiGet(`/notifications?page=${page}&limit=20`);

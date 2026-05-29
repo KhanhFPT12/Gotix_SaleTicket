@@ -56,31 +56,49 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.ticket-card-placeholder span {
-  font-size: 28px;
+  gap: 8px;
+  background: #1a1f2e;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 12px;
 }
 
 .ticket-card-placeholder p {
-  font-size: var(--font-size-xs);
+  font-size: 11px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 120px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .ticket-discount-tag {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
   background-color: var(--color-accent);
   color: white;
   font-size: var(--font-size-xs);
   font-weight: 700;
   padding: 3px 7px;
   border-radius: var(--border-radius-sm);
+}
+
+.ticket-verified-tag {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(22, 163, 74, 0.9);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 100px;
 }
 
 /* Body */
@@ -158,6 +176,11 @@
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   text-decoration: line-through;
+}
+
+.ticket-qty {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* Footer */

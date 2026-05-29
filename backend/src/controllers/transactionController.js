@@ -1,15 +1,17 @@
 const Transaction = require('../models/Transaction');
-const Ticket = require('../models/Ticket');
-const User = require('../models/User');
+const Ticket      = require('../models/Ticket');
+const User        = require('../models/User');
 const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendingBalance } = require('../services/walletService');
-const { notify } = require('../services/notificationService');
-const emailService = require('../services/emailService');
+const { notify }       = require('../services/notificationService');
+const emailService     = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
-const { buildPaymentUrl, verifyReturnUrl } = require('../services/vnpayService');
 
+const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+// ── Create transaction ────────────────────────────────────────────────────────
 const createTransaction = async (req, res, next) => {
   try {
-    const { ticketId, quantity, paymentMethod } = req.body;
+    const { ticketId, quantity } = req.body;
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
 
@@ -27,14 +29,17 @@ const createTransaction = async (req, res, next) => {
     const { platformFee, sellerAmount } = computeFees(totalPrice);
 
     const transaction = await Transaction.create({
-      buyerId:   req.user.id,
-      sellerId:  ticket.ownerId,
+      buyerId:          req.user.id,
+      sellerId:         ticket.ownerId,
       ticketId,
-      quantity:  Number(quantity),
+      quantity:         Number(quantity),
       totalPrice,
       platformFee,
       sellerAmount,
-      paymentMethod,
+      paymentMethod:    'qr_transfer',
+      paymentNote:      req.user.name || '',
+      paymentExpiredAt: new Date(Date.now() + PAYMENT_EXPIRY_MS),
+      status:           'pending_payment',
     });
 
     return res.status(201).json(success('Tạo giao dịch thành công', { transaction }));
@@ -43,15 +48,52 @@ const createTransaction = async (req, res, next) => {
   }
 };
 
-// Buyer xác nhận đã thanh toán → tiền pending cho seller
-const payTransaction = async (req, res, next) => {
+// ── User confirms they transferred money ──────────────────────────────────────
+const confirmUserPaid = async (req, res, next) => {
   try {
     const tx = await Transaction.findById(req.params.id);
     if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
     if (tx.buyerId.toString() !== req.user.id) return res.status(403).json(error('Không có quyền'));
-    if (tx.paymentStatus === 'paid') return res.status(400).json(error('Giao dịch đã thanh toán rồi'));
-    if (tx.transactionStatus !== 'pending') return res.status(400).json(error('Giao dịch không ở trạng thái có thể thanh toán'));
+    if (tx.status !== 'pending_payment') {
+      return res.status(400).json(error('Giao dịch không ở trạng thái chờ thanh toán'));
+    }
 
+    // Check expiry
+    if (tx.paymentExpiredAt && new Date() > tx.paymentExpiredAt) {
+      tx.status = 'expired';
+      await tx.save();
+      return res.status(400).json(error('Giao dịch đã hết thời gian thanh toán'));
+    }
+
+    tx.status = 'waiting_admin_confirm';
+    await tx.save();
+
+    await notify({
+      receiverId: tx.sellerId,
+      title: 'Người mua đã chuyển khoản',
+      message: `${req.user.name} đã xác nhận chuyển khoản. Chờ GoTix xác minh.`,
+      type: 'ticket_sold',
+      relatedId: tx._id.toString(),
+    });
+
+    return res.json(success('Đã ghi nhận xác nhận chuyển khoản — chờ GoTix xác minh', { transaction: tx }));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Admin confirms money received ─────────────────────────────────────────────
+const adminConfirmTransaction = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json(error('Không có quyền'));
+
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
+    if (tx.status !== 'waiting_admin_confirm') {
+      return res.status(400).json(error('Giao dịch không ở trạng thái chờ xác nhận'));
+    }
+
+    // Reduce ticket quantity
     const ticket = await Ticket.findById(tx.ticketId);
     if (ticket) {
       ticket.quantity = Math.max(0, ticket.quantity - tx.quantity);
@@ -59,67 +101,73 @@ const payTransaction = async (req, res, next) => {
       await ticket.save();
     }
 
-    await addPendingBalance(tx.sellerId, tx.sellerAmount);
-
-    tx.paymentStatus = 'paid';
-    await tx.save();
-
-    // Notify seller
-    await notify({
-      receiverId: tx.sellerId,
-      title: 'Vé của bạn được mua',
-      message: `Có người vừa thanh toán mua vé. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đang chờ xác nhận.`,
-      type: 'ticket_sold',
-      relatedId: tx._id.toString(),
-    });
-
-    return res.json(success('Xác nhận thanh toán thành công — tiền đang chờ xử lý', { transaction: tx }));
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Buyer xác nhận đã nhận vé → giao dịch hoàn tất, tiền pending → available
-const completeTransaction = async (req, res, next) => {
-  try {
-    const tx = await Transaction.findById(req.params.id);
-    if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
-
-    const isBuyer = tx.buyerId.toString() === req.user.id;
-    if (!isBuyer && req.user.role !== 'admin') return res.status(403).json(error('Không có quyền'));
-    if (tx.paymentStatus !== 'paid') return res.status(400).json(error('Cần thanh toán trước khi hoàn tất'));
-    if (tx.transactionStatus === 'completed') return res.status(400).json(error('Giao dịch đã hoàn tất rồi'));
-    if (tx.transactionStatus === 'cancelled') return res.status(400).json(error('Giao dịch đã bị hủy'));
-
+    // Credit seller
     if (!tx.sellerCredited) {
+      await addPendingBalance(tx.sellerId, tx.sellerAmount);
       await releasePendingToAvailable(tx.sellerId, tx.sellerAmount);
       tx.sellerCredited = true;
     }
 
-    tx.transactionStatus = 'completed';
+    tx.status = 'completed';
     await tx.save();
 
-    // Notify seller + send email to buyer
+    const [buyer, seller] = await Promise.all([
+      User.findById(tx.buyerId),
+      User.findById(tx.sellerId),
+    ]);
+
+    await notify({
+      receiverId: tx.buyerId,
+      title: 'Thanh toán được xác nhận',
+      message: 'GoTix đã xác nhận thanh toán của bạn. Giao dịch hoàn tất!',
+      type: 'transaction_completed',
+      relatedId: tx._id.toString(),
+    });
     await notify({
       receiverId: tx.sellerId,
       title: 'Giao dịch hoàn tất',
-      message: `Giao dịch hoàn tất. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đã vào ví khả dụng.`,
+      message: `${tx.sellerAmount?.toLocaleString('vi-VN')}đ đã vào ví khả dụng của bạn.`,
       type: 'transaction_completed',
       relatedId: tx._id.toString(),
     });
 
-    const [buyer, ticket] = await Promise.all([
-      User.findById(tx.buyerId),
-      Ticket.findById(tx.ticketId),
-    ]);
-    if (buyer) await emailService.transactionCompleted(buyer, ticket, tx.totalPrice);
+    if (buyer) await emailService.transactionCompleted(buyer, ticket, tx.totalPrice).catch(() => {});
 
-    return res.json(success('Giao dịch hoàn tất — tiền đã vào ví người bán', { transaction: tx }));
+    return res.json(success('Xác nhận thanh toán thành công — giao dịch hoàn tất', { transaction: tx }));
   } catch (err) {
     next(err);
   }
 };
 
+// ── Admin rejects transaction ─────────────────────────────────────────────────
+const adminRejectTransaction = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json(error('Không có quyền'));
+
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
+    if (!['waiting_admin_confirm', 'pending_payment'].includes(tx.status)) {
+      return res.status(400).json(error('Không thể từ chối giao dịch ở trạng thái này'));
+    }
+
+    tx.status = 'failed';
+    await tx.save();
+
+    await notify({
+      receiverId: tx.buyerId,
+      title: 'Thanh toán bị từ chối',
+      message: 'GoTix không xác nhận được giao dịch của bạn. Vui lòng liên hệ hỗ trợ.',
+      type: 'transaction_cancelled',
+      relatedId: tx._id.toString(),
+    });
+
+    return res.json(success('Đã từ chối giao dịch', { transaction: tx }));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Cancel transaction (buyer) ────────────────────────────────────────────────
 const cancelTransaction = async (req, res, next) => {
   try {
     const tx = await Transaction.findById(req.params.id);
@@ -127,22 +175,14 @@ const cancelTransaction = async (req, res, next) => {
 
     const isBuyer = tx.buyerId.toString() === req.user.id;
     if (!isBuyer && req.user.role !== 'admin') return res.status(403).json(error('Không có quyền hủy giao dịch này'));
-    if (tx.transactionStatus === 'completed') return res.status(400).json(error('Không thể hủy giao dịch đã hoàn tất'));
-    if (tx.transactionStatus === 'cancelled') return res.status(400).json(error('Giao dịch đã bị hủy rồi'));
-
-    if (tx.paymentStatus === 'paid' && !tx.sellerCredited) {
-      await reversePendingBalance(tx.sellerId, tx.sellerAmount);
-
-      const ticket = await Ticket.findById(tx.ticketId);
-      if (ticket) {
-        ticket.quantity += tx.quantity;
-        if (ticket.status === 'sold') ticket.status = 'available';
-        await ticket.save();
-      }
+    if (['completed', 'failed', 'expired'].includes(tx.status)) {
+      return res.status(400).json(error('Không thể hủy giao dịch đã kết thúc'));
+    }
+    if (tx.status === 'waiting_admin_confirm') {
+      return res.status(400).json(error('Giao dịch đang chờ xác nhận, không thể tự hủy'));
     }
 
-    tx.transactionStatus = 'cancelled';
-    tx.paymentStatus = 'failed';
+    tx.status = 'failed';
     await tx.save();
 
     await notify({
@@ -159,6 +199,7 @@ const cancelTransaction = async (req, res, next) => {
   }
 };
 
+// ── Read ──────────────────────────────────────────────────────────────────────
 const getMyPurchases = async (req, res, next) => {
   try {
     const transactions = await Transaction.find({ buyerId: req.user.id })
@@ -187,7 +228,7 @@ const getTransactionById = async (req, res, next) => {
   try {
     const tx = await Transaction.findById(req.params.id)
       .populate('ticketId')
-      .populate('buyerId', 'name email avatar phone')
+      .populate('buyerId',  'name email avatar phone')
       .populate('sellerId', 'name email avatar phone');
     if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
 
@@ -202,70 +243,13 @@ const getTransactionById = async (req, res, next) => {
   }
 };
 
-const createVnPayUrl = async (req, res, next) => {
-  try {
-    const tx = await Transaction.findById(req.params.id);
-    if (!tx) return res.status(404).json(error('Không tìm thấy giao dịch'));
-    if (tx.buyerId.toString() !== req.user.id) return res.status(403).json(error('Không có quyền'));
-    if (tx.paymentStatus === 'paid') return res.status(400).json(error('Giao dịch đã thanh toán rồi'));
-    if (tx.transactionStatus !== 'pending') return res.status(400).json(error('Giao dịch không ở trạng thái có thể thanh toán'));
-
-    // final total includes 2% platform fee on frontend, but we already have tx.totalPrice and tx.platformFee
-    const amountToPay = tx.totalPrice + tx.platformFee;
-    const url = buildPaymentUrl(req, tx._id.toString(), amountToPay);
-
-    return res.json(success('Tạo URL thanh toán thành công', { url }));
-  } catch (err) {
-    next(err);
-  }
-};
-
-const vnpayReturn = async (req, res, next) => {
-  try {
-    let vnp_Params = req.query;
-    const verifyResult = verifyReturnUrl(vnp_Params);
-
-    if (verifyResult.isSuccess) {
-      const txId = vnp_Params['vnp_TxnRef'];
-      const tx = await Transaction.findById(txId);
-      
-      if (!tx) {
-        return res.status(404).json(error('Không tìm thấy giao dịch'));
-      }
-
-      if (tx.paymentStatus !== 'paid' && tx.transactionStatus === 'pending') {
-        const ticket = await Ticket.findById(tx.ticketId);
-        if (ticket) {
-          ticket.quantity = Math.max(0, ticket.quantity - tx.quantity);
-          if (ticket.quantity === 0) ticket.status = 'sold';
-          await ticket.save();
-        }
-
-        await addPendingBalance(tx.sellerId, tx.sellerAmount);
-
-        tx.paymentStatus = 'paid';
-        await tx.save();
-
-        await notify({
-          receiverId: tx.sellerId,
-          title: 'Vé của bạn được mua',
-          message: `Có người vừa thanh toán mua vé qua VNPay. ${tx.sellerAmount?.toLocaleString('vi-VN')}đ đang chờ xác nhận.`,
-          type: 'ticket_sold',
-          relatedId: tx._id.toString(),
-        });
-      }
-
-      return res.json(success('Giao dịch thanh toán thành công', { transactionId: tx._id }));
-    } else {
-      return res.status(400).json(error('Thanh toán thất bại hoặc mã xác thực không hợp lệ', { code: verifyResult.code }));
-    }
-  } catch (err) {
-    next(err);
-  }
-};
-
 module.exports = {
-  createTransaction, payTransaction, completeTransaction,
-  cancelTransaction, getMyPurchases, getMySales, getTransactionById,
-  createVnPayUrl, vnpayReturn
+  createTransaction,
+  confirmUserPaid,
+  adminConfirmTransaction,
+  adminRejectTransaction,
+  cancelTransaction,
+  getMyPurchases,
+  getMySales,
+  getTransactionById,
 };

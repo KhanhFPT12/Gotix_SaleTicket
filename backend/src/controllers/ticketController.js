@@ -7,7 +7,7 @@ const { success, error } = require('../utils/apiResponse');
 const getTickets = async (req, res, next) => {
   try {
     const {
-      search, category, location, verifyStatus, status: statusFilter,
+      search, category, location, city, cinema, verifyStatus, status: statusFilter,
       minPrice, maxPrice, sort,
       dateFrom, dateTo,
       page = 1, limit = 12,
@@ -26,6 +26,8 @@ const getTickets = async (req, res, next) => {
     if (search) filter.$text = { $search: search };
     if (category) filter.category = category;
     if (location) filter.location = new RegExp(location, 'i');
+    if (city)   filter.city = new RegExp(city, 'i');
+    if (cinema) filter['details.cinemaName'] = new RegExp(cinema, 'i');
 
     if (minPrice || maxPrice) {
       filter.resalePrice = {};
