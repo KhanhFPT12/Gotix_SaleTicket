@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
 import { apiGetNotifications, apiMarkRead, apiMarkAllRead, normalizeNotification, resolveMediaUrl } from "../../api/client";
+import GoTixLogo from "./GoTixLogo";
 import "./Header.css";
 
 function NotificationDropdown({ onClose }) {
@@ -120,7 +121,7 @@ export default function Header() {
     <header className="header">
       <div className="container header-inner">
         <Link to="/" className="header-logo">
-          <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="header-logo-img" />
+          <GoTixLogo height={38} />
         </Link>
 
         <nav className={`header-nav ${menuOpen ? "open" : ""}`}>

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import GoTixLogo from "./GoTixLogo";
 import "./Footer.css";
 
 export default function Footer() {
@@ -7,7 +8,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="footer-logo-img" />
+            <GoTixLogo height={36} />
             <p className="footer-tagline">
               Nền tảng mua và pass vé an toàn, minh bạch cho người Việt.
             </p>

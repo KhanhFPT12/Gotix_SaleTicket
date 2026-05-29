@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoTixLogo from "../components/common/GoTixLogo";
 import "./Auth.css";
 
 export default function Login() {
@@ -57,7 +58,7 @@ export default function Login() {
       <div className="auth-card">
         <div className="auth-brand">
           <Link to="/" className="auth-logo">
-            <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="auth-logo-img" />
+            <GoTixLogo height={52} />
           </Link>
         </div>
         <h1 className="auth-title">Đăng nhập</h1>

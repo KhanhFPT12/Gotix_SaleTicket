@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTickets } from "../context/TicketContext";
+import GoTixLogo from "../components/common/GoTixLogo";
 import "./AdminLayout.css";
 
 const NAV_ITEMS = [
@@ -130,7 +131,7 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="admin-sidebar-brand">
           <div className="admin-brand-logo-wrap">
-            <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="admin-logo-img" />
+            <GoTixLogo height={32} />
           </div>
           <span className="admin-brand-tag">Admin Panel</span>
         </div>
