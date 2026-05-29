@@ -88,6 +88,31 @@ ${note ? `<p>Lý do: ${note}</p>` : ''}
 ${note ? `<p>Lý do: ${note}</p>` : ''}`,
   }),
 
+  verifyEmail: (user, token) => send({
+    to: user.email,
+    subject: 'Xác nhận tài khoản GoTix',
+    bodyHtml: `<p>Xin chào <strong>${user.name}</strong>,</p>
+<p>Cảm ơn bạn đã đăng ký tài khoản GoTix! Vui lòng bấm nút bên dưới để xác nhận địa chỉ email và kích hoạt tài khoản.</p>
+<a class="btn" href="${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email?token=${token}">Xác nhận tài khoản</a>
+<p style="margin-top:16px;color:#6b7280;font-size:13px">Link xác nhận có hiệu lực trong <strong>24 giờ</strong>.<br>Nếu bạn không đăng ký tài khoản GoTix, hãy bỏ qua email này.</p>`,
+  }),
+
+  accountDisabled: (user) => send({
+    to: user.email,
+    subject: 'Tài khoản GoTix bị tạm khóa',
+    bodyHtml: `<p>Xin chào <strong>${user.name}</strong>,</p>
+<p>Tài khoản GoTix của bạn đã bị tạm khóa bởi quản trị viên.</p>
+<p>Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội hỗ trợ GoTix để được giải quyết.</p>`,
+  }),
+
+  accountEnabled: (user) => send({
+    to: user.email,
+    subject: 'Tài khoản GoTix đã được khôi phục',
+    bodyHtml: `<p>Xin chào <strong>${user.name}</strong>,</p>
+<p>Tài khoản GoTix của bạn đã được <strong>mở khóa</strong> và hoạt động trở lại bình thường.</p>
+<a class="btn" href="${process.env.CLIENT_URL || 'http://localhost:5173'}/login">Đăng nhập ngay</a>`,
+  }),
+
   forgotPassword: (user, resetUrl) => send({
     to: user.email,
     subject: 'Đặt lại mật khẩu GoTix',

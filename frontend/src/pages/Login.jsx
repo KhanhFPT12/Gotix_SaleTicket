@@ -8,10 +8,11 @@ export default function Login() {
   const { login, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [error, setError]         = useState("");
+  const [errorType, setErrorType] = useState(""); // "disabled" | ""
+  const [loading, setLoading]     = useState(false);
 
   const from = location.state?.from?.pathname || "/";
 
@@ -26,12 +27,13 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+    setError(""); setErrorType("");
     setLoading(true);
     try {
       const result = await login(email, password);
       if (!result.success) {
         setError(result.message);
+        if (result.message?.includes("vô hiệu hóa")) setErrorType("disabled");
         return;
       }
       const role = result.user.role;
@@ -64,7 +66,16 @@ export default function Login() {
         <h1 className="auth-title">Đăng nhập</h1>
         <p className="auth-subtitle">Chào mừng bạn trở lại GoTix</p>
 
-        {error && <div className="alert alert-error mb-md">{error}</div>}
+        {error && (
+          <div className={`alert ${errorType === "disabled" ? "alert-warning" : "alert-error"} mb-md`}>
+            {error}
+            {errorType === "disabled" && (
+              <div style={{ marginTop: 6, fontSize: 13 }}>
+                Vui lòng liên hệ hỗ trợ qua email hoặc trang GoTix.
+              </div>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

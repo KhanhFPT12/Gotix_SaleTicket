@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { apiPost, apiGet, apiFetch, setToken, getToken } from "../api/client";
+import { apiPost, apiGet, apiFetch, setToken, getToken, apiResendVerification } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -41,7 +41,16 @@ export function AuthProvider({ children }) {
     if (!res.success) return { success: false, message: res.message };
     setToken(res.data.token);
     setCurrentUser(res.data.user);
-    return { success: true, user: res.data.user };
+    return {
+      success: true,
+      user: res.data.user,
+      requireEmailVerification: res.data.requireEmailVerification,
+    };
+  }
+
+  async function resendVerification() {
+    const res = await apiResendVerification();
+    return res;
   }
 
   function logout() {
@@ -79,7 +88,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

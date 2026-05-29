@@ -79,18 +79,31 @@ const getUsers = async (req, res, next) => {
 const updateUserStatus = async (req, res, next) => {
   try {
     const { isActive } = req.body;
-    const user = await User.findByIdAndUpdate(req.params.id, { isActive }, { new: true });
-    if (!user) return res.status(404).json(error('Không tìm thấy người dùng'));
+    const target = await User.findById(req.params.id);
+    if (!target) return res.status(404).json(error('Không tìm thấy người dùng'));
+    if (target.role === 'admin') {
+      return res.status(400).json(error('Không thể thay đổi trạng thái tài khoản admin'));
+    }
+    if (target._id.toString() === req.user.id) {
+      return res.status(400).json(error('Không thể tự vô hiệu hóa tài khoản của mình'));
+    }
+
+    target.isActive = isActive;
+    await target.save({ validateBeforeSave: false });
 
     await auditLog({
       adminId: req.user.id,
       action: isActive ? 'unlock_user' : 'lock_user',
       targetType: 'User',
-      targetId: user._id,
-      description: `${isActive ? 'Mở khóa' : 'Khóa'} tài khoản ${user.email}`,
+      targetId: target._id,
+      description: `${isActive ? 'Mở khóa' : 'Khóa'} tài khoản ${target.email}`,
     });
 
-    return res.json(success('Cập nhật trạng thái tài khoản thành công', { user }));
+    // Notify user by email
+    if (!isActive) emailService.accountDisabled(target).catch(() => {});
+    else           emailService.accountEnabled(target).catch(() => {});
+
+    return res.json(success('Cập nhật trạng thái tài khoản thành công', { user: target }));
   } catch (err) {
     next(err);
   }

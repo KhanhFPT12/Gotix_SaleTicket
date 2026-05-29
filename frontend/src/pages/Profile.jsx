@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { apiGet, resolveMediaUrl } from "../api/client";
+import { apiGet, resolveMediaUrl, apiResendVerification } from "../api/client";
 import "./Profile.css";
 
 function formatDate(d) {
@@ -33,6 +33,8 @@ export default function Profile() {
   const [pwMsg, setPwMsg]       = useState({ type: "", text: "" });
 
   const [stats, setStats] = useState(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg]         = useState("");
 
   // Lấy stats từ backend
   useEffect(() => {
@@ -97,10 +99,46 @@ export default function Profile() {
   const trustColor = trustScore >= 70 ? "#16a34a" : trustScore >= 40 ? "#d97706" : "#ef4444";
   const trustLabel = trustScore >= 70 ? "Uy tín cao" : trustScore >= 40 ? "Trung bình" : "Cần thận trọng";
 
+  async function handleResendVerification() {
+    setResendLoading(true); setResendMsg("");
+    try {
+      const res = await apiResendVerification();
+      setResendMsg(res.success ? "✅ " + res.message : "❌ " + (res.message || "Gửi thất bại."));
+    } catch { setResendMsg("❌ Đã xảy ra lỗi."); }
+    finally { setResendLoading(false); }
+  }
+
   return (
     <div className="profile-page">
       <div className="container">
         <h1 className="page-heading">Tài khoản của tôi</h1>
+
+        {/* Email verification banner */}
+        {currentUser && !currentUser.emailVerified && (
+          <div className="alert alert-warning" style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <span>
+              <strong>📧 Chưa xác minh email</strong> — Bạn cần xác minh email để đăng vé, mua vé và rút tiền.
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {resendMsg && <span style={{ fontSize: 13 }}>{resendMsg}</span>}
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+              >
+                {resendLoading ? "Đang gửi..." : "Gửi lại email xác minh"}
+              </button>
+            </div>
+          </div>
+        )}
+        {currentUser?.emailVerified && (
+          <div style={{ marginBottom: 16 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 100, padding: "4px 12px" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Email đã xác minh
+            </span>
+          </div>
+        )}
 
         <div className="profile-layout">
           {/* ── Cột trái: chỉnh sửa ──────────────────────── */}

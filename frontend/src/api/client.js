@@ -188,6 +188,13 @@ export const apiAdminConfirmPro       = (id)  => apiPatch(`/pro/${id}/admin-conf
 export const apiAdminRejectPro        = (id)  => apiPatch(`/pro/${id}/admin-reject`, {});
 export const apiGetPublicProfile      = (id)  => apiGet(`/users/public/${id}`);
 
+// ── Auth verification ─────────────────────────────────────────────────────────
+export const apiVerifyEmail        = (token) => apiGet(`/auth/verify-email/${token}`);
+export const apiResendVerification = ()      => apiPost('/auth/resend-verification', {});
+
+// ── Admin user management ─────────────────────────────────────────────────────
+export const apiAdminSetUserActive = (id, isActive) => apiPatch(`/admin/users/${id}/status`, { isActive });
+
 // ── Notifications ─────────────────────────────────────────────────────────────
 export const apiGetNotifications  = (page = 1) => apiGet(`/notifications?page=${page}&limit=20`);
 export const apiMarkRead          = (id)       => apiPatch(`/notifications/${id}/read`, {});

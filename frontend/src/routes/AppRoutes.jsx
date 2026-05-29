@@ -24,6 +24,7 @@ import PublicProfile from "../pages/PublicProfile";
 import Wallet from "../pages/Wallet";
 import SavedTickets from "../pages/SavedTickets";
 import Unauthorized from "../pages/Unauthorized";
+import VerifyEmail from "../pages/VerifyEmail";
 import NotFound from "../pages/NotFound";
 
 import AdminOverview     from "../pages/admin/AdminOverview";
@@ -49,7 +50,8 @@ export default function AppRoutes() {
         <Route path="/tickets"     element={<TicketList />} />
         <Route path="/tickets/:id" element={<TicketDetail />} />
         <Route path="/users/:id"   element={<PublicProfile />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/unauthorized"  element={<Unauthorized />} />
+        <Route path="/verify-email"  element={<VerifyEmail />} />
 
         {/* Guest-only — redirect if already logged in */}
         <Route path="/login"    element={<GuestOnlyRoute><Login /></GuestOnlyRoute>} />
