@@ -1,15 +1,4 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-  port:   Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-  },
-});
-
+// ── Email template wrapper ─────────────────────────────────────────────────────
 function wrap(title, bodyHtml) {
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -21,35 +10,85 @@ function wrap(title, bodyHtml) {
   .hdr h1{margin:0;color:#fff;font-size:20px;font-weight:600}
   .body{padding:28px 32px;color:#374151;line-height:1.6}
   .body p{margin:0 0 12px}
-  .btn{display:inline-block;margin-top:16px;padding:10px 22px;background:#0F172A;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500}
+  .btn{display:inline-block;margin-top:16px;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600}
   .footer{padding:16px 32px;background:#f8fafc;color:#94a3b8;font-size:12px;border-top:1px solid #e2e8f0}
 </style></head>
 <body>
 <div class="wrap">
   <div class="hdr"><h1>GoTix</h1></div>
   <div class="body">${bodyHtml}</div>
-  <div class="footer">GoTix Marketplace — vé thật, an toàn, tin cậy.</div>
+  <div class="footer">GoTix — Nền tảng pass vé phim #1 Việt Nam</div>
 </div>
 </body></html>`;
 }
 
-async function send({ to, subject, bodyHtml }) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('[emailService] SMTP not configured. Set SMTP_USER and SMTP_PASS env vars.');
-    return;
-  }
-  try {
-    await transporter.sendMail({
-      from: `"GoTix" <${process.env.SMTP_USER}>`,
-      to,
+// ── Resend HTTP API (recommended — works on all cloud hosting) ─────────────────
+async function sendViaResend({ to, subject, bodyHtml }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error('RESEND_API_KEY not configured');
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from:    process.env.EMAIL_FROM || 'GoTix <onboarding@resend.dev>',
+      to:      [to],
       subject,
-      html: wrap(subject, bodyHtml),
-    });
-    console.log(`[emailService] Sent "${subject}" → ${to}`);
-  } catch (err) {
-    console.error('[emailService] send failed:', err.message);
-    throw err; // re-throw so caller's .catch() can log the real error
+      html:    wrap(subject, bodyHtml),
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `Resend error ${res.status}`);
+  return data;
+}
+
+// ── SMTP fallback (may be blocked by some hosting providers) ──────────────────
+const nodemailer = require('nodemailer');
+const smtpTransport = nodemailer.createTransport({
+  host:   process.env.SMTP_HOST || 'smtp.gmail.com',
+  port:   Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: { user: process.env.SMTP_USER || '', pass: process.env.SMTP_PASS || '' },
+  tls:  { rejectUnauthorized: false },
+});
+
+async function sendViaSmtp({ to, subject, bodyHtml }) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error('SMTP_USER / SMTP_PASS not configured');
   }
+  await smtpTransport.sendMail({
+    from: `"GoTix" <${process.env.SMTP_USER}>`,
+    to, subject, html: wrap(subject, bodyHtml),
+  });
+}
+
+// ── Main send — tries Resend first, falls back to SMTP ────────────────────────
+async function send({ to, subject, bodyHtml }) {
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendViaResend({ to, subject, bodyHtml });
+      console.log(`[email] ✓ Resend → ${to} | ${subject}`);
+      return;
+    } catch (err) {
+      console.error('[email] Resend failed:', err.message);
+    }
+  }
+
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      await sendViaSmtp({ to, subject, bodyHtml });
+      console.log(`[email] ✓ SMTP → ${to} | ${subject}`);
+      return;
+    } catch (err) {
+      console.error('[email] SMTP failed:', err.message);
+    }
+  }
+
+  console.warn('[email] No provider configured. Add RESEND_API_KEY or SMTP_USER+SMTP_PASS.');
 }
 
 const emailService = {
