@@ -1,0 +1,47 @@
+.sp-standalone {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-light, #f8fafc);
+}
+
+.sp-standalone-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--bg-white, #fff);
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.sp-standalone-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  flex: 1;
+}
+
+.sp-standalone-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted, #94a3b8);
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+}
+.sp-standalone-close:hover {
+  background: var(--bg-muted, #f1f5f9);
+  color: var(--color-text, #1e293b);
+}
+
+.sp-standalone-main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}

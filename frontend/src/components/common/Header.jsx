@@ -192,9 +192,15 @@ export default function Header() {
                       <Link to="/saved-tickets" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Vé đã lưu
                       </Link>
-                      <Link to="/support" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                        Hỗ trợ khách hàng
-                      </Link>
+                      <a
+                        href={`${import.meta.env.BASE_URL}support`}
+                        className="dropdown-item"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Hỗ trợ khách hàng ↗
+                      </a>
                       <Link to="/post-ticket" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Đăng vé phim
                       </Link>

@@ -1,8 +1,9 @@
 /* ── Support page ────────────────────────────────────────────── */
 .sp-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
 }
 
 /* Header */
@@ -11,22 +12,24 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--bg-white);
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
-.sp-header h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; }
-.sp-header p  { font-size: 0.9rem; color: var(--color-text-muted); margin: 0; }
+.sp-header h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 2px; }
+.sp-header p  { font-size: 0.82rem; color: var(--color-text-muted); margin: 0; }
 
 /* Layout */
 .sp-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  flex: 1;
   overflow: hidden;
-  height: calc(100vh - 220px);
-  min-height: 500px;
+  border-top: none;
+  min-height: 0;
   background: var(--color-surface);
 }
 

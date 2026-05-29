@@ -38,6 +38,7 @@ import AdminTopUps             from "../pages/admin/AdminTopUps";
 import AdminProSubscriptions   from "../pages/admin/AdminProSubscriptions";
 import AdminSupport            from "../pages/admin/AdminSupport";
 import Support                 from "../pages/Support";
+import SupportLayout           from "../layouts/SupportLayout";
 
 const USER_ONLY = ["user"];
 const ADMIN_ONLY = ["admin"];
@@ -80,12 +81,19 @@ export default function AppRoutes() {
           element={<ProtectedRoute allowedRoles={USER_ONLY}><UpgradePro /></ProtectedRoute>} />
         <Route path="/wallet"
           element={<ProtectedRoute allowedRoles={USER_ONLY}><Wallet /></ProtectedRoute>} />
-        <Route path="/support"
-          element={<ProtectedRoute allowedRoles={USER_ONLY}><Support /></ProtectedRoute>} />
         <Route path="/saved-tickets"
           element={<ProtectedRoute allowedRoles={USER_ONLY}><SavedTickets /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
+      </Route>
+
+      {/* ── Support — standalone layout, opens in new tab ── */}
+      <Route element={
+        <ProtectedRoute allowedRoles={USER_ONLY}>
+          <SupportLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="/support" element={<Support />} />
       </Route>
 
       {/* ── User dashboard — user only ── */}
