@@ -22,16 +22,40 @@ function wrap(title, bodyHtml) {
 </body></html>`;
 }
 
-// ── Resend HTTP API (recommended — works on all cloud hosting) ─────────────────
+// ── Brevo (recommended: free 300/day, any recipient, no domain needed) ────────
+async function sendViaBrevo({ to, subject, bodyHtml }) {
+  if (!process.env.BREVO_API_KEY) throw new Error('BREVO_API_KEY not set');
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method:  'POST',
+    headers: {
+      'api-key':      process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      'Accept':       'application/json',
+    },
+    body: JSON.stringify({
+      sender:      { name: 'GoTix', email: process.env.EMAIL_FROM_ADDRESS },
+      to:          [{ email: to }],
+      subject,
+      htmlContent: wrap(subject, bodyHtml),
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || `Brevo HTTP ${res.status}`);
+  }
+}
+
+// ── Resend HTTP API (requires verified domain for non-owner emails) ─────────────
 async function sendViaResend({ to, subject, bodyHtml }) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) throw new Error('RESEND_API_KEY not configured');
+  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY not configured');
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type':  'application/json',
     },
     body: JSON.stringify({
       from:    process.env.EMAIL_FROM || 'GoTix <onboarding@resend.dev>',
@@ -43,7 +67,6 @@ async function sendViaResend({ to, subject, bodyHtml }) {
 
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || `Resend error ${res.status}`);
-  return data;
 }
 
 // ── SMTP fallback (may be blocked by some hosting providers) ──────────────────
@@ -66,29 +89,42 @@ async function sendViaSmtp({ to, subject, bodyHtml }) {
   });
 }
 
-// ── Main send — tries Resend first, falls back to SMTP ────────────────────────
+// ── Main send — Brevo → Resend → SMTP ─────────────────────────────────────────
 async function send({ to, subject, bodyHtml }) {
+  // 1. Brevo: free 300/day, any recipient, HTTP API (recommended)
+  if (process.env.BREVO_API_KEY) {
+    try {
+      await sendViaBrevo({ to, subject, bodyHtml });
+      console.log(`[email] ✓ Brevo → ${to}`);
+      return;
+    } catch (err) {
+      console.error('[email] Brevo failed:', err.message);
+    }
+  }
+
+  // 2. Resend: requires verified domain for non-owner emails
   if (process.env.RESEND_API_KEY) {
     try {
       await sendViaResend({ to, subject, bodyHtml });
-      console.log(`[email] ✓ Resend → ${to} | ${subject}`);
+      console.log(`[email] ✓ Resend → ${to}`);
       return;
     } catch (err) {
       console.error('[email] Resend failed:', err.message);
     }
   }
 
+  // 3. SMTP: may be blocked on cloud hosting
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     try {
       await sendViaSmtp({ to, subject, bodyHtml });
-      console.log(`[email] ✓ SMTP → ${to} | ${subject}`);
+      console.log(`[email] ✓ SMTP → ${to}`);
       return;
     } catch (err) {
       console.error('[email] SMTP failed:', err.message);
     }
   }
 
-  console.warn('[email] No provider configured. Add RESEND_API_KEY or SMTP_USER+SMTP_PASS.');
+  console.warn('[email] No provider configured. Add BREVO_API_KEY (recommended).');
 }
 
 const emailService = {
