@@ -332,13 +332,60 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .ss-page { height: 100%; }
+
+  /* Stats — 2 per row on mobile */
+  .ss-stats { gap: 8px; }
+  .ss-stat-card { padding: 10px 12px; flex: 1 1 calc(50% - 8px); min-width: calc(50% - 8px); }
+  .ss-stat-val  { font-size: 1.3rem; }
+  .ss-stat-lbl  { font-size: 10px; }
+
+  /* Single column layout */
   .ss-layout {
     grid-template-columns: 1fr;
-    height: calc(100vh - 200px);
+    height: calc(100dvh - 200px);
+    border-radius: 8px;
   }
+
   .ss-hidden-mobile { display: none !important; }
-  .ss-back-btn { display: flex; }
-  .ss-stats { gap: 8px; }
-  .ss-stat-card { padding: 10px 12px; }
-  .ss-stat-val { font-size: 1.3rem; }
+  .ss-back-btn { display: flex !important; }
+
+  /* List pane */
+  .ss-list-pane { height: 100%; }
+  .ss-filters { padding: 8px; }
+  .ss-filter-row { flex-wrap: nowrap; overflow-x: auto; }
+  .ss-sel { min-width: 80px; flex: 0 0 auto; }
+
+  /* Chat pane */
+  .ss-chat-pane { height: 100%; }
+  .ss-chat-header { flex-wrap: nowrap; padding: 8px 12px; }
+  .ss-chat-header-top { flex-wrap: wrap; gap: 4px; }
+  .ss-chat-subject { font-size: 13px; }
+
+  /* Action bar — horizontal scroll on mobile */
+  .ss-action-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .ss-action-group { flex-wrap: nowrap; white-space: nowrap; }
+
+  /* Messages */
+  .ss-messages { padding: 10px; }
+  .ss-msg-body { max-width: 80%; }
+
+  /* Input */
+  .ss-input-area {
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .ss-input { font-size: 16px; } /* prevent iOS zoom */
+  .ss-send  { width: 40px; height: 40px; }
+}
+
+@media (max-width: 480px) {
+  .ss-stat-card { flex: 1 1 calc(50% - 4px); }
+  .ss-layout    { height: calc(100dvh - 185px); }
 }

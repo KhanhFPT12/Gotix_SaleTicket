@@ -309,53 +309,82 @@
 .sp-modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 .sp-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-/* Mobile */
+/* ── Modal mobile ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .sp-modal-overlay { align-items: flex-end; padding: 0; }
+  .sp-modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+  .sp-modal-body { padding: 16px; }
+}
+
+/* ── Mobile layout ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .sp-page { padding: 0; }
+  /* Support page fills full standalone height */
+  .sp-page { padding: 0; height: 100%; }
 
   .sp-header {
     padding: 12px 16px 8px;
-    flex-direction: column;
     gap: 10px;
   }
-  .sp-header h1 { font-size: 1rem; }
+  .sp-header h1     { font-size: 1rem; }
+  .sp-header .btn   { width: 100%; justify-content: center; text-align: center; }
 
+  /* Single column layout */
   .sp-layout {
     grid-template-columns: 1fr;
-    flex: 1;
     border-radius: 0;
     border-left: none;
     border-right: none;
+    border-bottom: none;
+    /* Use dvh so mobile browser chrome is accounted for */
+    height: calc(100dvh - 120px);
   }
 
   .sp-hidden-mobile { display: none !important; }
-  .sp-back-btn { display: flex; }
-  .sp-list { border-right: none; }
+  .sp-back-btn { display: flex !important; }
+  .sp-list     { border-right: none; height: 100%; overflow-y: auto; }
 
-  /* Larger touch targets on mobile */
-  .sp-ticket-item { padding: 14px 16px; }
-  .sp-send-btn    { width: 42px; height: 42px; }
-  .sp-attach-btn  { padding: 8px; }
-  .sp-input       { font-size: 16px; /* prevents iOS zoom */ }
+  /* Ticket items — bigger touch target */
+  .sp-ticket-item { padding: 14px 16px; min-height: 72px; }
 
-  /* Input area safe area for notch/home indicator */
-  .sp-input-area {
-    padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  /* Chat panel fills remaining height */
+  .sp-chat-panel { height: 100%; }
+
+  /* Messages area — scrollable only this area */
+  .sp-messages {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
   }
 
-  /* Messages scroll area */
-  .sp-messages { padding: 12px; }
+  /* Chat header */
+  .sp-chat-header { padding: 10px 12px; gap: 8px; flex-wrap: nowrap; }
+  .sp-chat-title  { min-width: 0; overflow: hidden; }
+  .sp-chat-title strong { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Chat header on mobile */
-  .sp-chat-header { padding: 10px 12px; }
-  .sp-chat-title  { font-size: 0.82rem; }
+  /* Input — prevent iOS zoom, safe area */
+  .sp-input-area {
+    padding: 10px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .sp-input {
+    font-size: 16px; /* critical: prevents iOS zoom on focus */
+    padding: 9px 12px;
+  }
+  .sp-send-btn    { width: 42px; height: 42px; flex-shrink: 0; }
+  .sp-attach-btn  { padding: 8px; }
 
-  /* Action bar */
-  .ss-action-bar { padding: 6px 12px; gap: 8px; overflow-x: auto; flex-wrap: nowrap; }
+  /* Typing badge compact */
+  .sp-topic-badge, .sp-status-badge { font-size: 10px; padding: 2px 6px; }
 }
 
 @media (max-width: 480px) {
-  .sp-layout { height: calc(100svh - 170px); }
+  .sp-layout { height: calc(100dvh - 110px); }
+  .sp-list-header { padding: 10px 14px; }
+  .sp-chat-header { flex-wrap: nowrap; }
 }
 

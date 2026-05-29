@@ -29,8 +29,8 @@ const register = async (req, res, next) => {
     });
 
     // Fire-and-forget — don't block response if email fails
-    emailService.verifyEmail(user, verifyToken).catch(e =>
-      console.error('[emailService] verifyEmail failed:', e.message)
+    emailService.welcomeAndVerify(user, verifyToken).catch(e =>
+      console.error('[emailService] welcomeAndVerify failed:', e.message)
     );
 
     const token = generateToken(user._id);

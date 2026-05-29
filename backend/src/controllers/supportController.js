@@ -19,29 +19,45 @@ const createTicket = async (req, res, next) => {
     if (!subject?.trim()) return res.status(400).json(error('Vui lòng nhập tiêu đề'));
     if (!topic)           return res.status(400).json(error('Vui lòng chọn chủ đề'));
 
-    const ticket = await SupportTicket.create({
-      userId: req.user.id,
-      subject: subject.trim(),
-      topic,
-      priority: priority || 'medium',
-      status: 'new',
-    });
-
-    if (message?.trim()) {
-      const msg = await SupportMessage.create({
-        ticketId: ticket._id,
-        senderId: req.user.id,
-        senderRole: 'user',
-        content: message.trim(),
-      });
-      ticket.lastMessage   = msg.content;
-      ticket.lastMessageAt = msg.createdAt;
-      ticket.unreadByStaff = 1;
-      await ticket.save();
+    const VALID_TOPICS = [
+      'payment','buy_ticket','pass_ticket','ticket_issue','not_received',
+      'withdrawal','account','report_user','fake_ticket','other',
+    ];
+    if (!VALID_TOPICS.includes(topic)) {
+      return res.status(400).json(error(`Chủ đề không hợp lệ: ${topic}`));
     }
 
+    const ticket = await SupportTicket.create({
+      userId:   req.user.id,
+      subject:  subject.trim(),
+      topic,
+      priority: priority || 'medium',
+      status:   'new',
+    });
+
+    let initialMsg = null;
+    if (message?.trim()) {
+      initialMsg = await SupportMessage.create({
+        ticketId:   ticket._id,
+        senderId:   req.user.id,
+        senderRole: 'user',
+        content:    message.trim(),
+      });
+      await SupportTicket.findByIdAndUpdate(ticket._id, {
+        lastMessage:   initialMsg.content,
+        lastMessageAt: initialMsg.createdAt,
+        unreadByStaff: 1,
+      });
+    }
+
+    // Notify staff via socket
+    getIo()?.emit('support_new_ticket', { ticket });
+
     return res.status(201).json(success('Tạo yêu cầu hỗ trợ thành công', { ticket }));
-  } catch (err) { next(err); }
+  } catch (err) {
+    console.error('[supportController] createTicket error:', err.message);
+    next(err);
+  }
 };
 
 const getTicketMessages = async (req, res, next) => {

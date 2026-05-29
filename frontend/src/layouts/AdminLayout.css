@@ -573,6 +573,10 @@
 /* Responsive */
 @media (max-width: 900px) {
   .admin-sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100%;
+    z-index: 200;
     transform: translateX(-100%);
   }
 
@@ -580,13 +584,9 @@
     transform: translateX(0);
   }
 
-  .admin-main {
-    margin-left: 0;
-  }
+  .admin-main { margin-left: 0; }
 
-  .admin-menu-toggle {
-    display: flex;
-  }
+  .admin-menu-toggle { display: flex; }
 
   .admin-overlay {
     position: fixed;
@@ -595,21 +595,38 @@
     z-index: 150;
   }
 
-  .admin-stats-row {
-    grid-template-columns: repeat(2, 1fr);
+  .admin-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .admin-topbar-name { display: none; }
+
+  /* Tables — horizontal scroll on tablet */
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
   }
 
-  .admin-topbar-name {
-    display: none;
-  }
+  /* Section header wraps on tablet */
+  .admin-section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .admin-section-actions { width: 100%; flex-wrap: wrap; }
+  .admin-search { min-width: 0; flex: 1; }
+}
+
+@media (max-width: 640px) {
+  .admin-content { padding: 12px; }
+  .admin-stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  /* Tables become fully scrollable on phone */
+  .admin-table th,
+  .admin-table td { padding: 8px 10px; font-size: 12px; }
+
+  /* Page title smaller */
+  .admin-page-title { font-size: 1.2rem; }
 }
 
 @media (max-width: 480px) {
-  .admin-content {
-    padding: 16px;
-  }
-
-  .admin-stats-row {
-    grid-template-columns: 1fr;
-  }
+  .admin-content { padding: 10px; }
+  .admin-stats-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .admin-stat-card { padding: 12px; }
+  .admin-stat-value { font-size: 1.4rem; }
 }

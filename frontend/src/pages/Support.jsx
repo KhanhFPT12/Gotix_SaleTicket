@@ -18,7 +18,7 @@ const TOPICS = {
   account:      { label: "Tài khoản",     color: "#64748b" },
   report_user:  { label: "Báo cáo user",  color: "#be123c" },
   fake_ticket:  { label: "Vé giả",        color: "#9f1239" },
-  other:        { label: "Khác",          color: "#94a3b8" },
+  other:        { label: "Vấn đề khác",   color: "#94a3b8" },
 };
 
 const STATUS = {

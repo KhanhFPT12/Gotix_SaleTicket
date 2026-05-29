@@ -88,6 +88,30 @@ ${note ? `<p>Lý do: ${note}</p>` : ''}
 ${note ? `<p>Lý do: ${note}</p>` : ''}`,
   }),
 
+  welcomeAndVerify: (user, token) => send({
+    to: user.email,
+    subject: 'Chào mừng đến với GoTix — Xác nhận tài khoản',
+    bodyHtml: `
+<p>Xin chào <strong>${user.name}</strong>,</p>
+<p>🎉 Chào mừng bạn đến với <strong>GoTix</strong> — nền tảng pass vé phim #1 Việt Nam!</p>
+<p>Tài khoản của bạn đã được tạo thành công. Bấm nút bên dưới để xác nhận email và kích hoạt đầy đủ tính năng:</p>
+<a class="btn" href="${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email?token=${token}">
+  ✅ Xác nhận tài khoản
+</a>
+<p style="margin-top:20px;padding:14px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;font-size:13px">
+  <strong>Với GoTix bạn có thể:</strong><br>
+  🎬 Đăng vé phim cần pass để tìm người mua nhanh<br>
+  🛒 Mua lại vé phim từ người dùng khác với giá tốt<br>
+  💬 Chat trực tiếp với người đăng vé để thương lượng<br>
+  🔒 Giao dịch an toàn, được GoTix xác minh và bảo đảm
+</p>
+<p style="margin-top:14px;color:#6b7280;font-size:12px">
+  Link xác nhận có hiệu lực trong <strong>24 giờ</strong>.<br>
+  Nếu bạn không đăng ký tài khoản GoTix, hãy bỏ qua email này.
+</p>`,
+  }),
+
+  // Keep old name as alias for backward compat
   verifyEmail: (user, token) => send({
     to: user.email,
     subject: 'Xác nhận tài khoản GoTix',
