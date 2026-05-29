@@ -129,7 +129,11 @@ export default function StaffSupport() {
     function onMsg(msg) {
       const tid = msg.ticketId?.toString?.() || msg.ticketId;
       if (tid === activeTicket?._id?.toString()) {
-        setMessages(prev => [...prev, msg]);
+        setMessages(prev => {
+          const id = msg._id?.toString();
+          if (id && prev.some(m => m._id?.toString() === id)) return prev;
+          return [...prev, msg];
+        });
         if (msg.ticket?.status) setActiveTicket(t => ({ ...t, status: msg.ticket.status }));
       }
       setTickets(prev => prev.map(t => {

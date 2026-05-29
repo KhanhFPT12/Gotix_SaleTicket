@@ -34,7 +34,10 @@ function wrap(title, bodyHtml) {
 }
 
 async function send({ to, subject, bodyHtml }) {
-  if (!process.env.SMTP_USER) return;
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('[emailService] SMTP not configured. Set SMTP_USER and SMTP_PASS env vars.');
+    return;
+  }
   try {
     await transporter.sendMail({
       from: `"GoTix" <${process.env.SMTP_USER}>`,
@@ -42,8 +45,10 @@ async function send({ to, subject, bodyHtml }) {
       subject,
       html: wrap(subject, bodyHtml),
     });
+    console.log(`[emailService] Sent "${subject}" → ${to}`);
   } catch (err) {
     console.error('[emailService] send failed:', err.message);
+    throw err; // re-throw so caller's .catch() can log the real error
   }
 }
 

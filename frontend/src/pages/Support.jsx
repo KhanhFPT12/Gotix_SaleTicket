@@ -110,7 +110,12 @@ export default function Support() {
     const socket = connectSocket();
     function onMessage(msg) {
       if (msg.ticketId?.toString() === activeId || msg.ticketId === activeId) {
-        setMessages(prev => [...prev, msg]);
+        setMessages(prev => {
+          // Dedup: ignore if this _id already in list (REST response added it first)
+          const id = msg._id?.toString();
+          if (id && prev.some(m => m._id?.toString() === id)) return prev;
+          return [...prev, msg];
+        });
         if (msg.ticket?.status) {
           setActiveTicket(t => ({ ...t, status: msg.ticket.status }));
           setTickets(prev => prev.map(t => t._id === activeId ? { ...t, status: msg.ticket.status, lastMessage: msg.content || '[Hình ảnh]', lastMessageAt: msg.createdAt } : t));
