@@ -69,7 +69,7 @@ export default function Wallet() {
     if (!bank) return "";
     const info = encodeURIComponent(code);
     const name = encodeURIComponent(bank.accountName);
-    return `https://img.vietqr.io/image/${bank.bankBin}-${bank.accountNumber}-compact2.png?amount=${amount}&addInfo=${info}&accountName=${name}`;
+    return `https://img.vietqr.io/image/${bank.bankBin}-${bank.accountNumber}-print.png?amount=${amount}&addInfo=${info}&accountName=${name}`;
   }
 
   async function handleCreateTopUp(e) {
