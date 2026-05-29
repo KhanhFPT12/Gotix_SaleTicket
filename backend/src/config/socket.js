@@ -203,6 +203,22 @@ function initSocket(httpServer) {
       }
     });
 
+    // ── Support chat rooms ────────────────────────────────────
+    socket.on('join_support_room', ({ ticketId }) => {
+      if (ticketId) socket.join(`support:${ticketId}`);
+    });
+    socket.on('leave_support_room', ({ ticketId }) => {
+      if (ticketId) socket.leave(`support:${ticketId}`);
+    });
+    socket.on('support_typing', ({ ticketId }) => {
+      if (ticketId) socket.to(`support:${ticketId}`).emit('support_typing', {
+        senderId: userId, senderName: socket.userName,
+      });
+    });
+    socket.on('support_stop_typing', ({ ticketId }) => {
+      if (ticketId) socket.to(`support:${ticketId}`).emit('support_stop_typing', { senderId: userId });
+    });
+
     socket.on('disconnect', () => {
       onlineUsers.delete(userId);
       socket.broadcast.emit('user_offline', { userId });

@@ -188,6 +188,16 @@ export const apiAdminConfirmPro       = (id)  => apiPatch(`/pro/${id}/admin-conf
 export const apiAdminRejectPro        = (id)  => apiPatch(`/pro/${id}/admin-reject`, {});
 export const apiGetPublicProfile      = (id)  => apiGet(`/users/public/${id}`);
 
+// ── Support / Customer care ───────────────────────────────────────────────────
+export const apiGetMyTickets        = ()            => apiGet('/support/my-tickets');
+export const apiCreateSupportTicket = (data)        => apiPost('/support/tickets', data);
+export const apiGetSupportMessages  = (id)          => apiGet(`/support/tickets/${id}/messages`);
+export const apiSendSupportMessage  = (id, data)    => apiFetch(`/support/tickets/${id}/messages`, { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) });
+export const apiAdminGetTickets     = (params = {}) => apiGet('/support/admin/tickets?' + new URLSearchParams(params));
+export const apiAdminGetMessages    = (id)          => apiGet(`/support/admin/tickets/${id}/messages`);
+export const apiAdminSendMessage    = (id, data)    => apiFetch(`/support/admin/tickets/${id}/messages`, { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) });
+export const apiAdminUpdateStatus   = (id, status)  => apiPatch(`/support/admin/tickets/${id}/status`, { status });
+
 // ── Auth verification ─────────────────────────────────────────────────────────
 export const apiVerifyEmail        = (token) => apiGet(`/auth/verify-email/${token}`);
 export const apiResendVerification = ()      => apiPost('/auth/resend-verification', {});

@@ -36,6 +36,8 @@ import AdminAuditLogs    from "../pages/admin/AdminAuditLogs";
 import AdminWithdrawals        from "../pages/admin/AdminWithdrawals";
 import AdminTopUps             from "../pages/admin/AdminTopUps";
 import AdminProSubscriptions   from "../pages/admin/AdminProSubscriptions";
+import AdminSupport            from "../pages/admin/AdminSupport";
+import Support                 from "../pages/Support";
 
 const USER_ONLY = ["user"];
 const ADMIN_ONLY = ["admin"];
@@ -78,6 +80,8 @@ export default function AppRoutes() {
           element={<ProtectedRoute allowedRoles={USER_ONLY}><UpgradePro /></ProtectedRoute>} />
         <Route path="/wallet"
           element={<ProtectedRoute allowedRoles={USER_ONLY}><Wallet /></ProtectedRoute>} />
+        <Route path="/support"
+          element={<ProtectedRoute allowedRoles={USER_ONLY}><Support /></ProtectedRoute>} />
         <Route path="/saved-tickets"
           element={<ProtectedRoute allowedRoles={USER_ONLY}><SavedTickets /></ProtectedRoute>} />
 
@@ -108,6 +112,7 @@ export default function AppRoutes() {
         <Route path="/admin/withdrawals"  element={<AdminWithdrawals />} />
         <Route path="/admin/topups"             element={<AdminTopUps />} />
         <Route path="/admin/pro-subscriptions"  element={<AdminProSubscriptions />} />
+        <Route path="/admin/support"            element={<AdminSupport />} />
         <Route path="/admin/audit-logs"         element={<AdminAuditLogs />} />
       </Route>
     </Routes>

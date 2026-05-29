@@ -192,6 +192,9 @@ export default function Header() {
                       <Link to="/saved-tickets" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Vé đã lưu
                       </Link>
+                      <Link to="/support" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                        Hỗ trợ khách hàng
+                      </Link>
                       <Link to="/post-ticket" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Đăng vé phim
                       </Link>
