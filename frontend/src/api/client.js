@@ -1,5 +1,5 @@
-const BASE        = 'http://localhost:5000/api';
-const MEDIA_BASE  = 'http://localhost:5000';
+const BASE        = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api';
+const MEDIA_BASE  = import.meta.env.VITE_API_URL  || 'http://localhost:5000';
 
 export function resolveMediaUrl(path) {
   if (!path) return '';
