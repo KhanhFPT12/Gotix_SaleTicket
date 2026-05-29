@@ -3,5 +3,5 @@ module.exports = {
   bankName:      'TPBank',
   bankBin:       'TPB',          // slug cho VietQR image URL
   accountNumber: '0819734122',
-  accountName:   'GOTIX',
+  accountName:   'Nguyen Gia Khanh',
 };

@@ -12,7 +12,7 @@ function formatPrice(p) {
 }
 
 function buildQrUrl(amount, note) {
-  return `${QR_BASE}?amount=${amount}&addInfo=${encodeURIComponent(note)}&accountName=GOTIX`;
+  return `${QR_BASE}?amount=${amount}&addInfo=${encodeURIComponent(note)}&accountName=Nguyen%20Gia%20Khanh`;
 }
 
 function useCountdown(targetDate) {
