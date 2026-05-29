@@ -24,25 +24,31 @@ function wrap(title, bodyHtml) {
 
 // ── Brevo (recommended: free 300/day, any recipient, no domain needed) ────────
 async function sendViaBrevo({ to, subject, bodyHtml }) {
-  if (!process.env.BREVO_API_KEY) throw new Error('BREVO_API_KEY not set');
+  const key = (process.env.BREVO_API_KEY || '').trim();
+  if (!key) throw new Error('BREVO_API_KEY not set');
+
+  // Debug: print first/last 6 chars so you can verify key in Render logs
+  const masked = key.slice(0, 8) + '...' + key.slice(-4);
+  console.log(`[email] Brevo key: ${masked} | from: ${process.env.EMAIL_FROM_ADDRESS} | to: ${to}`);
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method:  'POST',
     headers: {
-      'api-key':      process.env.BREVO_API_KEY,
+      'api-key':      key,
       'Content-Type': 'application/json',
       'Accept':       'application/json',
     },
     body: JSON.stringify({
-      sender:      { name: 'GoTix', email: process.env.EMAIL_FROM_ADDRESS },
+      sender:      { name: 'GoTix', email: (process.env.EMAIL_FROM_ADDRESS || '').trim() },
       to:          [{ email: to }],
       subject,
       htmlContent: wrap(subject, bodyHtml),
     }),
   });
 
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
+    console.error('[email] Brevo response:', JSON.stringify(data));
     throw new Error(data.message || `Brevo HTTP ${res.status}`);
   }
 }
