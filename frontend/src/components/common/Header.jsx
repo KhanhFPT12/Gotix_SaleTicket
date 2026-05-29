@@ -120,7 +120,7 @@ export default function Header() {
     <header className="header">
       <div className="container header-inner">
         <Link to="/" className="header-logo">
-          <img src="/gotix-logo.png" alt="GoTix" className="header-logo-img" />
+          <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="header-logo-img" />
         </Link>
 
         <nav className={`header-nav ${menuOpen ? "open" : ""}`}>

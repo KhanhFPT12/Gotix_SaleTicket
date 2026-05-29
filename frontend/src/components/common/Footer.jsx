@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <img src="/gotix-logo.png" alt="GoTix" className="footer-logo-img" />
+            <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="footer-logo-img" />
             <p className="footer-tagline">
               Nền tảng mua và pass vé an toàn, minh bạch cho người Việt.
             </p>

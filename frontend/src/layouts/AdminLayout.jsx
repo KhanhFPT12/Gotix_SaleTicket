@@ -130,7 +130,7 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="admin-sidebar-brand">
           <div className="admin-brand-logo-wrap">
-            <img src="/gotix-logo.png" alt="GoTix" className="admin-logo-img" />
+            <img src={`${import.meta.env.BASE_URL}gotix-logo.png`} alt="GoTix" className="admin-logo-img" />
           </div>
           <span className="admin-brand-tag">Admin Panel</span>
         </div>
