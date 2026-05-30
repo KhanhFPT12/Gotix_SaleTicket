@@ -13,11 +13,12 @@ export default function Register() {
   const [registered, setRegistered] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
 
+  // Nếu đã đăng nhập từ trước (không phải vừa đăng ký) → redirect
   useEffect(() => {
-    if (currentUser && !registered) navigate("/", { replace: true });
-  }, [currentUser, navigate, registered]);
+    if (currentUser) navigate("/", { replace: true });
+  }, [currentUser, navigate]);
 
-  if (currentUser && !registered) return null;
+  if (currentUser) return null;
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }));
@@ -31,12 +32,9 @@ export default function Register() {
     try {
       const result = await register(form);
       if (!result.success) { setError(result.message); return; }
-      if (result.requireEmailVerification) {
-        setRegisteredEmail(form.email);
-        setRegistered(true);
-      } else {
-        navigate("/", { replace: true });
-      }
+      // Luôn hiển thị màn hình "kiểm tra email" — không navigate về home
+      setRegisteredEmail(result.email || form.email);
+      setRegistered(true);
     } catch {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");
     } finally {
