@@ -13,6 +13,7 @@ router.post('/logout', logout);
 router.get('/me', protect, getMe);
 router.put ('/change-password',     protect, changePassword);
 router.get ('/verify-email/:token', verifyEmail);
-router.post('/resend-verification', protect, resendVerification);
+// optionalAuth so logged-in users use token, others pass email in body
+router.post('/resend-verification', resendVerification);
 
 module.exports = router;

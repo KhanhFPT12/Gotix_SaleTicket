@@ -39,17 +39,19 @@ export function AuthProvider({ children }) {
       phone:    data.phone || "",
     });
     if (!res.success) return { success: false, message: res.message };
-    setToken(res.data.token);
-    setCurrentUser(res.data.user);
+    // KHÔNG set token — user phải xác minh email trước khi đăng nhập
     return {
       success: true,
-      user: res.data.user,
-      requireEmailVerification: res.data.requireEmailVerification,
+      requireEmailVerification: res.data?.requireEmailVerification,
+      email: res.data?.email,
     };
   }
 
-  async function resendVerification() {
-    const res = await apiResendVerification();
+  async function resendVerification(email) {
+    // email param cho trường hợp chưa đăng nhập
+    const res = email
+      ? await apiPost("/auth/resend-verification", { email })
+      : await apiResendVerification();
     return res;
   }
 
