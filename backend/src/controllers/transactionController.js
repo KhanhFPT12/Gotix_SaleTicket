@@ -1,7 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Ticket      = require('../models/Ticket');
 const User        = require('../models/User');
-const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendingBalance } = require('../services/walletService');
+const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendingBalance, deductAvailableBalance } = require('../services/walletService');
 const { notify }       = require('../services/notificationService');
 const emailService     = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
@@ -11,7 +11,7 @@ const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 // ── Create transaction ────────────────────────────────────────────────────────
 const createTransaction = async (req, res, next) => {
   try {
-    const { ticketId, quantity } = req.body;
+    const { ticketId, quantity, paymentMethod } = req.body;
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
 
@@ -27,7 +27,64 @@ const createTransaction = async (req, res, next) => {
 
     const totalPrice = ticket.resalePrice * Number(quantity);
     const { platformFee, sellerAmount } = computeFees(totalPrice);
+    // Buyer pays: totalPrice + platformFee (buyer's fee = 2% of frontend display)
+    const buyerAmount = totalPrice + platformFee;
 
+    // ── Wallet payment: deduct immediately, skip QR + admin confirm ─────────
+    if (paymentMethod === 'wallet') {
+      const buyer = await User.findById(req.user.id);
+      if (!buyer || buyer.availableBalance < buyerAmount) {
+        return res.status(400).json(error(
+          `Số dư ví không đủ. Cần ${buyerAmount.toLocaleString('vi-VN')}đ, hiện có ${(buyer?.availableBalance || 0).toLocaleString('vi-VN')}đ`
+        ));
+      }
+
+      // Deduct from buyer
+      await deductAvailableBalance(req.user.id, buyerAmount);
+
+      // Reduce ticket quantity
+      ticket.quantity = Math.max(0, ticket.quantity - Number(quantity));
+      if (ticket.quantity === 0) ticket.status = 'sold';
+      await ticket.save();
+
+      // Credit seller immediately
+      await addPendingBalance(ticket.ownerId, sellerAmount);
+      await releasePendingToAvailable(ticket.ownerId, sellerAmount);
+
+      const transaction = await Transaction.create({
+        buyerId:        req.user.id,
+        sellerId:       ticket.ownerId,
+        ticketId,
+        quantity:       Number(quantity),
+        totalPrice,
+        platformFee,
+        sellerAmount,
+        paymentMethod:  'wallet',
+        paymentNote:    req.user.name || '',
+        status:         'completed',
+        sellerCredited: true,
+      });
+
+      // Notify both parties
+      await notify({
+        receiverId: req.user.id,
+        title: 'Thanh toán ví thành công',
+        message: `Đã trừ ${buyerAmount.toLocaleString('vi-VN')}đ từ ví. Giao dịch hoàn tất!`,
+        type: 'transaction_completed',
+        relatedId: transaction._id.toString(),
+      });
+      await notify({
+        receiverId: ticket.ownerId,
+        title: 'Vé đã được bán',
+        message: `${sellerAmount.toLocaleString('vi-VN')}đ đã vào ví khả dụng của bạn.`,
+        type: 'transaction_completed',
+        relatedId: transaction._id.toString(),
+      });
+
+      return res.status(201).json(success('Thanh toán bằng ví thành công', { transaction }));
+    }
+
+    // ── QR transfer: standard flow ─────────────────────────────────────────
     const transaction = await Transaction.create({
       buyerId:          req.user.id,
       sellerId:         ticket.ownerId,

@@ -157,7 +157,7 @@ export function TicketProvider({ children }) {
     const res = await apiPost("/transactions", {
       ticketId:      data.ticketId,
       quantity:      data.quantity,
-      paymentMethod: data.paymentMethod,
+      paymentMethod: data.paymentMethod || 'qr_transfer',
     });
     if (!res.success) throw new Error(res.message || "Tạo giao dịch thất bại");
     const tx = normalizeTransaction(res.data.transaction);

@@ -44,18 +44,19 @@ const STEP_LABELS = ["Xác nhận đơn", "Thanh toán", "Hoàn tất"];
 
 export default function Payment() {
   const { ticketId }   = useParams();
-  const { tickets, addTransaction, confirmPayment } = useTickets();
+  const { tickets, addTransaction, confirmPayment, wallet } = useTickets();
   const { currentUser } = useAuth();
 
   const [step, setStep]         = useState(0);
   const [qty, setQty]           = useState(1);
-  const [txData, setTxData]     = useState(null); // { id, paymentNote, paymentExpiredAt, totalPrice+fee }
-  const [confirmError, setConfirmError] = useState("");
-  const [confirming, setConfirming]     = useState(false);
-  const [paying, setPaying]             = useState(false);
-  const [payError, setPayError]         = useState("");
-  const [copied, setCopied]             = useState(false);
-  const [hasPaid, setHasPaid]           = useState(false);
+  const [txData, setTxData]     = useState(null);
+  const [confirmError, setConfirmError]   = useState("");
+  const [confirming, setConfirming]       = useState(false);
+  const [walletPaying, setWalletPaying]   = useState(false);
+  const [paying, setPaying]               = useState(false);
+  const [payError, setPayError]           = useState("");
+  const [copied, setCopied]               = useState(false);
+  const [hasPaid, setHasPaid]             = useState(false);
 
   const ticket = tickets.find((t) => t.id === ticketId);
 
@@ -74,11 +75,31 @@ export default function Payment() {
     );
   }
 
+  // Wallet balance
+  const walletBalance   = wallet?.availableBalance ?? 0;
+  const canPayByWallet  = walletBalance >= finalTotal;
+
+  // Pay by wallet — deduct immediately, no QR needed
+  async function handleWalletPay() {
+    setConfirmError("");
+    setWalletPaying(true);
+    try {
+      await addTransaction({ ticketId: ticket.id, quantity: qty, paymentMethod: "wallet" });
+      setHasPaid(true);
+      setStep(2);
+    } catch (err) {
+      setConfirmError(err.message || "Thanh toán ví thất bại. Vui lòng thử lại.");
+    } finally {
+      setWalletPaying(false);
+    }
+  }
+
+  // QR transfer — create pending tx then show QR
   async function handleConfirm() {
     setConfirmError("");
     setConfirming(true);
     try {
-      const tx = await addTransaction({ ticketId: ticket.id, quantity: qty });
+      const tx = await addTransaction({ ticketId: ticket.id, quantity: qty, paymentMethod: "qr_transfer" });
       setTxData({
         id:               tx.id,
         paymentNote:      tx.paymentNote || currentUser?.name || "",
@@ -159,16 +180,44 @@ export default function Payment() {
                   </div>
                 </div>
 
+                {/* ── Wallet payment ── */}
+                {canPayByWallet && (
+                  <div className="wallet-pay-box">
+                    <div className="wallet-pay-info">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/>
+                        <path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                      </svg>
+                      <div>
+                        <p className="wallet-pay-label">Số dư ví: <strong style={{color:"#16a34a"}}>{formatPrice(walletBalance)}</strong></p>
+                        <p className="wallet-pay-sub">Đủ để thanh toán — giao dịch hoàn tất ngay, không cần chuyển khoản</p>
+                      </div>
+                    </div>
+                    {confirmError && <div className="alert alert-error" style={{marginBottom:10}}>{confirmError}</div>}
+                    <button className="btn btn-success btn-lg w-full" onClick={handleWalletPay} disabled={walletPaying}>
+                      {walletPaying ? "Đang xử lý..." : `Thanh toán bằng ví — ${formatPrice(finalTotal)}`}
+                    </button>
+                    <p className="wallet-pay-divider">hoặc</p>
+                  </div>
+                )}
+
+                {/* ── QR transfer ── */}
                 <div className="pay-method-notice">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
                   </svg>
                   Thanh toán qua chuyển khoản ngân hàng (QR Code)
+                  {!canPayByWallet && walletBalance > 0 && (
+                    <span style={{marginLeft:8,color:"#9ca3af",fontSize:12}}>
+                      (ví: {formatPrice(walletBalance)} — chưa đủ)
+                    </span>
+                  )}
                 </div>
 
-                {confirmError && <div className="alert alert-error mt-md">{confirmError}</div>}
+                {!canPayByWallet && confirmError && <div className="alert alert-error mt-md">{confirmError}</div>}
                 <button className="btn btn-accent btn-lg w-full mt-lg" onClick={handleConfirm} disabled={confirming}>
-                  {confirming ? "Đang xử lý..." : "Tiến hành thanh toán"}
+                  {confirming ? "Đang xử lý..." : "Thanh toán bằng QR"}
                 </button>
               </div>
             )}
