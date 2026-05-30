@@ -1,13 +1,15 @@
-const crypto = require('crypto');
+const crypto   = require('crypto');
+const bcrypt   = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
-const emailService = require('../services/emailService');
-const { success, error } = require('../utils/apiResponse');
+const User                 = require('../models/User');
+const PendingRegistration  = require('../models/PendingRegistration');
+const generateToken        = require('../utils/generateToken');
+const emailService         = require('../services/emailService');
+const { success, error }   = require('../utils/apiResponse');
 
 const COOKIE_OPTS = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' };
 
-// ── Register — tạo tài khoản, gửi email, KHÔNG cấp token ─────────────────────
+// ── REGISTER — lưu tạm, gửi email, CHƯA tạo user thật ───────────────────────
 const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -15,28 +17,32 @@ const register = async (req, res, next) => {
       return res.status(400).json(error('Validation thất bại', errors.array()));
     }
     const { name, email, password, phone } = req.body;
+
+    // Email đã có trong User thật
     if (await User.findOne({ email })) {
       return res.status(409).json(error('Email đã được sử dụng'));
     }
 
-    const verifyToken   = crypto.randomBytes(32).toString('hex');
-    const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    // Hash mật khẩu trước khi lưu tạm
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const verifyToken    = crypto.randomBytes(32).toString('hex');
 
-    await User.create({
-      name, email, password, phone, role: 'user',
-      emailVerified:            false,
-      emailVerificationToken:   verifyToken,
-      emailVerificationExpires: verifyExpires,
+    // Xóa pending cũ nếu có (user đăng ký lại)
+    await PendingRegistration.deleteOne({ email });
+
+    await PendingRegistration.create({
+      name, email, phone: phone || '',
+      password: hashedPassword,
+      token:    verifyToken,
     });
 
-    // Gửi email xác nhận — fire-and-forget
+    // Gửi email xác nhận
     emailService.welcomeAndVerify({ name, email }, verifyToken).catch(e =>
       console.error('[emailService] welcomeAndVerify failed:', e.message)
     );
 
-    // KHÔNG trả về token — user phải xác minh email trước khi đăng nhập
     return res.status(201).json(success(
-      'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản trước khi đăng nhập.',
+      'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.',
       { requireEmailVerification: true, email }
     ));
   } catch (err) {
@@ -44,7 +50,7 @@ const register = async (req, res, next) => {
   }
 };
 
-// ── Login — chặn nếu chưa xác minh email ─────────────────────────────────────
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
 const login = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -53,20 +59,23 @@ const login = async (req, res, next) => {
     }
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password');
+
     if (!user || !(await user.comparePassword(password))) {
+      // Kiểm tra có phải chưa xác minh email không
+      const pending = await PendingRegistration.findOne({ email });
+      if (pending) {
+        return res.status(403).json(error(
+          'Tài khoản chưa được xác minh. Vui lòng kiểm tra email và bấm link xác nhận.',
+          { code: 'EMAIL_NOT_VERIFIED', email }
+        ));
+      }
       return res.status(401).json(error('Email hoặc mật khẩu không đúng'));
     }
+
     if (!user.isActive) {
       return res.status(403).json(error(
         'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.',
         { code: 'ACCOUNT_DISABLED' }
-      ));
-    }
-    // Chặn đăng nhập nếu chưa xác minh email
-    if (!user.emailVerified) {
-      return res.status(403).json(error(
-        'Vui lòng xác minh email trước khi đăng nhập. Kiểm tra hộp thư của bạn.',
-        { code: 'EMAIL_NOT_VERIFIED', email: user.email }
       ));
     }
 
@@ -119,74 +128,97 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-// GET /auth/verify-email/:token
+// ── VERIFY EMAIL — chỉ lúc này mới tạo User thật ────────────────────────────
 const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const user = await User.findOne({
-      emailVerificationToken:   token,
-      emailVerificationExpires: { $gt: Date.now() },
-    }).select('+emailVerificationToken +emailVerificationExpires');
 
-    if (!user) {
+    // Tìm trong pending
+    const pending = await PendingRegistration.findOne({ token });
+
+    // Nếu không có pending, kiểm tra xem đã tồn tại user chưa (xác minh lần 2)
+    if (!pending) {
+      const existingUser = await User.findOne({
+        emailVerificationToken: token,
+        emailVerificationExpires: { $gt: Date.now() },
+      }).select('+emailVerificationToken +emailVerificationExpires');
+
+      if (existingUser) {
+        existingUser.emailVerified            = true;
+        existingUser.emailVerificationToken   = undefined;
+        existingUser.emailVerificationExpires = undefined;
+        await existingUser.save({ validateBeforeSave: false });
+        return res.json(success('Xác minh email thành công! Bạn có thể đăng nhập ngay.'));
+      }
+
+      // Kiểm tra user đã verified trước đó
+      const alreadyVerified = await User.findOne({ emailVerified: true });
+      if (alreadyVerified) {
+        return res.json(success('Tài khoản đã được xác minh trước đó.'));
+      }
+
       return res.status(400).json(error(
         'Link xác nhận không hợp lệ hoặc đã hết hạn.',
         { code: 'INVALID_TOKEN' }
       ));
     }
-    if (user.emailVerified) {
-      return res.json(success('Tài khoản đã được xác minh trước đó.'));
+
+    // Kiểm tra email chưa bị đăng ký bởi người khác trong lúc chờ
+    if (await User.findOne({ email: pending.email })) {
+      await PendingRegistration.deleteOne({ _id: pending._id });
+      return res.status(409).json(error('Email này đã được sử dụng bởi tài khoản khác.'));
     }
 
-    user.emailVerified            = true;
-    user.emailVerificationToken   = undefined;
-    user.emailVerificationExpires = undefined;
+    // Tạo User thật — mật khẩu đã được hash sẵn trong pending
+    const user = new User({
+      name:         pending.name,
+      email:        pending.email,
+      phone:        pending.phone,
+      role:         'user',
+      emailVerified: true,
+    });
+    // Gán mật khẩu đã hash trực tiếp, bypass pre-save hook
+    user.$set({ password: pending.password });
+    // Tắt validation cho password vì bypass bcrypt hook
     await user.save({ validateBeforeSave: false });
 
-    return res.json(success('Xác minh email thành công! Bạn có thể đăng nhập ngay bây giờ.'));
+    // Xóa pending
+    await PendingRegistration.deleteOne({ _id: pending._id });
+
+    return res.json(success('Xác minh email thành công! Tài khoản của bạn đã được tạo. Bạn có thể đăng nhập ngay.'));
   } catch (err) {
     next(err);
   }
 };
 
-// POST /auth/resend-verification — public (nhận email), hoặc logged-in (dùng token)
+// ── RESEND VERIFICATION — public endpoint ────────────────────────────────────
 const resendVerification = async (req, res, next) => {
   try {
-    let user;
+    const email = req.body?.email || req.user && (await User.findById(req.user.id))?.email;
+    if (!email) return res.status(400).json(error('Vui lòng cung cấp email'));
 
-    if (req.user?.id) {
-      // Đã đăng nhập
-      user = await User.findById(req.user.id)
-        .select('+emailVerificationToken +emailVerificationExpires');
-    } else {
-      // Chưa đăng nhập — tìm qua email
-      const { email } = req.body;
-      if (!email) return res.status(400).json(error('Vui lòng cung cấp email'));
-      user = await User.findOne({ email })
-        .select('+emailVerificationToken +emailVerificationExpires');
+    // Tìm trong pending
+    const pending = await PendingRegistration.findOne({ email });
+    if (!pending) {
+      // Kiểm tra có phải user đã verified rồi
+      const user = await User.findOne({ email });
+      if (user?.emailVerified) return res.status(400).json(error('Tài khoản đã được xác minh rồi.'));
+      return res.status(404).json(error('Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.'));
     }
 
-    if (!user) return res.status(404).json(error('Không tìm thấy tài khoản'));
-    if (user.emailVerified) {
-      return res.status(400).json(error('Tài khoản đã được xác minh rồi.'));
+    // Rate-limit: createdAt phải cũ hơn 60 giây
+    const elapsedMs = Date.now() - pending.createdAt.getTime();
+    if (elapsedMs < 60_000) {
+      return res.status(429).json(error('Vui lòng chờ ít nhất 1 phút trước khi gửi lại.'));
     }
 
-    // Rate-limit: chờ ít nhất 60 giây giữa các lần gửi
-    if (user.emailVerificationExpires) {
-      const issuedMs  = user.emailVerificationExpires.getTime() - 24 * 60 * 60 * 1000;
-      const elapsedMs = Date.now() - issuedMs;
-      if (elapsedMs < 60_000) {
-        return res.status(429).json(error('Vui lòng chờ ít nhất 1 phút trước khi gửi lại.'));
-      }
-    }
+    // Tạo token mới, reset thời gian tạo (reset TTL)
+    const newToken = crypto.randomBytes(32).toString('hex');
+    pending.token     = newToken;
+    pending.createdAt = new Date();
+    await pending.save();
 
-    const verifyToken   = crypto.randomBytes(32).toString('hex');
-    const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    user.emailVerificationToken   = verifyToken;
-    user.emailVerificationExpires = verifyExpires;
-    await user.save({ validateBeforeSave: false });
-
-    await emailService.verifyEmail(user, verifyToken);
+    await emailService.verifyEmail({ name: pending.name, email: pending.email }, newToken);
     return res.json(success('Email xác minh đã được gửi lại. Vui lòng kiểm tra hộp thư.'));
   } catch (err) {
     next(err);
