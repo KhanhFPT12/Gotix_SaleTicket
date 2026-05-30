@@ -61,7 +61,7 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.comparePassword(password))) {
-      // Kiểm tra có phải chưa xác minh email không
+      // Nếu không tìm thấy user → kiểm tra có trong pending không
       const pending = await PendingRegistration.findOne({ email });
       if (pending) {
         return res.status(403).json(error(
@@ -72,10 +72,19 @@ const login = async (req, res, next) => {
       return res.status(401).json(error('Email hoặc mật khẩu không đúng'));
     }
 
+    // Tài khoản bị vô hiệu hóa bởi admin
     if (!user.isActive) {
       return res.status(403).json(error(
         'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.',
         { code: 'ACCOUNT_DISABLED' }
+      ));
+    }
+
+    // Chặn nếu emailVerified = false (tài khoản cũ hoặc migrate)
+    if (!user.emailVerified) {
+      return res.status(403).json(error(
+        'Vui lòng xác minh email trước khi đăng nhập. Kiểm tra hộp thư của bạn.',
+        { code: 'EMAIL_NOT_VERIFIED', email: user.email }
       ));
     }
 
