@@ -1,3 +1,4 @@
+// GoTix Backend — OTP registration flow active
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
