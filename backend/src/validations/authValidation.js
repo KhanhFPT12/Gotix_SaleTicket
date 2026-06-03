@@ -12,7 +12,7 @@ const registerValidation = [
     .custom(val => {
       const cleaned = String(val).replace(/\s/g, '');
       if (!VN_PHONE_REGEX.test(cleaned)) {
-        throw new Error('Số điện thoại Việt Nam không hợp lệ (VD: 0901234567)');
+        throw new Error('Số điện thoại không hợp lệ ');
       }
       return true;
     }),

@@ -18,4 +18,4 @@ services:
       - key: JWT_EXPIRE
         value: 7d
       - key: CLIENT_URL
-        value: https://khanhfpt12.github.io/Gotix_SaleTicket
+        value: https://gotix.pages.dev
