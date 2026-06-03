@@ -36,7 +36,6 @@ import AdminAuditLogs    from "../pages/admin/AdminAuditLogs";
 import AdminWithdrawals        from "../pages/admin/AdminWithdrawals";
 import AdminTopUps             from "../pages/admin/AdminTopUps";
 import AdminProSubscriptions   from "../pages/admin/AdminProSubscriptions";
-import AdminSupport            from "../pages/admin/AdminSupport";
 import Support                 from "../pages/Support";
 import SupportLayout           from "../layouts/SupportLayout";
 import StaffLayout             from "../layouts/StaffLayout";
@@ -132,7 +131,6 @@ export default function AppRoutes() {
         <Route path="/admin/withdrawals"  element={<AdminWithdrawals />} />
         <Route path="/admin/topups"             element={<AdminTopUps />} />
         <Route path="/admin/pro-subscriptions"  element={<AdminProSubscriptions />} />
-        <Route path="/admin/support"            element={<AdminSupport />} />
         <Route path="/admin/audit-logs"         element={<AdminAuditLogs />} />
       </Route>
     </Routes>
