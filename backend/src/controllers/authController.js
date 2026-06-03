@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const User                = require('../models/User');
 const PendingRegistration = require('../models/PendingRegistration');
@@ -8,13 +7,13 @@ const { success, error }  = require('../utils/apiResponse');
 
 const COOKIE_OPTS  = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' };
 const OTP_EXPIRE   = 10 * 60 * 1000; // 10 phút
-const OTP_COOLDOWN = 60 * 1000;      // resend tối thiểu cách 60 giây
+const OTP_COOLDOWN = 60 * 1000;      // resend tối thiểu 60 giây
 
 function generateOtp() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-// ── REGISTER — lưu tạm + gửi OTP ─────────────────────────────────────────────
+// ── REGISTER — lưu tạm rawPassword + gửi OTP ─────────────────────────────────
 const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -27,26 +26,22 @@ const register = async (req, res, next) => {
       return res.status(409).json(error('Email đã được sử dụng'));
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const otp        = generateOtp();
     const otpExpires = new Date(Date.now() + OTP_EXPIRE);
 
-    // Xóa pending cũ (nếu đăng ký lại)
     await PendingRegistration.deleteOne({ email });
-
     await PendingRegistration.create({
       name, email, phone: phone || '',
-      password: hashedPassword,
+      rawPassword: password,   // lưu raw — User.create() sẽ hash khi tạo thật
       otp, otpExpires,
     });
 
-    // Gửi OTP qua email — fire-and-forget
     emailService.sendOtp({ name, email }, otp).catch(e =>
       console.error('[emailService] sendOtp failed:', e.message)
     );
 
     return res.status(201).json(success(
-      'Mã OTP đã được gửi đến email của bạn.',
+      'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.',
       { requireOtp: true, email }
     ));
   } catch (err) {
@@ -54,7 +49,7 @@ const register = async (req, res, next) => {
   }
 };
 
-// ── VERIFY OTP — kiểm tra OTP + tạo User thật ────────────────────────────────
+// ── VERIFY OTP — tạo User thật bằng User.create() (hash chuẩn) ───────────────
 const verifyOtp = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
@@ -69,41 +64,38 @@ const verifyOtp = async (req, res, next) => {
         { code: 'NO_PENDING' }
       ));
     }
-
     if (new Date() > pending.otpExpires) {
       await PendingRegistration.deleteOne({ email });
       return res.status(400).json(error(
-        'Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại.',
+        'Mã OTP đã hết hạn (10 phút). Vui lòng yêu cầu gửi lại.',
         { code: 'OTP_EXPIRED' }
       ));
     }
-
     if (pending.otp !== String(otp).trim()) {
       return res.status(400).json(error('Mã OTP không đúng. Vui lòng kiểm tra lại.'));
     }
-
-    // OTP đúng — tạo User thật
     if (await User.findOne({ email: pending.email })) {
       await PendingRegistration.deleteOne({ email });
       return res.status(409).json(error('Email này đã được sử dụng bởi tài khoản khác.'));
     }
 
-    const user = new User({
+    // Tạo User thật — dùng User.create() để pre-save hook hash password đúng 1 lần
+    const user = await User.create({
       name:          pending.name,
       email:         pending.email,
       phone:         pending.phone,
       role:          'user',
       emailVerified: true,
+      password:      pending.rawPassword, // raw → bcrypt hash chạy 1 lần duy nhất
     });
-    user.$set({ password: pending.password });
-    await user.save({ validateBeforeSave: false });
 
     await PendingRegistration.deleteOne({ email });
 
-    // Auto-login sau khi tạo tài khoản thành công
+    // Auto-login
     const token = generateToken(user._id);
     res.cookie('token', token, COOKIE_OPTS);
     const userObj = user.toObject();
+    delete userObj.password;
     userObj.id = user._id.toString();
 
     return res.status(201).json(success(
@@ -126,7 +118,6 @@ const resendOtp = async (req, res, next) => {
       return res.status(404).json(error('Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.'));
     }
 
-    // Rate-limit
     const elapsed = Date.now() - pending.createdAt.getTime();
     if (elapsed < OTP_COOLDOWN) {
       return res.status(429).json(error('Vui lòng chờ ít nhất 1 phút trước khi gửi lại.'));
@@ -136,7 +127,7 @@ const resendOtp = async (req, res, next) => {
     const otpExpires = new Date(Date.now() + OTP_EXPIRE);
     pending.otp        = otp;
     pending.otpExpires = otpExpires;
-    pending.createdAt  = new Date(); // reset cooldown timer
+    pending.createdAt  = new Date();
     await pending.save();
 
     await emailService.sendOtp({ name: pending.name, email: pending.email }, otp);
@@ -154,16 +145,18 @@ const login = async (req, res, next) => {
       return res.status(400).json(error('Validation thất bại', errors.array()));
     }
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).select('+password');
 
+    // Kiểm tra có pending OTP không (chưa xác minh)
+    const pending = await PendingRegistration.findOne({ email });
+    if (pending) {
+      return res.status(403).json(error(
+        'Tài khoản chưa được xác minh. Vui lòng nhập mã OTP đã gửi tới email của bạn.',
+        { code: 'EMAIL_NOT_VERIFIED', email }
+      ));
+    }
+
+    const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.comparePassword(password))) {
-      const pending = await PendingRegistration.findOne({ email });
-      if (pending) {
-        return res.status(403).json(error(
-          'Tài khoản chưa được xác minh. Vui lòng nhập mã OTP đã gửi tới email của bạn.',
-          { code: 'EMAIL_NOT_VERIFIED', email }
-        ));
-      }
       return res.status(401).json(error('Email hoặc mật khẩu không đúng'));
     }
 
@@ -230,15 +223,8 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-// ── Giữ lại verifyEmail (backward-compat cho link cũ) ────────────────────────
-const verifyEmail = async (req, res, next) => {
-  return res.status(410).json(error(
-    'Link xác nhận này không còn được sử dụng. Vui lòng đăng ký lại với luồng mã OTP mới.',
-    { code: 'DEPRECATED' }
-  ));
-};
-
-// Alias cũ — không còn dùng
+// Backward-compat
+const verifyEmail        = (req, res) => res.status(410).json(error('Link xác nhận không còn được sử dụng. Vui lòng đăng ký lại.'));
 const resendVerification = resendOtp;
 
 module.exports = {
