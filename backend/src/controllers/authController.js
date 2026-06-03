@@ -170,7 +170,8 @@ const login = async (req, res, next) => {
       ));
     }
 
-    if (!user.emailVerified) {
+    // Chỉ yêu cầu email verified với role user — admin/support tạo thủ công nên bỏ qua
+    if (user.role === 'user' && !user.emailVerified) {
       return res.status(403).json(error(
         'Vui lòng hoàn tất xác minh tài khoản trước khi đăng nhập.',
         { code: 'EMAIL_NOT_VERIFIED', email: user.email }
