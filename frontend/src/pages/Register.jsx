@@ -47,9 +47,18 @@ export default function Register() {
     e.preventDefault();
     setError("");
     if (form.password.length < 6) { setError("Mật khẩu ít nhất 6 ký tự"); return; }
+    // Validate phone
+    const phoneClean = form.phone.replace(/\s/g, "");
+    const vnPhone = /^0[35789][0-9]{8}$/;
+    if (!phoneClean) { setError("Vui lòng nhập số điện thoại"); return; }
+    if (!vnPhone.test(phoneClean)) {
+      setError("Số điện thoại không hợp lệ. Phải là số Việt Nam 10 chữ số (VD: 0901234567)");
+      return;
+    }
+
     setLoading(true);
     try {
-      const result = await register(form);
+      const result = await register({ ...form, phone: phoneClean });
       if (!result.success) { setError(result.message); return; }
       setPendingEmail(result.email || form.email);
       setStep("otp");
@@ -239,9 +248,19 @@ export default function Register() {
               value={form.email} onChange={e => setField("email", e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Số điện thoại</label>
-            <input type="tel" className="form-input" placeholder="0901234567"
-              value={form.phone} onChange={e => setField("phone", e.target.value)} />
+            <label className="form-label">
+              Số điện thoại <span className="required">*</span>
+            </label>
+            <input
+              type="tel" className="form-input"
+              placeholder="0901234567"
+              maxLength={11}
+              value={form.phone}
+              onChange={e => setField("phone", e.target.value.replace(/[^0-9]/g, ""))}
+            />
+            <span style={{ fontSize: 12, color: "var(--color-text-muted)", marginTop: 4, display: "block" }}>
+              Số điện thoại Việt Nam 10 chữ số (03x, 05x, 07x, 08x, 09x)
+            </span>
           </div>
           <div className="form-group">
             <label className="form-label">Mật khẩu</label>
