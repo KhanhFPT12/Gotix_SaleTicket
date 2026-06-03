@@ -34,8 +34,9 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    // Allow any github.io subdomain for GitHub Pages
+    // Allow github.io and pages.dev (Cloudflare Pages)
     if (/^https:\/\/[a-z0-9-]+\.github\.io$/.test(origin)) return cb(null, true);
+    if (/^https:\/\/[a-z0-9-]+\.pages\.dev$/.test(origin)) return cb(null, true);
     cb(new Error('CORS: origin not allowed'));
   },
   credentials: true,
