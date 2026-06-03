@@ -1,43 +1,59 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GoTixLogo from "../components/common/GoTixLogo";
 import "./Auth.css";
 
 export default function Register() {
-  const { register, currentUser, resendVerification } = useAuth();
+  const { register, verifyOtp, resendOtp, currentUser } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm]       = useState({ name: "", email: "", password: "", phone: "" });
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
-  const [resending, setResending] = useState(false);
-  const [resendMsg, setResendMsg] = useState("");
 
-  // Nếu đã đăng nhập từ trước (không phải vừa đăng ký) → redirect
+  const [form, setForm]   = useState({ name: "", email: "", password: "", phone: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // OTP step
+  const [step, setStep]               = useState("form"); // form | otp
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [otp, setOtp]                 = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError]       = useState("");
+  const [otpLoading, setOtpLoading]   = useState(false);
+  const [resending, setResending]     = useState(false);
+  const [resendMsg, setResendMsg]     = useState("");
+  const [countdown, setCountdown]     = useState(0);
+
+  const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
+
+  // Nếu đã đăng nhập → về trang chính
   useEffect(() => {
     if (currentUser) navigate("/", { replace: true });
   }, [currentUser, navigate]);
 
+  // Đếm ngược resend
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
+
   if (currentUser) return null;
 
-  function set(field, value) {
+  function setField(field, value) {
     setForm(f => ({ ...f, [field]: value }));
   }
 
+  // ── Submit form đăng ký ──────────────────────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    setResendMsg("");
     if (form.password.length < 6) { setError("Mật khẩu ít nhất 6 ký tự"); return; }
     setLoading(true);
     try {
       const result = await register(form);
       if (!result.success) { setError(result.message); return; }
-      // Luôn hiển thị màn hình "kiểm tra email" — không navigate về home
-      setRegisteredEmail(result.email || form.email);
-      setRegistered(true);
+      setPendingEmail(result.email || form.email);
+      setStep("otp");
+      setCountdown(60);
     } catch {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");
     } finally {
@@ -45,75 +61,158 @@ export default function Register() {
     }
   }
 
-  async function handleResendVerification() {
-    if (!registeredEmail) return;
-    setResending(true);
-    setResendMsg("");
-    try {
-      const res = await resendVerification(registeredEmail);
-      setResendMsg(res.success ? "✅ " + res.message : "❌ " + (res.message || "Gửi thất bại."));
-    } catch {
-      setResendMsg("❌ Đã xảy ra lỗi. Vui lòng thử lại.");
-    } finally {
-      setResending(false);
+  // ── OTP input handlers ───────────────────────────────────────────────────
+  function handleOtpChange(index, value) {
+    const val = value.replace(/\D/g, "").slice(-1); // chỉ lấy 1 số
+    const next = [...otp];
+    next[index] = val;
+    setOtp(next);
+    setOtpError("");
+    if (val && index < 5) otpRefs[index + 1].current?.focus();
+  }
+
+  function handleOtpKeyDown(index, e) {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs[index - 1].current?.focus();
+    }
+    if (e.key === "Enter") handleVerifyOtp();
+  }
+
+  function handleOtpPaste(e) {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted.length === 6) {
+      setOtp(pasted.split(""));
+      otpRefs[5].current?.focus();
     }
   }
 
-  // ── Check email screen ──────────────────────────────────────────────────────
-  if (registered) {
+  // ── Xác nhận OTP ─────────────────────────────────────────────────────────
+  async function handleVerifyOtp() {
+    const code = otp.join("");
+    if (code.length < 6) { setOtpError("Vui lòng nhập đủ 6 chữ số"); return; }
+    setOtpError("");
+    setOtpLoading(true);
+    try {
+      const result = await verifyOtp(pendingEmail, code);
+      if (!result.success) {
+        setOtpError(result.message);
+        setOtp(["", "", "", "", "", ""]);
+        otpRefs[0].current?.focus();
+        return;
+      }
+      // Đăng nhập thành công → navigate (AuthContext set currentUser → useEffect navigate)
+    } catch {
+      setOtpError("Đã xảy ra lỗi. Vui lòng thử lại.");
+    } finally {
+      setOtpLoading(false);
+    }
+  }
+
+  // ── Gửi lại OTP ──────────────────────────────────────────────────────────
+  async function handleResend() {
+    setResending(true); setResendMsg("");
+    try {
+      const res = await resendOtp(pendingEmail);
+      if (res.success) {
+        setResendMsg("Đã gửi lại mã OTP. Kiểm tra hộp thư.");
+        setCountdown(60);
+        setOtp(["", "", "", "", "", ""]);
+        otpRefs[0].current?.focus();
+      } else {
+        setResendMsg(res.message || "Gửi lại thất bại.");
+      }
+    } catch { setResendMsg("Đã xảy ra lỗi."); }
+    finally { setResending(false); }
+  }
+
+  // ── OTP screen ───────────────────────────────────────────────────────────
+  if (step === "otp") {
     return (
       <div className="auth-page">
         <div className="auth-card" style={{ textAlign: "center" }}>
           <div className="auth-brand">
-            <Link to="/"><GoTixLogo height={52} /></Link>
+            <Link to="/"><GoTixLogo height={48} /></Link>
           </div>
 
-          <div style={{ fontSize: 48, margin: "8px 0 16px" }}>📧</div>
-          <h1 className="auth-title">Kiểm tra hộp thư</h1>
-          <p className="auth-subtitle" style={{ marginBottom: 20 }}>
-            Chúng tôi đã gửi email xác nhận đến<br />
-            <strong>{registeredEmail}</strong>
+          <div style={{ fontSize: 44, margin: "8px 0 12px" }}>📱</div>
+          <h1 className="auth-title">Nhập mã xác nhận</h1>
+          <p className="auth-subtitle" style={{ marginBottom: 24 }}>
+            Chúng tôi đã gửi mã 6 chữ số đến<br />
+            <strong>{pendingEmail}</strong>
           </p>
 
-          <div className="alert alert-info" style={{ textAlign: "left", marginBottom: 20 }}>
-            <strong>Bước tiếp theo:</strong>
-            <ol style={{ margin: "8px 0 0 16px", padding: 0, lineHeight: 1.8 }}>
-              <li>Mở email từ <strong>GoTix</strong></li>
-              <li>Bấm nút <strong>"Xác nhận tài khoản"</strong></li>
-              <li>Quay lại đăng nhập và sử dụng GoTix</li>
-            </ol>
+          {/* 6 ô OTP */}
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 20 }}
+               onPaste={handleOtpPaste}>
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={otpRefs[i]}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={e => handleOtpChange(i, e.target.value)}
+                onKeyDown={e => handleOtpKeyDown(i, e)}
+                autoFocus={i === 0}
+                style={{
+                  width: 48, height: 56,
+                  fontSize: 24, fontWeight: 700,
+                  textAlign: "center",
+                  border: `2px solid ${otpError ? "#ef4444" : digit ? "var(--color-primary)" : "var(--color-border)"}`,
+                  borderRadius: 10,
+                  outline: "none",
+                  background: "var(--bg-white)",
+                  transition: "border-color 0.15s",
+                }}
+              />
+            ))}
           </div>
 
-          <p style={{ fontSize: 13, color: "var(--color-text-muted)", marginBottom: 20 }}>
-            Không nhận được email? Kiểm tra thư mục Spam hoặc gửi lại ngay bên dưới.
-          </p>
-
-          {resendMsg && (
-            <div className="alert alert-info" style={{ textAlign: "left", marginBottom: 16 }}>
-              {resendMsg}
-            </div>
+          {otpError && (
+            <div className="alert alert-error" style={{ marginBottom: 16 }}>{otpError}</div>
           )}
 
-          <div style={{ display: "grid", gap: 12 }}>
-            <button
-              type="button"
-              className="btn btn-outline btn-lg"
-              onClick={handleResendVerification}
-              disabled={resending}
-            >
-              {resending ? "Đang gửi lại..." : "Gửi lại email xác minh"}
-            </button>
+          <button
+            className="btn btn-primary btn-lg"
+            style={{ width: "100%", marginBottom: 16 }}
+            onClick={handleVerifyOtp}
+            disabled={otpLoading || otp.join("").length < 6}
+          >
+            {otpLoading ? "Đang xác nhận..." : "Xác nhận"}
+          </button>
 
-            <Link to="/login" className="btn btn-primary btn-lg" style={{ display: "block" }}>
-              Về trang đăng nhập
-            </Link>
+          <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>
+            {resendMsg && (
+              <p style={{ marginBottom: 8, color: "#16a34a" }}>{resendMsg}</p>
+            )}
+            {countdown > 0 ? (
+              <p>Gửi lại mã sau <strong>{countdown}s</strong></p>
+            ) : (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={handleResend}
+                disabled={resending}
+              >
+                {resending ? "Đang gửi..." : "Gửi lại mã OTP"}
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => { setStep("form"); setOtp(["","","","","",""]); setOtpError(""); }}
+            >
+              ← Đổi email
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Register form ───────────────────────────────────────────────────────────
+  // ── Registration form ────────────────────────────────────────────────────
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -129,25 +228,25 @@ export default function Register() {
           <div className="form-group">
             <label className="form-label">Họ và tên</label>
             <input type="text" className="form-input" placeholder="Nguyễn Văn A"
-              value={form.name} onChange={e => set("name", e.target.value)} required autoFocus />
+              value={form.name} onChange={e => setField("name", e.target.value)} required autoFocus />
           </div>
           <div className="form-group">
             <label className="form-label">Email</label>
             <input type="email" className="form-input" placeholder="email@example.com"
-              value={form.email} onChange={e => set("email", e.target.value)} required />
+              value={form.email} onChange={e => setField("email", e.target.value)} required />
           </div>
           <div className="form-group">
             <label className="form-label">Số điện thoại</label>
             <input type="tel" className="form-input" placeholder="0901234567"
-              value={form.phone} onChange={e => set("phone", e.target.value)} />
+              value={form.phone} onChange={e => setField("phone", e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Mật khẩu</label>
             <input type="password" className="form-input" placeholder="Ít nhất 6 ký tự"
-              value={form.password} onChange={e => set("password", e.target.value)} required />
+              value={form.password} onChange={e => setField("password", e.target.value)} required />
           </div>
           <button type="submit" className="btn btn-primary btn-lg auth-submit" disabled={loading}>
-            {loading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
+            {loading ? "Đang gửi mã..." : "Tiếp tục"}
           </button>
         </form>
 

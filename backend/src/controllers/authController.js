@@ -1,15 +1,20 @@
-const crypto   = require('crypto');
-const bcrypt   = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const User                 = require('../models/User');
-const PendingRegistration  = require('../models/PendingRegistration');
-const generateToken        = require('../utils/generateToken');
-const emailService         = require('../services/emailService');
-const { success, error }   = require('../utils/apiResponse');
+const User                = require('../models/User');
+const PendingRegistration = require('../models/PendingRegistration');
+const generateToken       = require('../utils/generateToken');
+const emailService        = require('../services/emailService');
+const { success, error }  = require('../utils/apiResponse');
 
-const COOKIE_OPTS = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' };
+const COOKIE_OPTS  = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' };
+const OTP_EXPIRE   = 10 * 60 * 1000; // 10 phút
+const OTP_COOLDOWN = 60 * 1000;      // resend tối thiểu cách 60 giây
 
-// ── REGISTER — lưu tạm, gửi email, CHƯA tạo user thật ───────────────────────
+function generateOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+// ── REGISTER — lưu tạm + gửi OTP ─────────────────────────────────────────────
 const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -18,33 +23,124 @@ const register = async (req, res, next) => {
     }
     const { name, email, password, phone } = req.body;
 
-    // Email đã có trong User thật
     if (await User.findOne({ email })) {
       return res.status(409).json(error('Email đã được sử dụng'));
     }
 
-    // Hash mật khẩu trước khi lưu tạm
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verifyToken    = crypto.randomBytes(32).toString('hex');
+    const otp        = generateOtp();
+    const otpExpires = new Date(Date.now() + OTP_EXPIRE);
 
-    // Xóa pending cũ nếu có (user đăng ký lại)
+    // Xóa pending cũ (nếu đăng ký lại)
     await PendingRegistration.deleteOne({ email });
 
     await PendingRegistration.create({
       name, email, phone: phone || '',
       password: hashedPassword,
-      token:    verifyToken,
+      otp, otpExpires,
     });
 
-    // Gửi email xác nhận
-    emailService.welcomeAndVerify({ name, email }, verifyToken).catch(e =>
-      console.error('[emailService] welcomeAndVerify failed:', e.message)
+    // Gửi OTP qua email — fire-and-forget
+    emailService.sendOtp({ name, email }, otp).catch(e =>
+      console.error('[emailService] sendOtp failed:', e.message)
     );
 
     return res.status(201).json(success(
-      'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.',
-      { requireEmailVerification: true, email }
+      'Mã OTP đã được gửi đến email của bạn.',
+      { requireOtp: true, email }
     ));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── VERIFY OTP — kiểm tra OTP + tạo User thật ────────────────────────────────
+const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json(error('Vui lòng cung cấp email và mã OTP'));
+    }
+
+    const pending = await PendingRegistration.findOne({ email });
+    if (!pending) {
+      return res.status(400).json(error(
+        'Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.',
+        { code: 'NO_PENDING' }
+      ));
+    }
+
+    if (new Date() > pending.otpExpires) {
+      await PendingRegistration.deleteOne({ email });
+      return res.status(400).json(error(
+        'Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại.',
+        { code: 'OTP_EXPIRED' }
+      ));
+    }
+
+    if (pending.otp !== String(otp).trim()) {
+      return res.status(400).json(error('Mã OTP không đúng. Vui lòng kiểm tra lại.'));
+    }
+
+    // OTP đúng — tạo User thật
+    if (await User.findOne({ email: pending.email })) {
+      await PendingRegistration.deleteOne({ email });
+      return res.status(409).json(error('Email này đã được sử dụng bởi tài khoản khác.'));
+    }
+
+    const user = new User({
+      name:          pending.name,
+      email:         pending.email,
+      phone:         pending.phone,
+      role:          'user',
+      emailVerified: true,
+    });
+    user.$set({ password: pending.password });
+    await user.save({ validateBeforeSave: false });
+
+    await PendingRegistration.deleteOne({ email });
+
+    // Auto-login sau khi tạo tài khoản thành công
+    const token = generateToken(user._id);
+    res.cookie('token', token, COOKIE_OPTS);
+    const userObj = user.toObject();
+    userObj.id = user._id.toString();
+
+    return res.status(201).json(success(
+      'Tạo tài khoản thành công! Chào mừng bạn đến với GoTix.',
+      { user: userObj, token }
+    ));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── RESEND OTP ────────────────────────────────────────────────────────────────
+const resendOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json(error('Vui lòng cung cấp email'));
+
+    const pending = await PendingRegistration.findOne({ email });
+    if (!pending) {
+      return res.status(404).json(error('Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.'));
+    }
+
+    // Rate-limit
+    const elapsed = Date.now() - pending.createdAt.getTime();
+    if (elapsed < OTP_COOLDOWN) {
+      return res.status(429).json(error('Vui lòng chờ ít nhất 1 phút trước khi gửi lại.'));
+    }
+
+    const otp        = generateOtp();
+    const otpExpires = new Date(Date.now() + OTP_EXPIRE);
+    pending.otp        = otp;
+    pending.otpExpires = otpExpires;
+    pending.createdAt  = new Date(); // reset cooldown timer
+    await pending.save();
+
+    await emailService.sendOtp({ name: pending.name, email: pending.email }, otp);
+    return res.json(success('Mã OTP mới đã được gửi. Vui lòng kiểm tra hộp thư.'));
   } catch (err) {
     next(err);
   }
@@ -61,18 +157,16 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.comparePassword(password))) {
-      // Nếu không tìm thấy user → kiểm tra có trong pending không
       const pending = await PendingRegistration.findOne({ email });
       if (pending) {
         return res.status(403).json(error(
-          'Tài khoản chưa được xác minh. Vui lòng kiểm tra email và bấm link xác nhận.',
+          'Tài khoản chưa được xác minh. Vui lòng nhập mã OTP đã gửi tới email của bạn.',
           { code: 'EMAIL_NOT_VERIFIED', email }
         ));
       }
       return res.status(401).json(error('Email hoặc mật khẩu không đúng'));
     }
 
-    // Tài khoản bị vô hiệu hóa bởi admin
     if (!user.isActive) {
       return res.status(403).json(error(
         'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.',
@@ -80,10 +174,9 @@ const login = async (req, res, next) => {
       ));
     }
 
-    // Chặn nếu emailVerified = false (tài khoản cũ hoặc migrate)
     if (!user.emailVerified) {
       return res.status(403).json(error(
-        'Vui lòng xác minh email trước khi đăng nhập. Kiểm tra hộp thư của bạn.',
+        'Vui lòng hoàn tất xác minh tài khoản trước khi đăng nhập.',
         { code: 'EMAIL_NOT_VERIFIED', email: user.email }
       ));
     }
@@ -137,104 +230,19 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-// ── VERIFY EMAIL — chỉ lúc này mới tạo User thật ────────────────────────────
+// ── Giữ lại verifyEmail (backward-compat cho link cũ) ────────────────────────
 const verifyEmail = async (req, res, next) => {
-  try {
-    const { token } = req.params;
-
-    // Tìm trong pending
-    const pending = await PendingRegistration.findOne({ token });
-
-    // Nếu không có pending, kiểm tra xem đã tồn tại user chưa (xác minh lần 2)
-    if (!pending) {
-      const existingUser = await User.findOne({
-        emailVerificationToken: token,
-        emailVerificationExpires: { $gt: Date.now() },
-      }).select('+emailVerificationToken +emailVerificationExpires');
-
-      if (existingUser) {
-        existingUser.emailVerified            = true;
-        existingUser.emailVerificationToken   = undefined;
-        existingUser.emailVerificationExpires = undefined;
-        await existingUser.save({ validateBeforeSave: false });
-        return res.json(success('Xác minh email thành công! Bạn có thể đăng nhập ngay.'));
-      }
-
-      // Kiểm tra user đã verified trước đó
-      const alreadyVerified = await User.findOne({ emailVerified: true });
-      if (alreadyVerified) {
-        return res.json(success('Tài khoản đã được xác minh trước đó.'));
-      }
-
-      return res.status(400).json(error(
-        'Link xác nhận không hợp lệ hoặc đã hết hạn.',
-        { code: 'INVALID_TOKEN' }
-      ));
-    }
-
-    // Kiểm tra email chưa bị đăng ký bởi người khác trong lúc chờ
-    if (await User.findOne({ email: pending.email })) {
-      await PendingRegistration.deleteOne({ _id: pending._id });
-      return res.status(409).json(error('Email này đã được sử dụng bởi tài khoản khác.'));
-    }
-
-    // Tạo User thật — mật khẩu đã được hash sẵn trong pending
-    const user = new User({
-      name:         pending.name,
-      email:        pending.email,
-      phone:        pending.phone,
-      role:         'user',
-      emailVerified: true,
-    });
-    // Gán mật khẩu đã hash trực tiếp, bypass pre-save hook
-    user.$set({ password: pending.password });
-    // Tắt validation cho password vì bypass bcrypt hook
-    await user.save({ validateBeforeSave: false });
-
-    // Xóa pending
-    await PendingRegistration.deleteOne({ _id: pending._id });
-
-    return res.json(success('Xác minh email thành công! Tài khoản của bạn đã được tạo. Bạn có thể đăng nhập ngay.'));
-  } catch (err) {
-    next(err);
-  }
+  return res.status(410).json(error(
+    'Link xác nhận này không còn được sử dụng. Vui lòng đăng ký lại với luồng mã OTP mới.',
+    { code: 'DEPRECATED' }
+  ));
 };
 
-// ── RESEND VERIFICATION — public endpoint ────────────────────────────────────
-const resendVerification = async (req, res, next) => {
-  try {
-    const email = req.body?.email || req.user && (await User.findById(req.user.id))?.email;
-    if (!email) return res.status(400).json(error('Vui lòng cung cấp email'));
-
-    // Tìm trong pending
-    const pending = await PendingRegistration.findOne({ email });
-    if (!pending) {
-      // Kiểm tra có phải user đã verified rồi
-      const user = await User.findOne({ email });
-      if (user?.emailVerified) return res.status(400).json(error('Tài khoản đã được xác minh rồi.'));
-      return res.status(404).json(error('Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.'));
-    }
-
-    // Rate-limit: createdAt phải cũ hơn 60 giây
-    const elapsedMs = Date.now() - pending.createdAt.getTime();
-    if (elapsedMs < 60_000) {
-      return res.status(429).json(error('Vui lòng chờ ít nhất 1 phút trước khi gửi lại.'));
-    }
-
-    // Tạo token mới, reset thời gian tạo (reset TTL)
-    const newToken = crypto.randomBytes(32).toString('hex');
-    pending.token     = newToken;
-    pending.createdAt = new Date();
-    await pending.save();
-
-    await emailService.verifyEmail({ name: pending.name, email: pending.email }, newToken);
-    return res.json(success('Email xác minh đã được gửi lại. Vui lòng kiểm tra hộp thư.'));
-  } catch (err) {
-    next(err);
-  }
-};
+// Alias cũ — không còn dùng
+const resendVerification = resendOtp;
 
 module.exports = {
   register, login, logout, getMe, changePassword,
+  verifyOtp, resendOtp,
   verifyEmail, resendVerification,
 };

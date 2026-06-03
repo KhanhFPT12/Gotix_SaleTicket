@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { apiPost, apiGet, apiFetch, setToken, getToken, apiResendVerification } from "../api/client";
+import { apiPost, apiGet, apiFetch, setToken, getToken, apiVerifyOtp, apiResendOtp } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -47,12 +47,21 @@ export function AuthProvider({ children }) {
     };
   }
 
+  async function verifyOtp(email, otp) {
+    const res = await apiVerifyOtp(email, otp);
+    if (!res.success) return { success: false, message: res.message };
+    setToken(res.data.token);
+    setCurrentUser(res.data.user);
+    return { success: true, user: res.data.user };
+  }
+
+  async function resendOtp(email) {
+    return apiResendOtp(email);
+  }
+
+  // Alias cũ — forward sang resendOtp
   async function resendVerification(email) {
-    // email param cho trường hợp chưa đăng nhập
-    const res = email
-      ? await apiPost("/auth/resend-verification", { email })
-      : await apiResendVerification();
-    return res;
+    return resendOtp(email);
   }
 
   function logout() {
@@ -90,7 +99,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser, resendVerification }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser, verifyOtp, resendOtp, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

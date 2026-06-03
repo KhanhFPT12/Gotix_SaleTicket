@@ -205,7 +205,10 @@ export const apiAdminGetMessages    = apiStaffGetMessages;
 export const apiAdminSendMessage    = apiStaffSendMessage;
 export const apiAdminUpdateStatus   = apiStaffUpdateStatus;
 
-// ── Auth verification ─────────────────────────────────────────────────────────
+// ── Auth OTP verification ─────────────────────────────────────────────────────
+export const apiVerifyOtp          = (email, otp) => apiPost('/auth/verify-otp', { email, otp });
+export const apiResendOtp          = (email)      => apiPost('/auth/resend-otp',  { email });
+// Backward compat
 export const apiVerifyEmail        = (token) => apiGet(`/auth/verify-email/${token}`);
 export const apiResendVerification = ()      => apiPost('/auth/resend-verification', {});
 
