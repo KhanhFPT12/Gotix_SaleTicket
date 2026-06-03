@@ -7,21 +7,6 @@ import "./AIChatBot.css";
 // ── AI Brain: knowledge base + intent engine ─────────────────────────────────
 
 const CATEGORY_KEYWORDS = {
-  bus: [
-    "xe", "xe khách", "xe khach", "xe buýt", "xe buyt", "xe giường nằm", "xe giuong nam", "limousine", "bus",
-    "xe đò", "xe do", "xe coach", "bến xe", "ben xe", "phương trang", "phuong trang", "thành bưởi", "thanh buoi",
-    "xe đi", "xe di", "vé xe", "ve xe", "chuyến xe", "chuyen xe", "nhà xe", "nha xe",
-  ],
-  train: [
-    "tàu", "tau", "tàu hoả", "tau hoa", "tàu lửa", "tau lua", "ga", "giường nằm tàu", "giuong nam tau",
-    "toa", "đường sắt", "duong sat", "train", "se1", "se2", "se3", "vé tàu", "ve tau",
-  ],
-  concert: [
-    "concert", "ca nhạc", "ca nhac", "nhạc sống", "nhac song", "show", "liveshow", "live concert",
-    "đại nhạc hội", "dai nhac hoi", "nhạc", "nhac", "biểu diễn", "bieu dien", "nghệ sĩ", "nghe si",
-    "singer", "band", "anh trai", "lệ quyên", "le quyen", "sơn tùng", "son tung", "mtp", "blackpink", "monsoon",
-    "vé concert", "ve concert", "âm nhạc", "am nhac", "vé ca nhạc", "ve ca nhac",
-  ],
   movie: [
     "phim", "xem phim", "vé phim", "ve phim", "vé xem phim", "ve xem phim",
     "rạp", "rap", "rạp phim", "rap phim", "rạp chiếu", "rap chieu", "cinema", "movie",
@@ -31,20 +16,6 @@ const CATEGORY_KEYWORDS = {
     "phim hoạt hình", "phim hoat hinh", "phim hài", "phim hai", "phim võ thuật", "phim vo thuat",
     "lật mặt", "lat mat", "avengers", "inside out", "deadpool", "wolverine", "kung fu panda",
     "demon slayer", "interstellar", "dark knight", "avatar", "past lives", "encanto", "spiderman", "spider-man",
-  ],
-  sport: [
-    "bóng đá", "bong da", "thể thao", "the thao", "sport", "trận đấu", "tran dau", "sân vận động", "san van dong",
-    "aff", "v-league", "vleague", "cup", "chung kết", "chung ket", "bóng rổ", "bong ro", "tennis",
-    "cầu lông", "cau long", "football", "soccer", "khán đài", "khan dai", "thi đấu", "thi dau", "vé bóng đá", "ve bong da",
-  ],
-  event: [
-    "sự kiện", "su kien", "event", "triển lãm", "trien lam", "festival", "lễ hội", "le hoi", "hội chợ", "hoi cho",
-    "van gogh", "ánh sáng", "anh sang", "trưng bày", "trung bay", "expo", "vé sự kiện", "ve su kien",
-  ],
-  workshop: [
-    "workshop", "hội thảo", "hoi thao", "khóa học", "khoa hoc", "học", "hoc", "seminar", "training",
-    "kỹ năng", "ky nang", "vẽ tranh", "ve tranh", "thiền", "thien", "yoga", "nấu ăn", "nau an",
-    "lớp học", "lop hoc", "dạy học", "day hoc",
   ],
 };
 
@@ -203,26 +174,26 @@ const EMOTIONS = {
     vibe: "Acoustic chill & Healing",
     confidence: 0.85,
     keywords: ["buồn", "sad", "tệ", "khóc", "nản", "chán", "down", "thất vọng", "tổn thương", "đau lòng", "cô đơn", "khoc", "buon", "te", "nan", "chan", "that vong", "ton thuong", "dau long"],
-    responseIntro: "If hôm nay bạn hơi buồn và muốn trốn thế giới một xíu, một góc nhỏ nghe acoustic hay rạp phim yên tĩnh sẽ giúp xoa dịu tâm hồn á. Chuyện gì rồi cũng sẽ qua thui nha! 🤍",
-    categories: ["movie", "concert"],
+    responseIntro: "If hôm nay bạn hơi buồn và muốn trốn thế giới một xíu, rạp phim yên tĩnh sẽ giúp xoa dịu tâm hồn á. Chuyện gì rồi cũng sẽ qua thui nha! 🤍",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Acoustic Night: Nhạc Trịnh & Những Bản Tình Ca Xưa",
-        category: "concert",
-        location: "Góc Ban Công Cafe, Hà Nội",
-        passPrice: 120000,
-        suggestedTime: "Buổi tối (19:30 - 21:30)",
-        description: "Đêm nhạc acoustic ấm cúng, phù hợp cho những ai muốn lắng lòng lại.",
-        moodTags: ["Healing", "Chill", "Slow Vibe"],
+        title: "Suất Chiếu Đặc Biệt: Anime Dáng Hình Thanh Âm (Silent Voice)",
+        category: "movie",
+        location: "Lotte Cinema Cầu Giấy, Hà Nội",
+        passPrice: 75000,
+        suggestedTime: "Buổi chiều (14:30 - 16:30)",
+        description: "Bộ phim anime cảm động và đầy ý nghĩa, giúp làm dịu đi những nỗi buồn thầm kín.",
+        moodTags: ["Healing", "Emotional", "Anime"],
       },
       {
-        title: "Workshop Vẽ Tranh Thư Giãn Bằng Màu Nước",
-        category: "workshop",
-        location: "Art & Soul Studio, TP. HCM",
-        passPrice: 250000,
-        suggestedTime: "Buổi chiều (14:00 - 17:00)",
-        description: "Tập trung nét cọ vẽ tranh và gạt bỏ hết những suy nghĩ u ám.",
-        moodTags: ["Art Therapy", "Calm", "Solo Activity"],
+        title: "Đêm Chiếu Phim Indie: Chữa Lành Tâm Hồn",
+        category: "movie",
+        location: "Sky Cinema, Quận 2, TP. HCM",
+        passPrice: 90000,
+        suggestedTime: "Buổi tối (19:30 - 21:30)",
+        description: "Không gian rạp chiếu phim ngoài trời nhẹ nhàng, lắng đọng đầy cảm xúc.",
+        moodTags: ["Quiet Vibe", "Indie Film", "Solo Activity"],
       }
     ]
   },
@@ -232,26 +203,26 @@ const EMOTIONS = {
     vibe: "Dopamine & Laughing",
     confidence: 0.85,
     keywords: ["stress", "căng thẳng", "áp lực", "lo lắng", "căng", "deadlines", "deadline", "mệt mỏi", "điên đầu", "đau đầu", "lo au", "cang thang", "ap luc", "met moi", "dau dau"],
-    responseIntro: "Áp lực deadline hay cuộc sống đang làm bạn nghẹt thở đúng hông? Để GoTix dắt bạn đi xem hài kịch cười thả ga xả stress hoặc một workshop trải nghiệm xoa dịu tâm trí nghen! 🍃",
-    categories: ["movie", "workshop", "sport"],
+    responseIntro: "Áp lực deadline hay cuộc sống đang làm bạn nghẹt thở đúng hông? Để GoTix gợi ý cho bạn một suất chiếu phim hài cười thả ga xả stress nghen! 🍃",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Đêm Kịch Hài Độc Thoại: Cười Xuyên Đêm",
-        category: "event",
-        location: "Comedy Club, Quận 1, TP. HCM",
-        passPrice: 150000,
+        title: "Suất Chiếu Bom Tấn Hài Hước: Deadpool & Wolverine 2",
+        category: "movie",
+        location: "CGV Vincom Đồng Khởi, TP. HCM",
+        passPrice: 85000,
         suggestedTime: "Buổi tối (20:00 - 22:00)",
         description: "Liều thuốc dopamine cực mạnh giúp bạn cười quên hết áp lực.",
         moodTags: ["Funny", "High Dopamine", "Anti-stress"],
       },
       {
-        title: "Workshop Làm Nến Thơm & Tinh Dầu Trị Liệu",
-        category: "workshop",
-        location: "The Scent Lab, Cầu Giấy, Hà Nội",
-        passPrice: 300000,
-        suggestedTime: "Chủ Nhật (09:00 - 12:00)",
-        description: "Học cách pha chế nến thơm xoa dịu giác quan cực hiệu quả.",
-        moodTags: ["Relaxing", "Therapy", "Healing"],
+        title: "Vé Phim Hài Gia Đình: Kung Fu Panda 5",
+        category: "movie",
+        location: "Lotte Cinema Landmark, Hà Nội",
+        passPrice: 80000,
+        suggestedTime: "Buổi chiều (15:00 - 17:00)",
+        description: "Chú gấu trúc đáng yêu và những tràng cười sảng khoái cho ngày mệt mỏi.",
+        moodTags: ["Comedy", "Relaxing", "Family Film"],
       }
     ]
   },
@@ -261,26 +232,26 @@ const EMOTIONS = {
     vibe: "Nature recharge & Cozy",
     confidence: 0.85,
     keywords: ["kiệt sức", "kiet suc", "kiệt quệ", "kiet que", "oải", "hết pin", "het pin", "hết năng lượng", "het nang luong", "burnout", "burned out", "mệt rã rời", "met ra roi"],
-    responseIntro: "Hộp pin năng lượng của bạn đang nhấp nháy đỏ rùi kìa. Hãy cất tạm công việc đi và đi cắm trại nhẹ nhàng hoặc nghe nhạc chill để sạc lại năng lượng (recharge) thui! 🔋⚡",
-    categories: ["concert", "workshop"],
+    responseIntro: "Hộp pin năng lượng của bạn đang nhấp nháy đỏ rùi kìa. Hãy cất tạm công việc đi và tự thưởng cho mình một bộ phim hoạt hình Ghibli ấm áp để sạc lại năng lượng nghen! 🔋⚡",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Camping Chill Trốn Phố Cuối Tuần",
-        category: "event",
-        location: "Sóc Sơn, Hà Nội",
-        passPrice: 450000,
-        suggestedTime: "Cả ngày thứ Bảy",
-        description: "Hòa mình cùng thiên nhiên rừng thông xanh mát để sạc lại năng lượng.",
-        moodTags: ["Nature", "Offline", "Recharge"],
+        title: "Suất Chiếu Kỷ Niệm Ghibli: My Neighbour Totoro",
+        category: "movie",
+        location: "BHD Star Vincom Thảo Điền, TP. HCM",
+        passPrice: 70000,
+        suggestedTime: "Cuối tuần (10:00 - 12:00)",
+        description: "Quay về tuổi thơ bình yên cùng Totoro để nạp lại năng lượng.",
+        moodTags: ["Nostalgia", "Cozy", "Recharge"],
       },
       {
-        title: "Trải Nghiệm Thiền Trà & Yoga Phục Hồi",
-        category: "workshop",
-        location: "Yên Vy Zen House, Bình Thạnh, TP. HCM",
-        passPrice: 180000,
-        suggestedTime: "Cuối tuần (08:00 - 10:00)",
-        description: "Buổi sáng nhẹ nhàng lắng nghe cơ thể phục hồi từ bên trong.",
-        moodTags: ["Zen", "Healthy", "Slow-living"],
+        title: "Phim Hoạt Hình Chữa Lành: Soul (Pixar)",
+        category: "movie",
+        location: "CGV Times City, Hà Nội",
+        passPrice: 75000,
+        suggestedTime: "Buổi tối (18:30 - 20:30)",
+        description: "Câu chuyện sâu lắng giúp ta trân trọng những điều bình dị nhất trong cuộc sống.",
+        moodTags: ["Pixar", "Inspirational", "Calm Vibe"],
       }
     ]
   },
@@ -290,26 +261,26 @@ const EMOTIONS = {
     vibe: "High-energy & Festival",
     confidence: 0.9,
     keywords: ["phấn khích", "hào hứng", "vui quá", "excited", "cháy", "quẩy", "xõa", "sung", "high", "nhiệt", "phan khich", "hao hung", "vui qua", "chay", "quay", "xoa", "nhiet"],
-    responseIntro: "Tần số năng lượng cực cao nha! ⚡ Rất thích hợp để bạn ra ngoài quẩy hết mình tại các đêm nhạc sôi động, lễ hội âm nhạc hoặc liveshow hoành tráng nè!",
-    categories: ["concert", "event"],
+    responseIntro: "Tần số năng lượng cực cao nha! ⚡ Rất thích hợp để bạn ra rạp xem các bộ phim bom tấn hành động kịch tính với âm thanh cực khủng nè!",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "EDM Music Festival: Neon Jungle Night",
-        category: "concert",
-        location: "Phố Đi Bộ Nguyễn Huệ, TP. HCM",
-        passPrice: 350000,
-        suggestedTime: "Buổi tối (18:00 - 23:00)",
-        description: "Lễ hội âm nhạc điện tử kết hợp ánh sáng hoành tráng nhất hè này.",
-        moodTags: ["Dance", "Loud Music", "High Energy"],
+        title: "Bom Tấn Hành Động Siêu Cấp: Avengers: Secret Wars",
+        category: "movie",
+        location: "Rạp IMAX - CGV Metropolis, Hà Nội",
+        passPrice: 120000,
+        suggestedTime: "Buổi tối (19:30 - 22:30)",
+        description: "Trải nghiệm mãn nhãn trên màn hình IMAX khổng lồ, âm thanh bùng nổ.",
+        moodTags: ["Action", "IMAX", "High Energy"],
       },
       {
-        title: "Trận Chung Kết Bóng Đá Cup Quốc Gia",
-        category: "sport",
-        location: "Sân vận động Mỹ Đình, Hà Nội",
-        passPrice: 200000,
-        suggestedTime: "Buổi chiều (17:00 - 19:30)",
-        description: "Không khí bùng nổ cùng hàng ngàn cổ động viên cuồng nhiệt.",
-        moodTags: ["Sporty", "Excited", "Crowd"],
+        title: "Vé Phim Khoa Học Viễn Tưởng: Dune 3",
+        category: "movie",
+        location: "Rạp 4DX - Hùng Vương Plaza, TP. HCM",
+        passPrice: 110000,
+        suggestedTime: "Buổi tối (20:00 - 22:45)",
+        description: "Hiệu ứng chuyển động ghế 4DX chân thực như đang ở giữa sa mạc Arrakis.",
+        moodTags: ["Sci-Fi", "4DX Experience", "Thrilling"],
       }
     ]
   },
@@ -319,26 +290,26 @@ const EMOTIONS = {
     vibe: "Cozy date & Sweet moments",
     confidence: 0.9,
     keywords: ["hẹn hò", "hen ho", "lãng mạn", "lang man", "date", "dating", "người yêu", "nguoi yeu", "ny", "crush", "gấu", "gau", "sweet", "ngọt ngào", "ngot ngao"],
-    responseIntro: "Mùi hương tình yêu ngập tràn rùi nhen! 🌹 Hãy dành thời gian tạo bất ngờ cho nửa kia bằng một buổi xem phim ghế đôi Sweetbox lãng mạn hoặc đêm nhạc tình ca ngọt ngào nhé!",
-    categories: ["movie", "concert"],
+    responseIntro: "Mùi hương tình yêu ngập tràn rùi nhen! 🌹 Hãy dành thời gian tạo bất ngờ cho nửa kia bằng một buổi xem phim ghế đôi Sweetbox lãng mạn nhé!",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Đêm Nhạc Acoustic: Love Songs & Sunset",
-        category: "concert",
-        location: "Rooftop Cafe, Quận 3, TP. HCM",
+        title: "Vé Cặp Ghế Đôi Sweetbox Phim Tình Cảm: Past Lives 2",
+        category: "movie",
+        location: "CGV Crescent Mall, TP. HCM",
         passPrice: 180000,
-        suggestedTime: "Hoàng hôn (17:30 - 19:30)",
-        description: "Ngắm hoàng hôn lãng mạn cùng những bản tình ca ngọt ngào.",
-        moodTags: ["Romantic", "Couples", "Sunset Vibe"],
+        suggestedTime: "Buổi tối (20:30 - 22:30)",
+        description: "Ghế đôi riêng tư ấm cúng, hoàn hảo cho buổi hẹn hò lãng mạn ngọt ngào.",
+        moodTags: ["Romantic", "Couples", "Sweetbox"],
       },
       {
-        title: "Ghế Đôi Premium Sweetbox Xem Phim Chiếu Rạp",
+        title: "Phim Lãng Mạn Kinh Điển: La La Land Re-release",
         category: "movie",
-        location: "Rạp CGV Vincom Đồng Khởi, TP. HCM",
-        passPrice: 320000,
-        suggestedTime: "Buổi tối (20:00 - 22:30)",
-        description: "Ghế Sweetbox không gian riêng tư cực ấm cúng dành cho hai người.",
-        moodTags: ["Movie Date", "Cozy", "Privacy"],
+        location: "Galaxy Cinema Nguyễn Du, TP. HCM",
+        passPrice: 80000,
+        suggestedTime: "Hoàng hôn (17:30 - 19:30)",
+        description: "Hòa mình vào thế giới nhạc kịch mộng mơ và tình yêu đôi lứa.",
+        moodTags: ["Musical", "Classic Love", "Date Night"],
       }
     ]
   },
@@ -348,26 +319,26 @@ const EMOTIONS = {
     vibe: "Warm connection & Social",
     confidence: 0.85,
     keywords: ["cô đơn", "co don", "một mình", "mot minh", "lonely", "trống vắng", "trong vang", "không có ai", "khong co ai", "lẻ loi", "le loi"],
-    responseIntro: "Đôi lúc một mình cũng ổn, nhưng nếu muốn tìm thêm kết nối ấm áp và gặp gỡ những người bạn mới, những hoạt động workshop cộng đồng hoặc một buổi coffee meetup nhỏ sẽ cực hợp á! 🤝✨",
-    categories: ["workshop", "event"],
+    responseIntro: "Đôi lúc một mình cũng ổn, nhưng nếu muốn tìm chút kết nối ấm áp, xem một bộ phim ý nghĩa tại rạp chiếu phim ấm cúng sẽ rất tuyệt đó! 🍿✨",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Coffee Chat & Kết Bạn Mới Cho Hướng Nội",
-        category: "event",
-        location: "Warm House Cafe, Bình Thạnh, TP. HCM",
-        passPrice: 50000,
+        title: "Suất Chiếu Giao Lưu CLB Điện Ảnh: Phim Cổ Điển",
+        category: "movie",
+        location: "Rạp Cinestar Quốc Thanh, TP. HCM",
+        passPrice: 65000,
         suggestedTime: "Sáng thứ Bảy (09:00 - 11:30)",
-        description: "Buổi trò chuyện nhẹ nhàng kết nối những người bạn mới đồng điệu.",
-        moodTags: ["Social", "New Friends", "Cozy"],
+        description: "Xem phim và giao lưu trò chuyện cùng những mọt phim có cùng đam mê.",
+        moodTags: ["Social Connection", "Classic Film", "Meetup"],
       },
       {
-        title: "Workshop Làm Bánh Gối Cùng Nhau",
-        category: "workshop",
-        location: "Bếp Nhà Cuckoo, Tây Hồ, Hà Nội",
-        passPrice: 280000,
-        suggestedTime: "Chiều thứ Bảy (14:00 - 16:30)",
-        description: "Vừa học làm bánh thủ công vừa trò chuyện giao lưu vui vẻ.",
-        moodTags: ["Interactive", "Friendly", "Connection"],
+        title: "Phim hoạt hình Pixar ấm áp: Inside Out 3",
+        category: "movie",
+        location: "Lotte Cinema Tây Hồ, Hà Nội",
+        passPrice: 85000,
+        suggestedTime: "Buổi chiều (14:00 - 16:00)",
+        description: "Gặp lại các cảm xúc quen thuộc và cảm nhận sự thấu hiểu ấm áp từ bộ phim.",
+        moodTags: ["Warmth", "Pixar", "Comforting"],
       }
     ]
   },
@@ -377,17 +348,17 @@ const EMOTIONS = {
     vibe: "Joyful sharing & Creatives",
     confidence: 0.8,
     keywords: ["vui", "hạnh phúc", "happy", "yêu đời", "tuyệt vời", "tốt lành", "thuận lợi", "vui ve", "hanh phuc", "yeu doi", "tuyet voi", "tot lanh", "thuan loi"],
-    responseIntro: "Một ngày ngập tràn niềm vui luôn nè! ☀️ Hãy tiếp tục lan tỏa niềm vui này bằng việc trải nghiệm những điều sáng tạo mới hoặc tham gia một liveshow ca nhạc nhẹ cùng bạn bè nhé!",
-    categories: ["workshop", "concert", "movie"],
+    responseIntro: "Một ngày ngập tràn niềm vui luôn nè! ☀️ Hãy tiếp tục lan tỏa niềm vui này bằng việc xem một bộ phim ca nhạc vui tươi hoặc phim hài cùng bạn bè nhé!",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Workshop Làm Gốm Nghệ Thuật: Nặn Mơ Ước",
-        category: "workshop",
-        location: "Gốm Bát Tràng Studio, Hà Nội",
-        passPrice: 350000,
-        suggestedTime: "Buổi chiều (14:00 - 17:00)",
-        description: "Thỏa sức sáng tạo tạo hình những món đồ gốm xinh xắn của riêng bạn.",
-        moodTags: ["Creative", "Joy", "Hands-on"],
+        title: "Phim Ca Nhạc Vui Tươi: Encanto 2",
+        category: "movie",
+        location: "BHD Star Vincom Phạm Ngọc Thạch, Hà Nội",
+        passPrice: 75000,
+        suggestedTime: "Buổi chiều (15:30 - 17:30)",
+        description: "Giai điệu rộn rã sắc màu phép thuật sẽ nhân đôi niềm vui của bạn.",
+        moodTags: ["Joyful", "Musical", "Feel-good"],
       }
     ]
   },
@@ -397,26 +368,26 @@ const EMOTIONS = {
     vibe: "Novelty & Active discovery",
     confidence: 0.8,
     keywords: ["chán", "chan", "bored", "tẻ nhạt", "te nhat", "rảnh quá", "ranh qua", "không biết làm gì", "khong biet lam gi", "vô vị", "vo vi"],
-    responseIntro: "Mood đang bị chững lại xíu đúng hông? Để phá tan sự nhàm chán này, thử thách bản thân với một bộ môn workshop mới lạ hoặc đi triển lãm nghệ thuật đầy sắc màu nghen! 🎨🚀",
-    categories: ["workshop", "event"],
+    responseIntro: "Mood đang bị chững lại xíu đúng hông? Để phá tan sự nhàm chán này, thử thách bản thân với một bộ phim trinh thám hack não hoặc phim kinh dị giật gân nghen! 🎬🚀",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Triển Lãm Nghệ Thuật Đa Giác Quan Van Gogh",
-        category: "event",
-        location: "GigaMall Thủ Đức, TP. HCM",
-        passPrice: 220000,
-        suggestedTime: "Cả ngày",
-        description: "Không gian nghệ thuật ánh sáng cực mãn nhãn tha hồ chụp hình check-in.",
-        moodTags: ["Art", "Immersive", "Photography"],
+        title: "Phim Trinh Thám Ly Kỳ Kịch Tính: Knives Out 3",
+        category: "movie",
+        location: "Galaxy Cinema Mipec Long Biên, Hà Nội",
+        passPrice: 80000,
+        suggestedTime: "Buổi tối (19:00 - 21:15)",
+        description: "Những pha suy luận đỉnh cao bẻ lái cực gắt phá tan sự tẻ nhạt.",
+        moodTags: ["Mystery", "Mind-bending", "Suspense"],
       },
       {
-        title: "Workshop Thử Làm Xà Phòng Thảo Mộc Handmade",
-        category: "workshop",
-        location: "Green Lab, Đống Đa, Hà Nội",
-        passPrice: 200000,
-        suggestedTime: "Chiều Chủ Nhật (15:00 - 17:00)",
-        description: "Tự tay làm ra bánh xà soap organic thơm lừng mang về làm quà.",
-        moodTags: ["New Skill", "Fun", "DIY"],
+        title: "Suất Chiếu Đêm Phim Kinh Dị Siêu Nhiên",
+        category: "movie",
+        location: "BHD Star Ba Tháng Hai, TP. HCM",
+        passPrice: 70000,
+        suggestedTime: "Suất khuya (22:30 - 00:30)",
+        description: "Rùng rợn và hồi hộp tột cùng, đẩy dopamine lên mức cao nhất.",
+        moodTags: ["Horror", "Late Night", "Adrenaline"],
       }
     ]
   },
@@ -426,17 +397,17 @@ const EMOTIONS = {
     vibe: "Active social & Networking",
     confidence: 0.85,
     keywords: ["giao lưu", "giao luu", "kết bạn", "ket ban", "social", "nhiều người", "nhieu nguoi", "tụ tập", "tu tap", "bè bạn", "be ban", "hội nhóm", "hoi nhom", "gặp gỡ", "gap go"],
-    responseIntro: "Đang tràn đầy năng lượng hướng ngoại đúng hông? Rủ ngay cạ cứng hoặc đi kết nối cộng đồng tại các buổi trình diễn nhạc kịch, festival náo nhiệt hoặc các buổi gặp gỡ cộng đồng nha! 🥳🔥",
-    categories: ["event", "concert"],
+    responseIntro: "Đang tràn đầy năng lượng hướng ngoại đúng hông? Rủ ngay cạ cứng đi xem phim suất chiếu đặc biệt của FC hoặc tham gia buổi chiếu thảo luận phim nhé! 🥳🔥",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Trò Chơi Nhập Vai Kịch Tính (Board Game Night)",
-        category: "event",
-        location: "Boardgame Hub, Cầu Giấy, Hà Nội",
-        passPrice: 70000,
-        suggestedTime: "Buổi tối (18:30 - 22:00)",
-        description: "Tham gia giải mật mã và nhập vai cùng hàng chục boardgamers vui vẻ.",
-        moodTags: ["Group Fun", "Intellectual", "Socialization"],
+        title: "Suất Chiếu Đặc Biệt Đồng Hành Cùng Fandom Marvel",
+        category: "movie",
+        location: "CGV Landmark 81, TP. HCM",
+        passPrice: 95000,
+        suggestedTime: "Tối thứ Sáu (19:30 - 22:30)",
+        description: "Hòa cùng không khí hò reo cuồng nhiệt từ hàng trăm fan Marvel thực thụ.",
+        moodTags: ["Group Fun", "Fandom", "Loud & Hype"],
       }
     ]
   },
@@ -446,17 +417,17 @@ const EMOTIONS = {
     vibe: "Action & High vibe sports",
     confidence: 0.85,
     keywords: ["năng lượng", "nang luong", "khỏe", "khoe", "sung sức", "sung suc", "energetic", "hoạt động", "hoat dong", "vận động", "van dong", "thể thao", "the thao"],
-    responseIntro: "Năng lượng đang đạt đỉnh! Rất thích hợp để đi xem các trận đấu thể thao kịch tính, trekking dã ngoại ngoài trời hoặc tham gia nhảy giải phóng hình thể nè! 🏃‍♂️⚡",
-    categories: ["sport", "event"],
+    responseIntro: "Năng lượng đang đạt đỉnh! Rất thích hợp để đi xem các bộ phim hành động bom tấn đua xe nghẹt thở hay phim phiêu lưu giả tưởng siêu hùng tráng nè! ⚡",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Giải Chạy Bán Marathon Thành Phố Sáng Sớm",
-        category: "sport",
-        location: "Hồ Hoàn Kiếm, Hà Nội",
-        passPrice: 150000,
-        suggestedTime: "Sáng sớm (05:00 - 08:30)",
-        description: "Chinh phục cự ly chạy bộ quanh phố cổ rực rỡ nắng mai.",
-        moodTags: ["Active", "Challenge", "Morning"],
+        title: "Phim Hành Động Nghẹt Thở 4DX: Fast & Furious 11",
+        category: "movie",
+        location: "CGV Crescent Mall, TP. HCM",
+        passPrice: 110000,
+        suggestedTime: "Buổi tối (20:15 - 22:30)",
+        description: "Các pha rượt đuổi tốc độ nghẹt thở kết hợp ghế rung lắc 4DX cực bốc.",
+        moodTags: ["Action", "Speed", "4DX Action"],
       }
     ]
   },
@@ -466,17 +437,17 @@ const EMOTIONS = {
     vibe: "Peaceful calm & Self-care",
     confidence: 0.9,
     keywords: ["healing", "chữa lành", "chua lanh", "bình yên", "binh yen", "nhẹ nhàng", "nhe nhang", "recharge", "thư giãn", "thu gian", "chill", "trầm", "tram"],
-    responseIntro: "Lắng nghe đứa trẻ bên trong bạn đang thì thầm cần vỗ về. Hãy cùng GoTix tìm một đêm nhạc Trịnh mộc mạc, một workshop làm gốm tĩnh lặng để tâm hồn dịu lại nha. 🕊️🌸",
-    categories: ["concert", "workshop"],
+    responseIntro: "Lắng nghe đứa trẻ bên trong bạn đang thì thầm cần vỗ về. Hãy cùng GoTix tìm một rạp phim yên tĩnh, xem một tác phẩm nhẹ nhàng mộc mạc nhé. 🕊️🌸",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Đêm Nhạc Acoustic Mộc: Gác Nhỏ Mơ Màng",
-        category: "concert",
-        location: "Mơ Màng Cafe, Quận 1, TP. HCM",
-        passPrice: 150000,
-        suggestedTime: "Tối thứ Bảy (20:00 - 22:00)",
-        description: "Gác gỗ mộc mạc, hòa âm guitar và violon mộc mạc ru êm đêm hè.",
-        moodTags: ["Healing", "Chill", "Cozy Space"],
+        title: "Suất Chiếu Phim Chữa Lành: My Neighbour Totoro",
+        category: "movie",
+        location: "Lotte Cinema Gold View, TP. HCM",
+        passPrice: 70000,
+        suggestedTime: "Sáng Chủ Nhật (09:30 - 11:30)",
+        description: "Không gian trong trẻo, nhẹ nhàng mang lại cảm giác bình yên sâu lắng.",
+        moodTags: ["Quiet space", "Healing Film", "Comfort"],
       }
     ]
   },
@@ -486,17 +457,17 @@ const EMOTIONS = {
     vibe: "Mindful presence & Relax",
     confidence: 0.8,
     keywords: ["suy nghĩ nhiều", "suy nghi nhieu", "overthink", "overthinking", "lo âu", "lo au", "nghĩ ngợi", "nghi ngoi", "rối bời", "roi boi", "mất ngủ", "mat ngu"],
-    responseIntro: "Đầu óc đang chạy quá tải với 1001 suy nghĩ hả bạn ơi? Hãy tắt bớt 'tab suy nghĩ' bằng cách hòa mình vào thế giới nghệ thuật tranh ảnh vẽ màu nước hoặc triển lãm tranh tĩnh lặng nghen! 🧠✨",
-    categories: ["event", "workshop"],
+    responseIntro: "Đầu óc đang chạy quá tải với 1001 suy nghĩ hả bạn ơi? Hãy tắt bớt 'tab suy nghĩ' bằng cách tập trung vào một bộ phim giả tưởng cân não cực kỳ lôi cuốn nghen! 🧠✨",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Triển Lãm Tranh Sơn Dầu: Sắc Màu Nội Tâm",
-        category: "event",
-        location: "Bảo tàng Mỹ thuật, Hà Nội",
-        passPrice: 50000,
-        suggestedTime: "Buổi chiều (13:30 - 17:00)",
-        description: "Không gian tranh sơn dầu yên lặng, mở mang góc nhìn nội tâm.",
-        moodTags: ["Quiet", "Self-reflection", "Art"],
+        title: "Phim Tâm Lý Chiều Sâu Hack Não: Inception Re-release",
+        category: "movie",
+        location: "BHD Star Vincom Plaza Đà Nẵng",
+        passPrice: 75000,
+        suggestedTime: "Buổi chiều (14:00 - 16:30)",
+        description: "Kịch bản xuất sắc giúp bạn hoàn toàn cuốn vào cốt truyện và quên đi âu lo.",
+        moodTags: ["Mind-blown", "Intense focus", "Sci-Fi"],
       }
     ]
   },
@@ -506,17 +477,57 @@ const EMOTIONS = {
     vibe: "Gentle flow & Easy going",
     confidence: 0.85,
     keywords: ["relax", "thư thái", "thu thai", "thư giãn", "thu gian", "nhẹ nhõm", "nhe nhom", "thong thả", "thong tha", "chill chill"],
-    responseIntro: "Tâm trạng thoải mái và thảnh thơi quá nè! 🍹 Thích hợp cho những hoạt động trôi chảy nhẹ nhàng như xem một bộ phim lãng mạn ngoài trời, đi bộ ngắm tranh hoặc nhâm nhi cafe trò chuyện.",
-    categories: ["movie", "workshop"],
+    responseIntro: "Tâm trạng thoải mái và thảnh thơi quá nè! 🍹 Thích hợp cho những hoạt động nhẹ nhàng như xem một bộ phim lãng mạn nhẹ nhàng trên ghế lười ngoài trời.",
+    categories: ["movie"],
     mockRecommendations: [
       {
-        title: "Đêm Chiếu Phim Indie Ngoài Trời Trên Sân Thượng",
+        title: "Suất Chiếu Phim Indie Ngoài Trời Trên Sân Thượng",
         category: "movie",
         location: "Sky Cinema, Quận 2, TP. HCM",
-        passPrice: 120000,
+        passPrice: 90000,
         suggestedTime: "Buổi tối (19:30 - 22:00)",
-        description: "Nằm ghế lười xem phim indie chiếu dưới bầu trời sao mát rượi.",
-        moodTags: ["Outdoor Cinema", "Breeze", "Relaxing"],
+        description: "Nằm ghế lười, tận hưởng làn gió mát và bộ phim nhẹ nhàng.",
+        moodTags: ["Outdoor Cinema", "Breeze", "Chill Out"],
+      }
+    ]
+  },
+  overthinking: {
+    label: "Overthinking (Suy nghĩ nhiều)",
+    energy: "low",
+    vibe: "Mindful presence & Relax",
+    confidence: 0.8,
+    keywords: ["suy nghĩ nhiều", "suy nghi nhieu", "overthink", "overthinking", "lo âu", "lo au", "nghĩ ngợi", "nghi ngoi", "rối bời", "roi boi", "mất ngủ", "mat ngu"],
+    responseIntro: "Đầu óc đang chạy quá tải với 1001 suy nghĩ hả bạn ơi? Hãy tắt bớt 'tab suy nghĩ' bằng cách tập trung vào một bộ phim giả tưởng cân não cực kỳ lôi cuốn nghen! 🧠✨",
+    categories: ["movie"],
+    mockRecommendations: [
+      {
+        title: "Phim Tâm Lý Chiều Sâu Hack Não: Inception Re-release",
+        category: "movie",
+        location: "BHD Star Vincom Plaza Đà Nẵng",
+        passPrice: 75000,
+        suggestedTime: "Buổi chiều (14:00 - 16:30)",
+        description: "Kịch bản xuất sắc giúp bạn hoàn toàn cuốn vào cốt truyện và quên đi âu lo.",
+        moodTags: ["Mind-blown", "Intense focus", "Sci-Fi"],
+      }
+    ]
+  },
+  relaxed: {
+    label: "Relaxed (Thư thái)",
+    energy: "low",
+    vibe: "Gentle flow & Easy going",
+    confidence: 0.85,
+    keywords: ["relax", "thư thái", "thu thai", "thư giãn", "thu gian", "nhẹ nhõm", "nhe nhom", "thong thả", "thong tha", "chill chill"],
+    responseIntro: "Tâm trạng thoải mái và thảnh thơi quá nè! 🍹 Thích hợp cho những hoạt động nhẹ nhàng như xem một bộ phim lãng mạn nhẹ nhàng trên ghế lười ngoài trời.",
+    categories: ["movie"],
+    mockRecommendations: [
+      {
+        title: "Suất Chiếu Phim Indie Ngoài Trời Trên Sân Thượng",
+        category: "movie",
+        location: "Sky Cinema, Quận 2, TP. HCM",
+        passPrice: 90000,
+        suggestedTime: "Buổi tối (19:30 - 22:00)",
+        description: "Nằm ghế lười, tận hưởng làn gió mát và bộ phim nhẹ nhàng.",
+        moodTags: ["Outdoor Cinema", "Breeze", "Chill Out"],
       }
     ]
   }
@@ -580,7 +591,7 @@ function getMoodRecommendations(emotionKey, tickets) {
   const formattedReal = realResults.map(t => {
     let matchReason = "";
     if (emotionKey === "sad") {
-      matchReason = "Giai điệu mộc mạc và câu chữ sâu lắng sẽ xoa dịu nỗi buồn trong bạn.";
+      matchReason = "Những thước phim mộc mạc và câu chữ sâu lắng sẽ xoa dịu nỗi buồn trong bạn.";
     } else if (emotionKey === "stressed") {
       matchReason = "Không gian tách biệt giúp bạn thoát khỏi âu lo và áp lực hiện tại.";
     } else if (emotionKey === "excited") {
@@ -632,7 +643,7 @@ function generateResponse(userText, tickets) {
     const results = getMoodRecommendations(emotionAnalysis.key, tickets);
     const emo = EMOTIONS[emotionAnalysis.key];
     return {
-      text: emo.responseIntro,
+      text: "Hôm nay mood của bạn thế nào nè? Đang chill chill nhẹ nhàng cần chữa lành (recharge), đang cô đơn muốn xem phim kết nối bạn bè, hay đang căng thẳng cần phim hài xả stress? Nói mình nghe để mình chọn trải nghiệm hợp nhất nha! 💖✨",
       tickets: results,
       emotionAnalysis: {
         mainEmotion: emotionAnalysis.mainEmotion,
@@ -646,7 +657,7 @@ function generateResponse(userText, tickets) {
   // 2. If user is asking "Hôm nay nên xem gì / làm gì" or asking about recommendation
   if (isRecommendationRequest(userText)) {
     return {
-      text: "Hôm nay mood của bạn thế nào nè? Đang chill chill nhẹ nhàng cần chữa lành (recharge), đang cô đơn muốn kết nối bạn bè, hay đang căng thẳng cần nạp dopamine quẩy nhạc? Nói mình nghe để mình chọn trải nghiệm hợp nhất nha! 💖✨",
+      text: "Hôm nay mood của bạn thế nào nè? Đang chill chill nhẹ nhàng cần chữa lành (recharge), đang cô đơn muốn xem phim kết nối bạn bè, hay đang căng thẳng cần phim hài xả stress? Nói mình nghe để mình chọn trải nghiệm hợp nhất nha! 💖✨",
       tickets: [],
     };
   }
@@ -654,7 +665,7 @@ function generateResponse(userText, tickets) {
   // 3. Regular Greetings
   if (intent === "greeting") {
     return {
-      text: "Yo! 👋 Mình là **GoTix AI** – người bạn đồng hành bắt vibe của bạn! 🎟️✨\n\nHôm nay mood của bạn thế nào nè? Đang chill chill thư thái, mệt mỏi cần chữa lành (recharge), hay đang tràn đầy dopamine muốn quẩy nhạc hội? Nói cho mình biết hoặc chọn thử các gợi ý bên dưới nha! 👇",
+      text: "Yo! 👋 Mình là **GoTix AI** – người bạn đồng hành bắt vibe xem phim của bạn! 🎬✨\n\nHôm nay mood của bạn thế nào nè? Đang chill chill thư thái, mệt mỏi cần chữa lành (recharge), hay đang tràn đầy dopamine muốn xem phim bom tấn? Nói cho mình biết hoặc chọn thử các gợi ý bên dưới nha! 👇",
       tickets: [],
     };
   }
@@ -662,7 +673,7 @@ function generateResponse(userText, tickets) {
   // 4. Regular Help
   if (intent === "help") {
     return {
-      text: "Cần hướng dẫn hả cạ cứng? Rất đơn giản nha:\n• Nói cho mình biết tâm trạng của bạn (ví dụ: *\"Hôm nay stress quá\"*, *\"Cuối tuần buồn cô đơn\"*).\n• Hoặc tìm vé trực tiếp theo cú pháp: *\"Vé xem phim CGV tại Hà Nội\"*.\n\nSau khi tìm được vé, bạn có thể **bấm thẳng vào hình** để xem chi tiết suất diễn và mua nha! 🚀",
+      text: "Cần hướng dẫn hả cạ cứng? Rất đơn giản nha:\n• Nói cho mình biết tâm trạng của bạn (ví dụ: *\"Hôm nay stress quá\"*, *\"Cuối tuần muốn xem phim lãng mạn\"*).\n• Hoặc tìm vé phim trực tiếp theo cú pháp: *\"Vé xem phim CGV tại Hà Nội\"*.\n\nSau khi tìm được vé, bạn có thể **bấm thẳng vào hình** để xem chi tiết suất diễn và mua nha! 🚀",
       tickets: [],
     };
   }
@@ -670,7 +681,7 @@ function generateResponse(userText, tickets) {
   // 5. About
   if (intent === "about") {
     return {
-      text: "**GoTix** chính là thiên đường mua bán vé thứ cấp uy tín hàng đầu Việt Nam! 🏆\n\n• Vé được **xác minh thủ công** nên an tâm 100% không sợ fake vé.\n• Giữ tiền trong ví đảm bảo cho tới khi giao dịch hoàn tất.\n• Giao lưu mua bán siêu tốc. Bạn muốn đi trốn ở đâu hay xem phim gì kể mình nghe nha!",
+      text: "**GoTix** chính là thiên đường mua bán vé xem phim thứ cấp uy tín hàng đầu Việt Nam! 🏆\n\n• Vé được **xác minh thủ công** nên an tâm 100% không sợ fake vé.\n• Giữ tiền trong ví đảm bảo cho tới khi giao dịch hoàn tất.\n• Giao lưu mua bán siêu tốc. Bạn muốn xem phim gì hay đi rạp nào kể mình nghe nha!",
       tickets: [],
     };
   }
@@ -686,7 +697,7 @@ function generateResponse(userText, tickets) {
   // 7. Price
   if (intent === "price") {
     return {
-      text: "Mức giá giao dịch trên GoTix vô cùng mềm và phong phú luôn:\n• 🎬 Vé phim: chỉ từ **60k - 300k**\n• 🎵 Vé concert: khoảng **500k - 5M**\n• ⚽ Thể thao: từ **100k - 2M**\n• 🚌 Vé xe khách: chỉ từ **80k - 500k**\n\nPhí giao dịch nền tảng siêu hạt dẻ chỉ **5%** nha. Bạn đang có ngân sách bao nhiêu thế?",
+      text: "Mức giá giao dịch vé xem phim trên GoTix vô cùng mềm và phong phú luôn, chỉ từ **60k - 300k** tùy thuộc vào loại ghế (Standard/VIP/Sweetbox) và rạp chiếu (CGV, Lotte, BHD, IMAX...).\n\nPhí giao dịch nền tảng siêu hạt dẻ chỉ **5%** nha. Bạn đang có ngân sách khoảng bao nhiêu thế?",
       tickets: [],
     };
   }
@@ -697,45 +708,16 @@ function generateResponse(userText, tickets) {
     const results = searchTickets(tickets, category, location, query);
 
     if (results.length === 0) {
-      const catLabel = category
-        ? TICKET_CATEGORIES.find((c) => c.id === category)?.label
-        : null;
       const searchTip = query ? ` với từ khóa "${query}"` : "";
       return {
-        text: `Hiện tại mình chưa tìm thấy vé ${catLabel ? catLabel.toLowerCase() : ""} ${location ? "tại " + location : ""}${searchTip} nào phù hợp. 😔\n\nBạn thử:\n• Hỏi danh mục khác (concert, phim, xe, tàu)\n• Kiểm tra lại từ khóa tìm kiếm\n• Xem toàn bộ vé tại trang **Danh sách vé**`,
+        text: `Hiện tại mình chưa tìm thấy vé xem phim nào ${location ? "tại " + location : ""}${searchTip} phù hợp. 😔\n\nBạn thử:\n• Đổi từ khóa tìm kiếm phim hoặc rạp khác\n• Xem toàn bộ vé tại trang **Danh sách vé**`,
         tickets: [],
         cta: { text: "Xem tất cả vé →", path: "/tickets" },
       };
     }
 
-    const catLabel = category
-      ? TICKET_CATEGORIES.find((c) => c.id === category)?.label
-      : "vé";
     const locText = location ? ` tại ${location}` : "";
-
-    let responseText = `Tìm thấy **${results.length} ${catLabel.toLowerCase()}**${locText} cho bạn! 🎉\nBấm vào vé để xem chi tiết và đặt mua nhé 👇`;
-    
-    if (category === "movie") {
-      responseText = `🎬 Mình tìm thấy **${results.length} vé xem phim**${locText} cực hot nè! Ghế đẹp, giá pass siêu hời. Bạn bấm vào hình vé bên dưới để xem chi tiết suất chiếu và đặt mua nhé! 👇`;
-    } else if (category === "bus") {
-      responseText = `🚌 Mình tìm thấy **${results.length} vé xe khách**${locText} phù hợp với bạn! Bấm vào để xem thông tin nhà xe, lộ trình và đặt vé nhé! 👇`;
-    } else if (category === "train") {
-      responseText = `🚂 Có **${results.length} vé tàu hoả**${locText} dành cho bạn! Bấm vào xem ga đi/đến, giờ khởi hành và đặt vé ngay nhé! 👇`;
-    } else if (category === "concert") {
-      responseText = `🎵 Bùng nổ âm nhạc! Có **${results.length} vé concert**${locText} đang bán nè. Bấm vào để xem line-up, sơ đồ ghế và mua vé nhé! 👇`;
-    } else if (category === "sport") {
-      responseText = `⚽ Cháy cùng đam mê! Có **${results.length} vé thể thao**${locText} cho bạn. Bấm vào để xem thông tin trận đấu, khán đài và mua vé nhé! 👇`;
-    } else if (category === "event") {
-      responseText = `🎪 Trải nghiệm thú vị! Tìm thấy **${results.length} vé sự kiện**${locText} cho bạn. Bấm vào để xem chi tiết và đặt vé ngay! 👇`;
-    } else if (category === "workshop") {
-      responseText = `🎓 Nâng cao kiến thức! Tìm thấy **${results.length} vé workshop**${locText} phù hợp. Bấm vào để xem nội dung lớp học và đăng ký nhé! 👇`;
-    }
-
-    let inferredVibe = "Trải nghiệm";
-    if (category === "movie") inferredVibe = "Xem phim giải trí";
-    else if (category === "concert") inferredVibe = "Quẩy nhạc sống";
-    else if (category === "bus" || category === "train") inferredVibe = "Du lịch, dịch chuyển";
-    else if (category === "workshop") inferredVibe = "Học hỏi & Chia sẻ";
+    const responseText = `🎬 Mình tìm thấy **${results.length} vé xem phim**${locText} cực hot nè! Ghế đẹp, giá pass siêu hời. Bạn bấm vào hình vé bên dưới để xem chi tiết suất chiếu và đặt mua nhé! 👇`;
 
     return {
       text: responseText,
@@ -743,7 +725,7 @@ function generateResponse(userText, tickets) {
       emotionAnalysis: {
         mainEmotion: "Active Search",
         energyLevel: "Medium",
-        recommendedVibe: inferredVibe,
+        recommendedVibe: "Xem phim giải trí",
         confidenceScore: "100%",
       }
     };
@@ -753,13 +735,13 @@ function generateResponse(userText, tickets) {
   const keywordResults = searchTickets(tickets, null, null, userText);
   if (keywordResults.length > 0) {
     return {
-      text: `Mình tìm thấy **${keywordResults.length} vé** có thể phù hợp với bạn! Bấm vào để xem chi tiết 👇`,
+      text: `Mình tìm thấy **${keywordResults.length} vé xem phim** có thể phù hợp với bạn! Bấm vào để xem chi tiết 👇`,
       tickets: keywordResults,
     };
   }
 
   return {
-    text: "Mình chưa hiểu tâm trạng hoặc từ khóa của bạn lắm. 🤔\n\nThử kể cho mình nghe xem:\n• *\"Hôm nay buồn quá, muốn trốn đi đâu đó\"*\n• *\"Đi làm stress cực kỳ, cần xả giận\"*\n• *\"Cuối tuần này rủ crush đi hẹn hò ở đâu nhỉ?\"*",
+    text: "Mình chưa hiểu tâm trạng hoặc từ khóa của bạn lắm. 🤔\n\nThử kể cho mình nghe xem:\n• *\"Hôm nay buồn quá, muốn xem phim gì chữa lành\"*\n• *\"Mới đi làm về stress cực kỳ, có phim hài nào vui vui không\"*\n• *\"Cuối tuần này rủ crush đi xem phim gì lãng mạn ở CGV nhỉ?\"*",
     tickets: [],
   };
 }
@@ -774,11 +756,11 @@ function formatPrice(p) {
 
 const QUICK_SUGGESTIONS = [
   { label: "✨ Hôm nay xem gì?", text: "Hôm nay nên xem gì?" },
-  { label: "🍿 Cần chữa lành", text: "Mình đang mệt mỏi và cần chữa lành tâm hồn" },
-  { label: "🔥 Muốn quẩy nhiệt", text: "Đang sung sức, muốn đi quẩy đâu đó thật nhiệt" },
+  { label: "🍿 Cần chữa lành", text: "Mình đang mệt mỏi và cần chữa lành tâm hồn bằng phim ảnh" },
+  { label: "🔥 Phim hành động", text: "Tìm phim hành động kịch tính" },
   { label: "🌹 Hẹn hò lãng mạn", text: "Kiếm buổi hẹn hò lãng mạn với người yêu" },
-  { label: "🎭 Căng thẳng stress", text: "Đầu óc đang cực kỳ stress và áp lực" },
-  { label: "🚌 Tìm vé xe khách", text: "Tìm vé xe khách" },
+  { label: "🎭 Phim hài xả stress", text: "Đang stress quá, muốn xem phim hài" },
+  { label: "🎬 Vé phim CGV hot", text: "Tìm vé CGV Hà Nội" },
 ];
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -810,7 +792,7 @@ export default function AIChatBot() {
           {
             id: Date.now(),
             role: "ai",
-            text: "Yo! 👋 Mình là **GoTix AI** – người bạn đồng hành bắt vibe của bạn! 🎟️✨\n\nHôm nay mood của bạn thế nào nè? Đang chill chill thư thái, mệt mỏi cần chữa lành (recharge), hay đang tràn đầy dopamine muốn quẩy nhạc hội? Nói cho mình biết hoặc chọn gợi ý bên dưới nha! 👇",
+            text: "Yo! 👋 Mình là **GoTix AI** – người bạn đồng hành bắt vibe xem phim của bạn! 🎬✨\n\nHôm nay mood của bạn thế nào nè? Đang chill chill thư thái, mệt mỏi cần chữa lành (recharge), hay đang tràn đầy dopamine muốn xem phim bom tấn? Nói cho mình biết hoặc chọn gợi ý bên dưới nha! 👇",
             tickets: [],
             time: new Date(),
           },

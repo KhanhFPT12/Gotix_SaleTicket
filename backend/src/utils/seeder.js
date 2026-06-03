@@ -162,6 +162,21 @@ const seedData = async () => {
       cinema:    'https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=600&q=80',
     };
 
+    const otherImages = {
+      concert1: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
+      concert2: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=600&q=80',
+      concert3: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=600&q=80',
+      event1:   'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+      event2:   'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=600&q=80',
+      sport1:   'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
+      sport2:   'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80',
+      workshop1:'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=600&q=80',
+      workshop2:'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
+      bus1:     'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80',
+      bus2:     'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80',
+      train1:   'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=600&q=80',
+    };
+
     function qr(code) {
       return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GOTIX-${code}-${Date.now()}`;
     }
@@ -178,8 +193,8 @@ const seedData = async () => {
       location: 'CGV Vincom Center Bà Triệu, Hai Bà Trưng, Hà Nội',
       eventDate: '2026-06-07',
       eventTime: '19:30',
-      originalPrice: 180000,
-      resalePrice: 130000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -206,8 +221,8 @@ const seedData = async () => {
       location: 'CGV Crescent Mall, Quận 7, TP. Hồ Chí Minh',
       eventDate: '2026-06-14',
       eventTime: '20:00',
-      originalPrice: 320000,
-      resalePrice: 260000,
+      originalPrice: 100000,
+      resalePrice: 50000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -234,8 +249,8 @@ const seedData = async () => {
       location: 'Lotte Cinema Gò Vấp, TP. Hồ Chí Minh',
       eventDate: '2026-06-08',
       eventTime: '14:00',
-      originalPrice: 110000,
-      resalePrice: 80000,
+      originalPrice: 80000,
+      resalePrice: 40000,
       quantity: 3,
       status: 'available',
       verifyStatus: 'verified',
@@ -262,8 +277,8 @@ const seedData = async () => {
       location: 'BHD Star Vincom Thảo Điền, Quận 2, TP. Hồ Chí Minh',
       eventDate: '2026-06-10',
       eventTime: '19:15',
-      originalPrice: 220000,
-      resalePrice: 160000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -290,8 +305,8 @@ const seedData = async () => {
       location: 'Galaxy Cinema Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
       eventDate: '2026-06-06',
       eventTime: '21:00',
-      originalPrice: 95000,
-      resalePrice: 70000,
+      originalPrice: 80000,
+      resalePrice: 40000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -318,8 +333,8 @@ const seedData = async () => {
       location: 'CGV Landmark 81, Bình Thạnh, TP. Hồ Chí Minh',
       eventDate: '2026-06-21',
       eventTime: '15:45',
-      originalPrice: 280000,
-      resalePrice: 210000,
+      originalPrice: 100000,
+      resalePrice: 50000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -348,8 +363,8 @@ const seedData = async () => {
       location: 'CGV Mipec Tower, Long Biên, Hà Nội',
       eventDate: '2026-06-15',
       eventTime: '18:30',
-      originalPrice: 210000,
-      resalePrice: 170000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -376,8 +391,8 @@ const seedData = async () => {
       location: 'Lotte Cinema Hà Nội, Đống Đa, Hà Nội',
       eventDate: '2026-06-13',
       eventTime: '23:00',
-      originalPrice: 140000,
-      resalePrice: 100000,
+      originalPrice: 80000,
+      resalePrice: 40000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -404,8 +419,8 @@ const seedData = async () => {
       location: 'CGV Times City, Hai Bà Trưng, Hà Nội',
       eventDate: '2026-06-28',
       eventTime: '09:30',
-      originalPrice: 165000,
-      resalePrice: 130000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -432,8 +447,8 @@ const seedData = async () => {
       location: 'Lotte Cinema Cầu Giấy, Hà Nội',
       eventDate: '2026-06-22',
       eventTime: '20:30',
-      originalPrice: 130000,
-      resalePrice: 95000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -462,8 +477,8 @@ const seedData = async () => {
       location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
       eventDate: '2026-06-20',
       eventTime: '15:00',
-      originalPrice: 100000,
-      resalePrice: 75000,
+      originalPrice: 80000,
+      resalePrice: 40000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -490,8 +505,8 @@ const seedData = async () => {
       location: 'CGV Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
       eventDate: '2026-07-04',
       eventTime: '22:30',
-      originalPrice: 200000,
-      resalePrice: 185000,
+      originalPrice: 100000,
+      resalePrice: 50000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -520,8 +535,8 @@ const seedData = async () => {
       location: 'CGV Vincom Đồng Khởi, Quận 1, TP. Hồ Chí Minh',
       eventDate: '2026-05-23',
       eventTime: '19:45',
-      originalPrice: 250000,
-      resalePrice: 190000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'sold',
       verifyStatus: 'verified',
@@ -549,8 +564,8 @@ const seedData = async () => {
       location: 'CGV Mipec Tower, Long Biên, Hà Nội',
       eventDate: '2026-05-18',
       eventTime: '14:00',
-      originalPrice: 160000,
-      resalePrice: 120000,
+      originalPrice: 80000,
+      resalePrice: 40000,
       quantity: 1,
       status: 'sold',
       verifyStatus: 'verified',
@@ -578,8 +593,8 @@ const seedData = async () => {
       location: 'CGV Hùng Vương Plaza, Quận 5, TP. Hồ Chí Minh',
       eventDate: '2026-07-12',
       eventTime: '17:00',
-      originalPrice: 195000,
-      resalePrice: 150000,
+      originalPrice: 90000,
+      resalePrice: 45000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'pending',
@@ -606,8 +621,8 @@ const seedData = async () => {
       location: 'Rạp lạ, Hà Nội',
       eventDate: '2026-05-01',
       eventTime: '10:00',
-      originalPrice: 100000,
-      resalePrice: 50000,
+      originalPrice: 60000,
+      resalePrice: 30000,
       quantity: 1,
       status: 'hidden',
       verifyStatus: 'rejected',
@@ -626,56 +641,60 @@ const seedData = async () => {
       views: 5,
     }));
 
-    console.log(`✅ Đã tạo ${await Ticket.countDocuments()} Movie Tickets.\n`);
+    console.log(`🎬 Đã tạo ${tickets.length} Movie Tickets.`);
+
+
+
+    console.log(`🎟️  Tổng số Tickets trong database: ${await Ticket.countDocuments()}\n`);
 
     // ── 4. Transactions ─────────────────────────────────────────────────
     console.log('💰 Seeding Transactions...');
 
     const tx1 = await Transaction.create({
       buyerId: buyer3._id, sellerId: seller1._id, ticketId: ticketSold1._id,
-      quantity: 2, totalPrice: 380000, paymentMethod: 'momo',
+      quantity: 2, totalPrice: 90000, paymentMethod: 'momo',
       paymentStatus: 'paid', transactionStatus: 'completed',
-      platformFee: 19000, sellerAmount: 361000, sellerCredited: true,
+      platformFee: 4500, sellerAmount: 85500, sellerCredited: true,
       createdAt: daysAgo(5),
     });
 
     const tx2 = await Transaction.create({
       buyerId: buyer2._id, sellerId: seller2._id, ticketId: ticketSold2._id,
-      quantity: 1, totalPrice: 120000, paymentMethod: 'bank_transfer',
+      quantity: 1, totalPrice: 40000, paymentMethod: 'bank_transfer',
       paymentStatus: 'paid', transactionStatus: 'completed',
-      platformFee: 6000, sellerAmount: 114000, sellerCredited: true,
+      platformFee: 2000, sellerAmount: 38000, sellerCredited: true,
       createdAt: daysAgo(9),
     });
 
     const tx3 = await Transaction.create({
       buyerId: buyer1._id, sellerId: seller2._id, ticketId: tickets[0]._id, // T01
-      quantity: 2, totalPrice: 260000, paymentMethod: 'momo',
+      quantity: 2, totalPrice: 90000, paymentMethod: 'momo',
       paymentStatus: 'pending', transactionStatus: 'pending',
-      platformFee: 13000, sellerAmount: 247000, sellerCredited: false,
+      platformFee: 4500, sellerAmount: 85500, sellerCredited: false,
       createdAt: new Date(),
     });
 
     const tx4 = await Transaction.create({
       buyerId: buyer4._id, sellerId: seller1._id, ticketId: tickets[1]._id, // T02
-      quantity: 1, totalPrice: 260000, paymentMethod: 'vnpay',
+      quantity: 1, totalPrice: 50000, paymentMethod: 'vnpay',
       paymentStatus: 'paid', transactionStatus: 'completed',
-      platformFee: 13000, sellerAmount: 247000, sellerCredited: true,
+      platformFee: 2500, sellerAmount: 47500, sellerCredited: true,
       createdAt: daysAgo(3),
     });
 
     const tx5 = await Transaction.create({
       buyerId: buyer2._id, sellerId: seller4._id, ticketId: tickets[8]._id, // T09 Demon Slayer
-      quantity: 1, totalPrice: 130000, paymentMethod: 'momo',
+      quantity: 1, totalPrice: 45000, paymentMethod: 'momo',
       paymentStatus: 'pending', transactionStatus: 'pending',
-      platformFee: 6500, sellerAmount: 123500, sellerCredited: false,
+      platformFee: 2250, sellerAmount: 42750, sellerCredited: false,
       createdAt: new Date(),
     });
 
     const tx6 = await Transaction.create({
       buyerId: buyer3._id, sellerId: seller3._id, ticketId: tickets[5]._id, // T06 Deadpool 4DX
-      quantity: 1, totalPrice: 210000, paymentMethod: 'bank_transfer',
+      quantity: 1, totalPrice: 50000, paymentMethod: 'bank_transfer',
       paymentStatus: 'paid', transactionStatus: 'disputed',
-      platformFee: 10500, sellerAmount: 199500, sellerCredited: false,
+      platformFee: 2500, sellerAmount: 47500, sellerCredited: false,
       createdAt: daysAgo(1),
     });
 
@@ -759,7 +778,7 @@ const seedData = async () => {
       {
         receiverId: seller1._id, type: 'ticket_sold', isRead: false,
         title: 'Vé phim đã bán được! 🎉',
-        message: 'Vé "Spider-Man: Brand New Day - CGV Vincom Đồng Khởi" đã được mua bởi Đỗ Minh Khoa. 361,000đ đã vào số dư khả dụng của bạn.',
+        message: 'Vé "Spider-Man: Brand New Day - CGV Vincom Đồng Khởi" đã được mua bởi Đỗ Minh Khoa. 85,500đ đã vào số dư khả dụng của bạn.',
         relatedId: ticketSold1._id.toString(),
       },
       {
@@ -783,7 +802,7 @@ const seedData = async () => {
       {
         receiverId: seller1._id, type: 'wallet_credited', isRead: true,
         title: 'Ví được cộng tiền 💰',
-        message: 'GoTix đã giải phóng 247,000đ vào ví khả dụng của bạn sau khi giao dịch Inside Out 3 được xác nhận hoàn tất bởi người mua.',
+        message: 'GoTix đã giải phóng 47,500đ vào ví khả dụng của bạn sau khi giao dịch Inside Out 3 được xác nhận hoàn tất bởi người mua.',
         relatedId: tx4._id.toString(),
       },
       {
@@ -955,12 +974,11 @@ const seedData = async () => {
 
     console.log(`✅ Đã tạo ${await AuditLog.countDocuments()} AuditLogs.\n`);
 
-    // ── Summary ─────────────────────────────────────────────────────────
     console.log('='.repeat(55));
-    console.log('🎬  SEEDING HOÀN TẤT – DỮ LIỆU VÉ XEM PHIM GOTIX');
+    console.log('🎫  SEEDING HOÀN TẤT – DỮ LIỆU VÉ PHIM GOTIX');
     console.log('='.repeat(55));
     console.log(`👤  Users:            ${await User.countDocuments()}`);
-    console.log(`🎟️   Tickets (Movie):  ${await Ticket.countDocuments()}`);
+    console.log(`🎟️   Vé phim (Movie):  ${await Ticket.countDocuments({ category: 'movie' })}`);
     console.log(`💰  Transactions:     ${await Transaction.countDocuments()}`);
     console.log(`⭐  Reviews:          ${await Review.countDocuments()}`);
     console.log(`💬  Chats:            ${await Chat.countDocuments()}`);

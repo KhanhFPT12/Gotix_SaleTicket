@@ -4,14 +4,6 @@ const detailsSchema = new mongoose.Schema(
   {
     movieTitle: String, cinemaName: String, cinemaAddress: String,
     room: String, seats: [String], showDate: String, showTime: String,
-    artistName: String, concertName: String,
-    eventName: String, organizer: String,
-    matchName: String, stadium: String,
-    seatZone: String, gate: String,
-    workshopName: String, speaker: String, venue: String,
-    departure: String, destination: String, departureTime: String,
-    busCompany: String, seatNumber: String, tripCode: String,
-    trainCode: String, coach: String,
   },
   { _id: false }
 );
@@ -19,7 +11,7 @@ const detailsSchema = new mongoose.Schema(
 const ticketSchema = new mongoose.Schema(
   {
     title:         { type: String, required: true, trim: true },
-    category:      { type: String, required: true, enum: ['movie', 'concert', 'event', 'sport', 'workshop', 'bus', 'train'] },
+    category:      { type: String, required: true, enum: ['movie'] },
     description:   { type: String, trim: true },
     location:      { type: String, required: true, trim: true },
     city:          { type: String, trim: true },
