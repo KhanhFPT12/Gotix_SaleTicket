@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GoTixLogo from "../components/common/GoTixLogo";
+import { GoogleLogin } from '@react-oauth/google';
 import "./Auth.css";
 
 export default function Login() {
-  const { login, currentUser, resendVerification } = useAuth();
+  const { login, googleLogin, currentUser, resendVerification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,6 +69,30 @@ export default function Login() {
     } catch { setResendMsg("❌ Đã xảy ra lỗi."); }
     finally { setResending(false); }
   }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await googleLogin(credentialResponse.credential);
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+      const role = result.user.role;
+      if (role === "admin")        navigate("/admin",         { replace: true });
+      else if (role === "support") navigate("/staff/support", { replace: true });
+      else navigate(from === "/login" ? "/" : from, { replace: true });
+    } catch {
+      setError("Đã xảy ra lỗi khi đăng nhập bằng Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Đăng nhập Google thất bại.");
+  };
 
   return (
     <div className="auth-page">
@@ -132,6 +157,17 @@ export default function Login() {
             {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
+
+        <div className="auth-separator"><span>Hoặc</span></div>
+        <div className="google-login-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            width="100%"
+            theme="outline"
+            text="signin_with"
+          />
+        </div>
 
         <p className="auth-switch">
           Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>

@@ -4,6 +4,9 @@ const PendingRegistration = require('../models/PendingRegistration');
 const generateToken       = require('../utils/generateToken');
 const emailService        = require('../services/emailService');
 const { success, error }  = require('../utils/apiResponse');
+const { OAuth2Client }    = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const COOKIE_OPTS  = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' };
 const OTP_EXPIRE   = 10 * 60 * 1000; // 10 phút
@@ -193,6 +196,64 @@ const logout = (req, res) => {
   return res.json(success('Đăng xuất thành công'));
 };
 
+// ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
+const googleLogin = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json(error('Không có token'));
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    let user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      const crypto = require('crypto');
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      user = await User.create({
+        name,
+        email,
+        password: randomPassword,
+        avatar: picture || '',
+        emailVerified: true,
+        role: 'user',
+        googleId,
+      });
+    } else {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.emailVerified = true;
+      }
+      if (!user.avatar && picture) {
+        user.avatar = picture;
+      }
+      await user.save({ validateBeforeSave: false });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json(error('Tài khoản đã bị vô hiệu hóa'));
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    const jwtToken = generateToken(user._id);
+    res.cookie('token', jwtToken, COOKIE_OPTS);
+
+    const userObj = user.toObject();
+    delete userObj.password;
+    userObj.id = user._id.toString();
+
+    return res.json(success('Đăng nhập Google thành công', { user: userObj, token: jwtToken }));
+  } catch (err) {
+    console.error('[Google Login Error]', err);
+    return res.status(400).json(error('Xác thực Google thất bại. Hãy kiểm tra lại Client ID.'));
+  }
+};
+
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
@@ -228,7 +289,7 @@ const verifyEmail        = (req, res) => res.status(410).json(error('Link xác n
 const resendVerification = resendOtp;
 
 module.exports = {
-  register, login, logout, getMe, changePassword,
+  register, login, logout, getMe, changePassword, googleLogin,
   verifyOtp, resendOtp,
   verifyEmail, resendVerification,
 };

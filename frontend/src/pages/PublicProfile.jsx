@@ -66,7 +66,7 @@ function ReviewCard({ review }) {
       <div className="pp-review__header">
         <div className="pp-review__buyer">
           {buyerAv
-            ? <img src={buyerAv} alt={buyerName} className="pp-review__avatar" />
+            ? <img src={buyerAv} alt={buyerName} referrerPolicy="no-referrer" className="pp-review__avatar" />
             : <div className="pp-review__avatar pp-review__avatar--placeholder">{buyerName.charAt(0).toUpperCase()}</div>
           }
           <div>
@@ -127,7 +127,7 @@ export default function PublicProfile() {
         <div className="pp-header">
           <div className="pp-header__avatar-wrap">
             {avatarUrl
-              ? <img src={avatarUrl} alt={user.name} className="pp-header__avatar" />
+              ? <img src={avatarUrl} alt={user.name} referrerPolicy="no-referrer" className="pp-header__avatar" />
               : <div className="pp-header__avatar pp-header__avatar--placeholder">{user.name?.charAt(0).toUpperCase()}</div>
             }
             {user.isPro && (

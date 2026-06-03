@@ -31,6 +31,14 @@ export function AuthProvider({ children }) {
     return { success: true, user: res.data.user };
   }
 
+  async function googleLogin(token) {
+    const res = await apiPost("/auth/google", { token });
+    if (!res.success) return { success: false, message: res.message };
+    setToken(res.data.token);
+    setCurrentUser(res.data.user);
+    return { success: true, user: res.data.user };
+  }
+
   async function register(data) {
     const res = await apiPost("/auth/register", {
       name:     data.name,
@@ -99,7 +107,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile, changePassword, refreshUser, verifyOtp, resendOtp, resendVerification }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, googleLogin, register, logout, updateProfile, changePassword, refreshUser, verifyOtp, resendOtp, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

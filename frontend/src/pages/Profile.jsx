@@ -152,8 +152,8 @@ export default function Profile() {
                 title="Nhấn để đổi ảnh đại diện"
               >
                 {avatarUrl
-                  ? <img src={avatarUrl} alt="Avatar" />
-                  : <span>{currentUser?.name?.charAt(0).toUpperCase()}</span>
+                  ? <img src={avatarUrl} alt="Avatar" referrerPolicy="no-referrer" />
+                  : <div className="pf-avatar__placeholder">{currentUser?.name?.charAt(0).toUpperCase()}</div>
                 }
                 <div className="pf-avatar__overlay">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
