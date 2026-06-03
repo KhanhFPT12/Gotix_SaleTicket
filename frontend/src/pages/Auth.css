@@ -196,3 +196,35 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+.auth-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: var(--spacing-lg) 0;
+}
+
+.auth-separator::before,
+.auth-separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.auth-separator span {
+  padding: 0 var(--spacing-md);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.google-login-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.google-login-wrapper > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

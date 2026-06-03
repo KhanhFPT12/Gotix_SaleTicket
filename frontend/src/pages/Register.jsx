@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GoTixLogo from "../components/common/GoTixLogo";
+import { GoogleLogin } from '@react-oauth/google';
 import "./Auth.css";
 
 export default function Register() {
-  const { register, verifyOtp, resendOtp, currentUser } = useAuth();
+  const { register, googleLogin, verifyOtp, resendOtp, currentUser } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm]   = useState({ name: "", email: "", password: "", phone: "" });
@@ -133,6 +134,27 @@ export default function Register() {
     } catch { setResendMsg("Đã xảy ra lỗi."); }
     finally { setResending(false); }
   }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await googleLogin(credentialResponse.credential);
+      if (!result.success) {
+        setError(result.message);
+        return;
+      }
+      // Redirect handled by useEffect
+    } catch {
+      setError("Đã xảy ra lỗi khi đăng ký bằng Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Đăng nhập Google thất bại.");
+  };
 
   // ── OTP screen ───────────────────────────────────────────────────────────
   if (step === "otp") {
@@ -271,6 +293,17 @@ export default function Register() {
             {loading ? "Đang gửi mã..." : "Tiếp tục"}
           </button>
         </form>
+
+        <div className="auth-separator"><span>Hoặc</span></div>
+        <div className="google-login-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            width="100%"
+            theme="outline"
+            text="signup_with"
+          />
+        </div>
 
         <ul className="register-perks">
           <li>Đăng vé miễn phí, được duyệt trong 24h</li>

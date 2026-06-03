@@ -170,7 +170,7 @@ export default function Header() {
                 <button className="user-menu-trigger" onClick={() => setMenuOpen(!menuOpen)}>
                   <div className="user-avatar">
                     {currentUser.avatar
-                      ? <img src={resolveMediaUrl(currentUser.avatar)} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                      ? <img src={resolveMediaUrl(currentUser.avatar)} alt="avatar" referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
                       : currentUser.name?.charAt(0).toUpperCase()
                     }
                   </div>

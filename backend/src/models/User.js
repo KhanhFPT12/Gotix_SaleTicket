@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
     pendingBalance:   { type: Number, default: 0, min: 0 },
     totalRevenue:     { type: Number, default: 0, min: 0 },
     violationCount: { type: Number, default: 0 },
+    googleId:       { type: String },
     trustScore:     { type: Number, default: 50 },
     isPro:       { type: Boolean, default: false },
     proPlan:     { type: String, enum: ['none', '1_month', '3_months', '6_months', '1_year'], default: 'none' },
