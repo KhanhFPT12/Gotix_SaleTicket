@@ -156,14 +156,17 @@ export default function Register() {
                 onKeyDown={e => handleOtpKeyDown(i, e)}
                 autoFocus={i === 0}
                 style={{
-                  width: 48, height: 56,
-                  fontSize: 24, fontWeight: 700,
+                  width: 52, height: 60,
+                  fontSize: 28, fontWeight: 800,
                   textAlign: "center",
-                  border: `2px solid ${otpError ? "#ef4444" : digit ? "var(--color-primary)" : "var(--color-border)"}`,
-                  borderRadius: 10,
+                  border: `2px solid ${otpError ? "#ef4444" : digit ? "#2563eb" : "#d1d5db"}`,
+                  borderRadius: 12,
                   outline: "none",
-                  background: "var(--bg-white)",
-                  transition: "border-color 0.15s",
+                  background: digit ? "#eff6ff" : "#ffffff",
+                  color: "#111827",
+                  boxShadow: digit ? "0 0 0 3px rgba(37,99,235,0.15)" : "0 1px 3px rgba(0,0,0,0.08)",
+                  transition: "all 0.15s",
+                  cursor: "text",
                 }}
               />
             ))}
