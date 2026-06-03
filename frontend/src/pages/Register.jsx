@@ -5,13 +5,15 @@ import GoTixLogo from "../components/common/GoTixLogo";
 import "./Auth.css";
 
 export default function Register() {
-  const { register, currentUser } = useAuth();
+  const { register, currentUser, resendVerification } = useAuth();
   const navigate = useNavigate();
   const [form, setForm]       = useState({ name: "", email: "", password: "", phone: "" });
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
 
   // Nếu đã đăng nhập từ trước (không phải vừa đăng ký) → redirect
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setResendMsg("");
     if (form.password.length < 6) { setError("Mật khẩu ít nhất 6 ký tự"); return; }
     setLoading(true);
     try {
@@ -39,6 +42,20 @@ export default function Register() {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!registeredEmail) return;
+    setResending(true);
+    setResendMsg("");
+    try {
+      const res = await resendVerification(registeredEmail);
+      setResendMsg(res.success ? "✅ " + res.message : "❌ " + (res.message || "Gửi thất bại."));
+    } catch {
+      setResendMsg("❌ Đã xảy ra lỗi. Vui lòng thử lại.");
+    } finally {
+      setResending(false);
     }
   }
 
@@ -68,14 +85,29 @@ export default function Register() {
           </div>
 
           <p style={{ fontSize: 13, color: "var(--color-text-muted)", marginBottom: 20 }}>
-            Không nhận được email? Kiểm tra thư mục Spam, hoặc{" "}
-            <Link to="/login" style={{ color: "var(--color-primary)" }}>đăng nhập</Link>
-            {" "}để gửi lại từ trang hồ sơ.
+            Không nhận được email? Kiểm tra thư mục Spam hoặc gửi lại ngay bên dưới.
           </p>
 
-          <Link to="/login" className="btn btn-primary btn-lg" style={{ display: "block" }}>
-            Về trang đăng nhập
-          </Link>
+          {resendMsg && (
+            <div className="alert alert-info" style={{ textAlign: "left", marginBottom: 16 }}>
+              {resendMsg}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gap: 12 }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-lg"
+              onClick={handleResendVerification}
+              disabled={resending}
+            >
+              {resending ? "Đang gửi lại..." : "Gửi lại email xác minh"}
+            </button>
+
+            <Link to="/login" className="btn btn-primary btn-lg" style={{ display: "block" }}>
+              Về trang đăng nhập
+            </Link>
+          </div>
         </div>
       </div>
     );

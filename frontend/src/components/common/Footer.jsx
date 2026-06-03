@@ -17,11 +17,7 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Khám phá</h4>
             <ul>
-              <li><Link to="/tickets?category=concert">Vé concert</Link></li>
-              <li><Link to="/tickets?category=movie">Vé phim</Link></li>
-              <li><Link to="/tickets?category=sport">Vé thể thao</Link></li>
-              <li><Link to="/tickets?category=workshop">Workshop</Link></li>
-              <li><Link to="/tickets?category=bus">Vé xe khách</Link></li>
+              <li><Link to="/tickets?category=movie">Vé xem phim</Link></li>
             </ul>
           </div>
 
