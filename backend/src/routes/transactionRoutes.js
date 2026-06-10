@@ -9,8 +9,12 @@ const {
   getMyPurchases,
   getMySales,
   getTransactionById,
+  getRecentPublic,
 } = require('../controllers/transactionController');
 const { protect } = require('../middleware/authMiddleware');
+
+// Public — no auth needed (anonymized social proof data)
+router.get('/recent-public',               getRecentPublic);
 
 router.post('/',                           protect, createTransaction);
 router.get('/my-purchases',               protect, getMyPurchases);

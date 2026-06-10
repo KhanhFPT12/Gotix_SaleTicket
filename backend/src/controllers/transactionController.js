@@ -300,6 +300,46 @@ const getTransactionById = async (req, res, next) => {
   }
 };
 
+// ── Public: recent completed transactions (social proof ticker) ───────────────
+// No auth required — anonymized data only
+const getRecentPublic = async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 15, 30);
+    const txs = await Transaction.find({ status: { $in: ['completed', 'paid'] } })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .populate('buyerId',  'name')
+      .populate('ticketId', 'title location city details');
+
+    const items = txs.map(tx => {
+      // Anonymize buyer: "Nguyễn Văn An" → "Nguyễn V. A."
+      const fullName = tx.buyerId?.name || 'Khách';
+      const parts = fullName.trim().split(' ');
+      let anonName = parts[0];
+      if (parts.length > 1) {
+        // Add initials for middle + last parts
+        anonName += ' ' + parts.slice(1).map(p => p.charAt(0) + '.').join(' ');
+      }
+
+      const ticket = tx.ticketId;
+      const details = ticket?.details || {};
+
+      return {
+        buyerName:  anonName,
+        movieTitle: details.movieTitle || ticket?.title || 'Vé phim',
+        cinema:     details.cinemaName || ticket?.location || '',
+        city:       ticket?.city || 'Đà Nẵng',
+        quantity:   tx.quantity,
+        completedAt: tx.updatedAt,
+      };
+    });
+
+    return res.json({ success: true, data: { transactions: items } });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createTransaction,
   confirmUserPaid,
@@ -309,4 +349,5 @@ module.exports = {
   getMyPurchases,
   getMySales,
   getTransactionById,
+  getRecentPublic,
 };

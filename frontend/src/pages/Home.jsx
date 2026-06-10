@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTickets } from "../context/TicketContext";
 import TicketCard from "../components/tickets/TicketCard";
+import HeroBanner from "../components/common/HeroBanner";
 import "./Home.css";
 
 const CINEMA_QUICKLINKS = [
@@ -14,66 +14,14 @@ const CINEMA_QUICKLINKS = [
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
   const { tickets } = useTickets();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchCity, setSearchCity]   = useState("");
-
-  function handleSearch(e) {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("q", searchQuery);
-    if (searchCity)  params.set("city", searchCity);
-    navigate(`/tickets?${params.toString()}`);
-  }
-
   const latestTickets = tickets.filter(t => t.status === "approved").slice(0, 8);
 
   return (
     <div className="home">
 
-      {/* ── Hero ── */}
-      <section className="hero">
-        <div className="container">
-          <div className="hero-content">
-
-            <h1 className="hero-title">
-              Pass vé xem phim dư<br />An toàn · Nhanh chóng
-            </h1>
-            <p className="hero-subtitle">
-              Mua lại vé phim từ người dùng khác. Vé được xác minh, giao dịch qua GoTix — minh bạch từ đầu đến cuối.
-            </p>
-
-            <form className="search-bar" onSubmit={handleSearch}>
-              <div className="search-input-wrap">
-                <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Tìm theo tên phim, rạp..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="search-input"
-                />
-              </div>
-              <select
-                value={searchCity}
-                onChange={e => setSearchCity(e.target.value)}
-                className="search-select"
-              >
-                <option value="">Tất cả khu vực</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-              </select>
-              <button type="submit" className="btn btn-primary btn-lg search-btn">
-                Tìm vé
-              </button>
-            </form>
-
-
-          </div>
-        </div>
-      </section>
+      {/* ── Hero Banner Carousel — thay toàn bộ hero section ── */}
+      <HeroBanner />
 
       {/* ── Cinema quick filters ── */}
       <section className="section section-tight">

@@ -130,6 +130,28 @@
   background-color: var(--border-color);
 }
 
+/* Trust badges */
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.hero-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.hero-trust-item svg {
+  flex-shrink: 0;
+}
+
 /* Sections */
 .section {
   padding: var(--spacing-3xl) 0;
