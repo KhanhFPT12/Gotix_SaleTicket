@@ -95,13 +95,13 @@ export default function BuyerDashboard() {
               className={`tab-btn ${activeTab === "purchases" ? "active" : ""}`}
               onClick={() => setActiveTab("purchases")}
             >
-              Vé đã mua ({myPurchases.length})
+              Vé đã mua <span className="tab-count-badge">{myPurchases.length}</span>
             </button>
             <button
               className={`tab-btn ${activeTab === "posted" ? "active" : ""}`}
               onClick={() => setActiveTab("posted")}
             >
-              Vé đã đăng ({myPosted.length})
+              Vé đã đăng <span className="tab-count-badge">{myPosted.length}</span>
               {myPosted.filter((t) => t.status === "pending").length > 0 && (
                 <span className="tab-badge">
                   {myPosted.filter((t) => t.status === "pending").length}

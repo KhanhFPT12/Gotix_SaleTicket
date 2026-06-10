@@ -20,8 +20,6 @@ const CATEGORY_KEYWORDS = {
 };
 
 const LOCATION_KEYWORDS = {
-  "Hà Nội": ["hà nội", "ha noi", "hn", "thủ đô", "thu do", "bắc", "miền bắc", "mien bac"],
-  "TP. Hồ Chí Minh": ["hồ chí minh", "ho chi minh", "tp.hcm", "tphcm", "hcm", "sài gòn", "sai gon", "sg", "miền nam", "mien nam", "nam"],
   "Đà Nẵng": ["đà nẵng", "da nang", "dn", "miền trung", "mien trung"],
 };
 
@@ -111,6 +109,109 @@ function detectLocation(text) {
   return null;
 }
 
+function formatDateStr(dateStr) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+}
+
+function detectDateFilter(text) {
+  const prepared = prepareText(text);
+  
+  const getLocalDateStr = (offsetDays = 0) => {
+    const d = new Date();
+    if (offsetDays !== 0) {
+      d.setDate(d.getDate() + offsetDays);
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getDayOfWeekDateStr = (targetDay) => {
+    const today = new Date();
+    const currentDay = today.getDay();
+    let distance = targetDay - currentDay;
+    if (distance < 0) {
+      distance += 7;
+    }
+    return getLocalDateStr(distance);
+  };
+
+  // Today
+  if ([" hôm nay ", " hom nay ", " nay "].some(kw => prepared.includes(kw))) {
+    return {
+      type: "today",
+      label: "Hôm nay",
+      dates: [getLocalDateStr(0)]
+    };
+  }
+
+  // Tomorrow
+  if ([" ngày mai ", " ngay mai ", " mai "].some(kw => prepared.includes(kw))) {
+    return {
+      type: "tomorrow",
+      label: "Ngày mai",
+      dates: [getLocalDateStr(1)]
+    };
+  }
+
+  // The day after tomorrow
+  if ([" ngày kia ", " ngay kia ", " kia "].some(kw => prepared.includes(kw))) {
+    return {
+      type: "day_after_tomorrow",
+      label: "Ngày kia",
+      dates: [getLocalDateStr(2)]
+    };
+  }
+
+  // Weekend
+  if ([" cuối tuần ", " cuoi tuan ", " cuối tuần này ", " cuoi tuan nay "].some(kw => prepared.includes(kw))) {
+    const today = new Date();
+    const currentDay = today.getDay();
+    
+    // Sat
+    const satOffset = 6 - currentDay;
+    const satStr = getLocalDateStr(satOffset);
+    // Sun
+    const sunOffset = currentDay === 0 ? 0 : 7 - currentDay;
+    const sunStr = getLocalDateStr(sunOffset);
+
+    return {
+      type: "weekend",
+      label: "Cuối tuần này",
+      dates: [satStr, sunStr]
+    };
+  }
+
+  // Days of the week
+  const dayMappings = [
+    { label: "thứ Hai", day: 1, keywords: [" thứ 2 ", " thu 2 ", " thứ hai ", " thu hai "] },
+    { label: "thứ Ba", day: 2, keywords: [" thứ 3 ", " thu 3 ", " thứ ba ", " thu ba "] },
+    { label: "thứ Tư", day: 3, keywords: [" thứ 4 ", " thu 4 ", " thứ tư ", " thu tu "] },
+    { label: "thứ Năm", day: 4, keywords: [" thứ 5 ", " thu 5 ", " thứ năm ", " thu nam "] },
+    { label: "thứ Sáu", day: 5, keywords: [" thứ 6 ", " thu 6 ", " thứ sáu ", " thu sau "] },
+    { label: "thứ Bảy", day: 6, keywords: [" thứ 7 ", " thu 7 ", " thứ bảy ", " thu bay "] },
+    { label: "chủ Nhật", day: 0, keywords: [" chủ nhật ", " chu nhat ", " cn "] }
+  ];
+
+  for (const mapping of dayMappings) {
+    if (mapping.keywords.some(kw => prepared.includes(kw))) {
+      return {
+        type: "day_of_week",
+        label: mapping.label,
+        dates: [getDayOfWeekDateStr(mapping.day)]
+      };
+    }
+  }
+
+  return null;
+}
+
 function extractSearchQuery(text) {
   if (!text) return "";
   let q = text
@@ -140,17 +241,53 @@ function extractSearchQuery(text) {
       }
     }
   }
+
+  const dateKeywords = [
+    "ngày mai", "ngay mai", "mai",
+    "hôm nay", "hom nay", "nay",
+    "ngày kia", "ngay kia", "kia",
+    "cuối tuần", "cuoi tuan", "cuối tuần này", "cuoi tuan nay",
+    "thứ hai", "thu hai", "thứ 2", "thu 2",
+    "thứ ba", "thu ba", "thứ 3", "thu 3",
+    "thứ tư", "thu tu", "thứ 4", "thu 4",
+    "thứ năm", "thu nam", "thứ 5", "thu 5",
+    "thứ sáu", "thu sau", "thứ 6", "thu 6",
+    "thứ bảy", "thu bay", "thứ 7", "thu 7",
+    "chủ nhật", "chu nhat", "cn"
+  ];
+  const sortedDateKeywords = [...dateKeywords].sort((a, b) => b.length - a.length);
+  for (const kw of sortedDateKeywords) {
+    const target = ` ${kw.trim()} `;
+    while (q.includes(target)) {
+      q = q.replace(target, " ");
+    }
+  }
   
   return q.replace(/\s+/g, ' ').trim();
 }
 
-function searchTickets(tickets, category, location, query) {
+function searchTickets(tickets, category, location, query, datesFilter) {
   let results = tickets.filter(
     (t) => t.status === "approved" || t.verifyStatus === "verified" || t.status === "available"
   );
 
-  if (category) results = results.filter((t) => t.category === category);
-  if (location) results = results.filter((t) => t.location?.toLowerCase().includes(location.toLowerCase()));
+  // Focus only on movie tickets in Đà Nẵng
+  results = results.filter((t) => t.category === "movie");
+  results = results.filter(
+    (t) =>
+      t.location?.toLowerCase().includes("đà nẵng") ||
+      t.location?.toLowerCase().includes("da nang") ||
+      t.city?.toLowerCase().includes("đà nẵng") ||
+      t.city?.toLowerCase().includes("da nang")
+  );
+
+  // Filter by date if specified
+  if (datesFilter && datesFilter.length > 0) {
+    results = results.filter((t) => {
+      // t.date format is YYYY-MM-DD
+      return datesFilter.some((dStr) => t.date === dStr);
+    });
+  }
 
   if (query) {
     const q = query.toLowerCase();
@@ -180,8 +317,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Đặc Biệt: Anime Dáng Hình Thanh Âm (Silent Voice)",
         category: "movie",
-        location: "Lotte Cinema Cầu Giấy, Hà Nội",
-        passPrice: 75000,
+        location: "Lotte Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi chiều (14:30 - 16:30)",
         description: "Bộ phim anime cảm động và đầy ý nghĩa, giúp làm dịu đi những nỗi buồn thầm kín.",
         moodTags: ["Healing", "Emotional", "Anime"],
@@ -189,8 +326,8 @@ const EMOTIONS = {
       {
         title: "Đêm Chiếu Phim Indie: Chữa Lành Tâm Hồn",
         category: "movie",
-        location: "Sky Cinema, Quận 2, TP. HCM",
-        passPrice: 90000,
+        location: "Metiz Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (19:30 - 21:30)",
         description: "Không gian rạp chiếu phim ngoài trời nhẹ nhàng, lắng đọng đầy cảm xúc.",
         moodTags: ["Quiet Vibe", "Indie Film", "Solo Activity"],
@@ -209,8 +346,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Bom Tấn Hài Hước: Deadpool & Wolverine 2",
         category: "movie",
-        location: "CGV Vincom Đồng Khởi, TP. HCM",
-        passPrice: 85000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (20:00 - 22:00)",
         description: "Liều thuốc dopamine cực mạnh giúp bạn cười quên hết áp lực.",
         moodTags: ["Funny", "High Dopamine", "Anti-stress"],
@@ -218,8 +355,8 @@ const EMOTIONS = {
       {
         title: "Vé Phim Hài Gia Đình: Kung Fu Panda 5",
         category: "movie",
-        location: "Lotte Cinema Landmark, Hà Nội",
-        passPrice: 80000,
+        location: "Lotte Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi chiều (15:00 - 17:00)",
         description: "Chú gấu trúc đáng yêu và những tràng cười sảng khoái cho ngày mệt mỏi.",
         moodTags: ["Comedy", "Relaxing", "Family Film"],
@@ -238,8 +375,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Kỷ Niệm Ghibli: My Neighbour Totoro",
         category: "movie",
-        location: "BHD Star Vincom Thảo Điền, TP. HCM",
-        passPrice: 70000,
+        location: "BHD Star Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Cuối tuần (10:00 - 12:00)",
         description: "Quay về tuổi thơ bình yên cùng Totoro để nạp lại năng lượng.",
         moodTags: ["Nostalgia", "Cozy", "Recharge"],
@@ -247,8 +384,8 @@ const EMOTIONS = {
       {
         title: "Phim Hoạt Hình Chữa Lành: Soul (Pixar)",
         category: "movie",
-        location: "CGV Times City, Hà Nội",
-        passPrice: 75000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (18:30 - 20:30)",
         description: "Câu chuyện sâu lắng giúp ta trân trọng những điều bình dị nhất trong cuộc sống.",
         moodTags: ["Pixar", "Inspirational", "Calm Vibe"],
@@ -267,8 +404,8 @@ const EMOTIONS = {
       {
         title: "Bom Tấn Hành Động Siêu Cấp: Avengers: Secret Wars",
         category: "movie",
-        location: "Rạp IMAX - CGV Metropolis, Hà Nội",
-        passPrice: 120000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (19:30 - 22:30)",
         description: "Trải nghiệm mãn nhãn trên màn hình IMAX khổng lồ, âm thanh bùng nổ.",
         moodTags: ["Action", "IMAX", "High Energy"],
@@ -276,8 +413,8 @@ const EMOTIONS = {
       {
         title: "Vé Phim Khoa Học Viễn Tưởng: Dune 3",
         category: "movie",
-        location: "Rạp 4DX - Hùng Vương Plaza, TP. HCM",
-        passPrice: 110000,
+        location: "Lotte Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (20:00 - 22:45)",
         description: "Hiệu ứng chuyển động ghế 4DX chân thực như đang ở giữa sa mạc Arrakis.",
         moodTags: ["Sci-Fi", "4DX Experience", "Thrilling"],
@@ -296,8 +433,8 @@ const EMOTIONS = {
       {
         title: "Vé Cặp Ghế Đôi Sweetbox Phim Tình Cảm: Past Lives 2",
         category: "movie",
-        location: "CGV Crescent Mall, TP. HCM",
-        passPrice: 180000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (20:30 - 22:30)",
         description: "Ghế đôi riêng tư ấm cúng, hoàn hảo cho buổi hẹn hò lãng mạn ngọt ngào.",
         moodTags: ["Romantic", "Couples", "Sweetbox"],
@@ -305,8 +442,8 @@ const EMOTIONS = {
       {
         title: "Phim Lãng Mạn Kinh Điển: La La Land Re-release",
         category: "movie",
-        location: "Galaxy Cinema Nguyễn Du, TP. HCM",
-        passPrice: 80000,
+        location: "Galaxy Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Hoàng hôn (17:30 - 19:30)",
         description: "Hòa mình vào thế giới nhạc kịch mộng mơ và tình yêu đôi lứa.",
         moodTags: ["Musical", "Classic Love", "Date Night"],
@@ -325,8 +462,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Giao Lưu CLB Điện Ảnh: Phim Cổ Điển",
         category: "movie",
-        location: "Rạp Cinestar Quốc Thanh, TP. HCM",
-        passPrice: 65000,
+        location: "BHD Star Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Sáng thứ Bảy (09:00 - 11:30)",
         description: "Xem phim và giao lưu trò chuyện cùng những mọt phim có cùng đam mê.",
         moodTags: ["Social Connection", "Classic Film", "Meetup"],
@@ -334,8 +471,8 @@ const EMOTIONS = {
       {
         title: "Phim hoạt hình Pixar ấm áp: Inside Out 3",
         category: "movie",
-        location: "Lotte Cinema Tây Hồ, Hà Nội",
-        passPrice: 85000,
+        location: "Lotte Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi chiều (14:00 - 16:00)",
         description: "Gặp lại các cảm xúc quen thuộc và cảm nhận sự thấu hiểu ấm áp từ bộ phim.",
         moodTags: ["Warmth", "Pixar", "Comforting"],
@@ -354,8 +491,8 @@ const EMOTIONS = {
       {
         title: "Phim Ca Nhạc Vui Tươi: Encanto 2",
         category: "movie",
-        location: "BHD Star Vincom Phạm Ngọc Thạch, Hà Nội",
-        passPrice: 75000,
+        location: "BHD Star Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi chiều (15:30 - 17:30)",
         description: "Giai điệu rộn rã sắc màu phép thuật sẽ nhân đôi niềm vui của bạn.",
         moodTags: ["Joyful", "Musical", "Feel-good"],
@@ -374,8 +511,8 @@ const EMOTIONS = {
       {
         title: "Phim Trinh Thám Ly Kỳ Kịch Tính: Knives Out 3",
         category: "movie",
-        location: "Galaxy Cinema Mipec Long Biên, Hà Nội",
-        passPrice: 80000,
+        location: "Galaxy Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (19:00 - 21:15)",
         description: "Những pha suy luận đỉnh cao bẻ lái cực gắt phá tan sự tẻ nhạt.",
         moodTags: ["Mystery", "Mind-bending", "Suspense"],
@@ -383,8 +520,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Đêm Phim Kinh Dị Siêu Nhiên",
         category: "movie",
-        location: "BHD Star Ba Tháng Hai, TP. HCM",
-        passPrice: 70000,
+        location: "BHD Star Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Suất khuya (22:30 - 00:30)",
         description: "Rùng rợn và hồi hộp tột cùng, đẩy dopamine lên mức cao nhất.",
         moodTags: ["Horror", "Late Night", "Adrenaline"],
@@ -403,8 +540,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Đặc Biệt Đồng Hành Cùng Fandom Marvel",
         category: "movie",
-        location: "CGV Landmark 81, TP. HCM",
-        passPrice: 95000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Tối thứ Sáu (19:30 - 22:30)",
         description: "Hòa cùng không khí hò reo cuồng nhiệt từ hàng trăm fan Marvel thực thụ.",
         moodTags: ["Group Fun", "Fandom", "Loud & Hype"],
@@ -423,8 +560,8 @@ const EMOTIONS = {
       {
         title: "Phim Hành Động Nghẹt Thở 4DX: Fast & Furious 11",
         category: "movie",
-        location: "CGV Crescent Mall, TP. HCM",
-        passPrice: 110000,
+        location: "CGV Vincom Plaza Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (20:15 - 22:30)",
         description: "Các pha rượt đuổi tốc độ nghẹt thở kết hợp ghế rung lắc 4DX cực bốc.",
         moodTags: ["Action", "Speed", "4DX Action"],
@@ -443,8 +580,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Phim Chữa Lành: My Neighbour Totoro",
         category: "movie",
-        location: "Lotte Cinema Gold View, TP. HCM",
-        passPrice: 70000,
+        location: "Lotte Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Sáng Chủ Nhật (09:30 - 11:30)",
         description: "Không gian trong trẻo, nhẹ nhàng mang lại cảm giác bình yên sâu lắng.",
         moodTags: ["Quiet space", "Healing Film", "Comfort"],
@@ -463,8 +600,8 @@ const EMOTIONS = {
       {
         title: "Phim Tâm Lý Chiều Sâu Hack Não: Inception Re-release",
         category: "movie",
-        location: "BHD Star Vincom Plaza Đà Nẵng",
-        passPrice: 75000,
+        location: "BHD Star Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi chiều (14:00 - 16:30)",
         description: "Kịch bản xuất sắc giúp bạn hoàn toàn cuốn vào cốt truyện và quên đi âu lo.",
         moodTags: ["Mind-blown", "Intense focus", "Sci-Fi"],
@@ -483,48 +620,8 @@ const EMOTIONS = {
       {
         title: "Suất Chiếu Phim Indie Ngoài Trời Trên Sân Thượng",
         category: "movie",
-        location: "Sky Cinema, Quận 2, TP. HCM",
-        passPrice: 90000,
-        suggestedTime: "Buổi tối (19:30 - 22:00)",
-        description: "Nằm ghế lười, tận hưởng làn gió mát và bộ phim nhẹ nhàng.",
-        moodTags: ["Outdoor Cinema", "Breeze", "Chill Out"],
-      }
-    ]
-  },
-  overthinking: {
-    label: "Overthinking (Suy nghĩ nhiều)",
-    energy: "low",
-    vibe: "Mindful presence & Relax",
-    confidence: 0.8,
-    keywords: ["suy nghĩ nhiều", "suy nghi nhieu", "overthink", "overthinking", "lo âu", "lo au", "nghĩ ngợi", "nghi ngoi", "rối bời", "roi boi", "mất ngủ", "mat ngu"],
-    responseIntro: "Đầu óc đang chạy quá tải với 1001 suy nghĩ hả bạn ơi? Hãy tắt bớt 'tab suy nghĩ' bằng cách tập trung vào một bộ phim giả tưởng cân não cực kỳ lôi cuốn nghen! 🧠✨",
-    categories: ["movie"],
-    mockRecommendations: [
-      {
-        title: "Phim Tâm Lý Chiều Sâu Hack Não: Inception Re-release",
-        category: "movie",
-        location: "BHD Star Vincom Plaza Đà Nẵng",
-        passPrice: 75000,
-        suggestedTime: "Buổi chiều (14:00 - 16:30)",
-        description: "Kịch bản xuất sắc giúp bạn hoàn toàn cuốn vào cốt truyện và quên đi âu lo.",
-        moodTags: ["Mind-blown", "Intense focus", "Sci-Fi"],
-      }
-    ]
-  },
-  relaxed: {
-    label: "Relaxed (Thư thái)",
-    energy: "low",
-    vibe: "Gentle flow & Easy going",
-    confidence: 0.85,
-    keywords: ["relax", "thư thái", "thu thai", "thư giãn", "thu gian", "nhẹ nhõm", "nhe nhom", "thong thả", "thong tha", "chill chill"],
-    responseIntro: "Tâm trạng thoải mái và thảnh thơi quá nè! 🍹 Thích hợp cho những hoạt động nhẹ nhàng như xem một bộ phim lãng mạn nhẹ nhàng trên ghế lười ngoài trời.",
-    categories: ["movie"],
-    mockRecommendations: [
-      {
-        title: "Suất Chiếu Phim Indie Ngoài Trời Trên Sân Thượng",
-        category: "movie",
-        location: "Sky Cinema, Quận 2, TP. HCM",
-        passPrice: 90000,
+        location: "Metiz Cinema Đà Nẵng",
+        passPrice: 60000,
         suggestedTime: "Buổi tối (19:30 - 22:00)",
         description: "Nằm ghế lười, tận hưởng làn gió mát và bộ phim nhẹ nhàng.",
         moodTags: ["Outdoor Cinema", "Breeze", "Chill Out"],
@@ -584,8 +681,15 @@ function getMoodRecommendations(emotionKey, tickets) {
     (t) => (t.status === "approved" || t.verifyStatus === "verified" || t.status === "available")
   );
   
-  // Filter by category if matched
-  realResults = realResults.filter(t => emo.categories.includes(t.category));
+  // Filter to movie category and Đà Nẵng location
+  realResults = realResults.filter(
+    (t) =>
+      t.category === "movie" &&
+      (t.location?.toLowerCase().includes("đà nẵng") ||
+        t.location?.toLowerCase().includes("da nang") ||
+        t.city?.toLowerCase().includes("đà nẵng") ||
+        t.city?.toLowerCase().includes("da nang"))
+  );
   
   // Format real tickets
   const formattedReal = realResults.map(t => {
@@ -673,7 +777,7 @@ function generateResponse(userText, tickets) {
   // 4. Regular Help
   if (intent === "help") {
     return {
-      text: "Cần hướng dẫn hả cạ cứng? Rất đơn giản nha:\n• Nói cho mình biết tâm trạng của bạn (ví dụ: *\"Hôm nay stress quá\"*, *\"Cuối tuần muốn xem phim lãng mạn\"*).\n• Hoặc tìm vé phim trực tiếp theo cú pháp: *\"Vé xem phim CGV tại Hà Nội\"*.\n\nSau khi tìm được vé, bạn có thể **bấm thẳng vào hình** để xem chi tiết suất diễn và mua nha! 🚀",
+      text: "Cần hướng dẫn hả cạ cứng? Rất đơn giản nha:\n• Nói cho mình biết tâm trạng của bạn (ví dụ: *\"Hôm nay stress quá\"*, *\"Cuối tuần muốn xem phim lãng mạn\"*).\n• Hoặc tìm vé phim trực tiếp theo cú pháp: *\"Vé xem phim CGV tại Đà Nẵng\"*.\n\nSau khi tìm được vé, bạn có thể **bấm thẳng vào hình** để xem chi tiết suất diễn và mua nha! 🚀",
       tickets: [],
     };
   }
@@ -681,7 +785,7 @@ function generateResponse(userText, tickets) {
   // 5. About
   if (intent === "about") {
     return {
-      text: "**GoTix** chính là thiên đường mua bán vé xem phim thứ cấp uy tín hàng đầu Việt Nam! 🏆\n\n• Vé được **xác minh thủ công** nên an tâm 100% không sợ fake vé.\n• Giữ tiền trong ví đảm bảo cho tới khi giao dịch hoàn tất.\n• Giao lưu mua bán siêu tốc. Bạn muốn xem phim gì hay đi rạp nào kể mình nghe nha!",
+      text: "**GoTix** chính là thiên đường mua bán vé xem phim thứ cấp uy tín hàng đầu tại Đà Nẵng! 🏆\n\n• Vé được **xác minh thủ công** nên an tâm 100% không sợ fake vé.\n• Giữ tiền trong ví đảm bảo cho tới khi giao dịch hoàn tất.\n• Giao lưu mua bán siêu tốc. Bạn muốn xem phim gì hay đi rạp nào kể mình nghe nha!",
       tickets: [],
     };
   }
@@ -697,33 +801,38 @@ function generateResponse(userText, tickets) {
   // 7. Price
   if (intent === "price") {
     return {
-      text: "Mức giá giao dịch vé xem phim trên GoTix vô cùng mềm và phong phú luôn, chỉ từ **60k - 300k** tùy thuộc vào loại ghế (Standard/VIP/Sweetbox) và rạp chiếu (CGV, Lotte, BHD, IMAX...).\n\nPhí giao dịch nền tảng siêu hạt dẻ chỉ **5%** nha. Bạn đang có ngân sách khoảng bao nhiêu thế?",
+      text: "Mức giá giao dịch vé xem phim trên GoTix vô cùng mềm, chỉ loanh quanh **60k** tùy thuộc vào loại ghế (Standard/VIP/Sweetbox) và rạp chiếu tại Đà Nẵng (CGV, Lotte, BHD...).\n\nPhí giao dịch nền tảng siêu hạt dẻ chỉ **5%** nha. Bạn đang có ngân sách khoảng bao nhiêu thế?",
       tickets: [],
     };
   }
 
-  // 8. Search intent or category/location detected
-  if (intent === "search_ticket" || category || location) {
+  // 8. Search intent, category, location, or date filter detected
+  const dateFilter = detectDateFilter(userText);
+  if (intent === "search_ticket" || category || location || dateFilter) {
     const query = extractSearchQuery(userText);
-    const results = searchTickets(tickets, category, location, query);
+    const dateList = dateFilter ? dateFilter.dates : null;
+    const results = searchTickets(tickets, category, location, query, dateList);
 
     if (results.length === 0) {
       const searchTip = query ? ` với từ khóa "${query}"` : "";
+      const dateText = dateFilter ? ` chiếu vào ${dateFilter.label.toLowerCase()} (${dateFilter.dates.map(formatDateStr).join(" & ")})` : "";
+      const locText = location ? ` tại ${location}` : "";
       return {
-        text: `Hiện tại mình chưa tìm thấy vé xem phim nào ${location ? "tại " + location : ""}${searchTip} phù hợp. 😔\n\nBạn thử:\n• Đổi từ khóa tìm kiếm phim hoặc rạp khác\n• Xem toàn bộ vé tại trang **Danh sách vé**`,
+        text: `Hiện tại mình chưa tìm thấy vé xem phim nào${dateText}${locText}${searchTip} phù hợp ở Đà Nẵng. 😔\n\nLưu ý: GoTix hiện tại chỉ tập trung hỗ trợ vé xem phim tại khu vực Đà Nẵng.\n\nBạn thử:\n• Thay đổi ngày chiếu hoặc rạp phim khác tại Đà Nẵng\n• Đổi từ khóa tìm kiếm phim khác\n• Xem toàn bộ vé tại trang **Danh sách vé**`,
         tickets: [],
         cta: { text: "Xem tất cả vé →", path: "/tickets" },
       };
     }
 
+    const dateText = dateFilter ? ` chiếu vào ${dateFilter.label.toLowerCase()} (${dateFilter.dates.map(formatDateStr).join(" & ")})` : "";
     const locText = location ? ` tại ${location}` : "";
-    const responseText = `🎬 Mình tìm thấy **${results.length} vé xem phim**${locText} cực hot nè! Ghế đẹp, giá pass siêu hời. Bạn bấm vào hình vé bên dưới để xem chi tiết suất chiếu và đặt mua nhé! 👇`;
+    const responseText = `🎬 Mình tìm thấy **${results.length} vé xem phim**${dateText}${locText} cực hot tại Đà Nẵng nè! Ghế đẹp, giá pass siêu hời. Bạn bấm vào hình vé bên dưới để xem chi tiết suất chiếu và đặt mua nhé! 👇`;
 
     return {
       text: responseText,
       tickets: results,
       emotionAnalysis: {
-        mainEmotion: "Active Search",
+        mainEmotion: dateFilter ? `Lọc theo ${dateFilter.label}` : "Active Search",
         energyLevel: "Medium",
         recommendedVibe: "Xem phim giải trí",
         confidenceScore: "100%",
@@ -741,7 +850,7 @@ function generateResponse(userText, tickets) {
   }
 
   return {
-    text: "Mình chưa hiểu tâm trạng hoặc từ khóa của bạn lắm. 🤔\n\nThử kể cho mình nghe xem:\n• *\"Hôm nay buồn quá, muốn xem phim gì chữa lành\"*\n• *\"Mới đi làm về stress cực kỳ, có phim hài nào vui vui không\"*\n• *\"Cuối tuần này rủ crush đi xem phim gì lãng mạn ở CGV nhỉ?\"*",
+    text: "Mình chưa hiểu tâm trạng hoặc từ khóa của bạn lắm. 🤔\n\nThử kể cho mình nghe xem:\n• *\"Hôm nay buồn quá, muốn xem phim gì chữa lành\"*\n• *\"Mới đi làm về stress cực kỳ, có phim hài nào vui vui không\"*\n• *\"Cuối tuần này rủ crush đi xem phim gì lãng mạn ở CGV Đà Nẵng nhỉ?\"*",
     tickets: [],
   };
 }
@@ -755,12 +864,12 @@ function formatPrice(p) {
 }
 
 const QUICK_SUGGESTIONS = [
-  { label: "✨ Hôm nay xem gì?", text: "Hôm nay nên xem gì?" },
+  { label: "📅 Phim hôm nay?", text: "Hôm nay có phim gì tại Đà Nẵng không?" },
+  { label: "🗓️ Phim cuối tuần", text: "Cuối tuần này có phim gì hot không?" },
   { label: "🍿 Cần chữa lành", text: "Mình đang mệt mỏi và cần chữa lành tâm hồn bằng phim ảnh" },
   { label: "🔥 Phim hành động", text: "Tìm phim hành động kịch tính" },
   { label: "🌹 Hẹn hò lãng mạn", text: "Kiếm buổi hẹn hò lãng mạn với người yêu" },
-  { label: "🎭 Phim hài xả stress", text: "Đang stress quá, muốn xem phim hài" },
-  { label: "🎬 Vé phim CGV hot", text: "Tìm vé CGV Hà Nội" },
+  { label: "🎬 Vé phim CGV hot", text: "Tìm vé CGV Đà Nẵng" },
 ];
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -1105,7 +1214,7 @@ export default function AIChatBot() {
             id="ai-chatbot-input"
             type="text"
             className="ai-chat-input"
-            placeholder="Hỏi AI tìm vé... (vd: tìm vé xe đi HCM)"
+            placeholder="Hỏi AI tìm vé... (vd: tìm vé CGV Đà Nẵng)"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

@@ -75,19 +75,19 @@ export default function SellerDashboard() {
               className={`tab-btn ${activeTab === "tickets" ? "active" : ""}`}
               onClick={() => setActiveTab("tickets")}
             >
-              Vé của tôi ({myTickets.length})
+              Vé của tôi <span className="tab-count-badge">{myTickets.length}</span>
             </button>
             <button
               className={`tab-btn ${activeTab === "sales" ? "active" : ""}`}
               onClick={() => setActiveTab("sales")}
             >
-              Lịch sử bán ({myTxs.length})
+              Lịch sử bán <span className="tab-count-badge">{myTxs.length}</span>
             </button>
             <button
               className={`tab-btn ${activeTab === "reviews" ? "active" : ""}`}
               onClick={() => setActiveTab("reviews")}
             >
-              Đánh giá ({myReviews.length})
+              Đánh giá <span className="tab-count-badge">{myReviews.length}</span>
             </button>
           </div>
 
