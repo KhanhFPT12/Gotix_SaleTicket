@@ -10,6 +10,7 @@ const { notify } = require('../services/notificationService');
 const { log: auditLog } = require('../services/auditLogService');
 const emailService = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
+const { formatTicketResponse, formatTicketsResponse } = require('./ticketController');
 
 const getDashboard = async (req, res, next) => {
   try {
@@ -119,8 +120,9 @@ const getPendingTickets = async (req, res, next) => {
         .sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
       Ticket.countDocuments({ verifyStatus: 'pending' }),
     ]);
+    const formattedTickets = await formatTicketsResponse(tickets, req.user, false);
     return res.json(success('Vé chờ duyệt', {
-      tickets,
+      tickets: formattedTickets,
       pagination: { total, page: Number(page), limit: Number(limit) },
     }));
   } catch (err) {
@@ -131,12 +133,20 @@ const getPendingTickets = async (req, res, next) => {
 const adminVerifyTicket = async (req, res, next) => {
   try {
     const { verifyStatus, adminNote } = req.body;
-    const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verifyStatus }, { new: true })
+    const updateData = { verifyStatus, adminNote: adminNote || '' };
+
+    if (verifyStatus === 'revoked') {
+      updateData.status = 'hidden';
+    } else if (verifyStatus === 'verified' || verifyStatus === 'approved') {
+      updateData.status = 'available';
+    }
+
+    const ticket = await Ticket.findByIdAndUpdate(req.params.id, updateData, { new: true })
       .populate('ownerId', 'name email');
     if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
 
     const owner = ticket.ownerId;
-    if (verifyStatus === 'verified') {
+    if (verifyStatus === 'verified' || verifyStatus === 'approved') {
       await notify({
         receiverId: owner._id,
         title: 'Vé đã được duyệt',
@@ -154,17 +164,27 @@ const adminVerifyTicket = async (req, res, next) => {
         relatedId: ticket._id.toString(),
       });
       await emailService.ticketRejected(owner, ticket, adminNote);
+    } else if (verifyStatus === 'revoked') {
+      await notify({
+        receiverId: owner._id,
+        title: 'Vé bị thu hồi',
+        message: `Vé "${ticket.title}" của bạn đã bị thu hồi.${adminNote ? ' Lý do: ' + adminNote : ''}`,
+        type: 'ticket_revoked',
+        relatedId: ticket._id.toString(),
+      });
+      await emailService.ticketRejected(owner, ticket, `Vé đã bị thu hồi. Lý do: ${adminNote || 'Phát hiện sai phạm'}`).catch(() => {});
     }
 
     await auditLog({
       adminId: req.user.id,
-      action: verifyStatus === 'verified' ? 'approve_ticket' : 'reject_ticket',
+      action: verifyStatus === 'verified' || verifyStatus === 'approved' ? 'approve_ticket' : verifyStatus === 'revoked' ? 'revoke_ticket' : 'reject_ticket',
       targetType: 'Ticket',
       targetId: ticket._id,
-      description: `${verifyStatus === 'verified' ? 'Duyệt' : 'Từ chối'} vé "${ticket.title}"`,
+      description: `${verifyStatus === 'verified' || verifyStatus === 'approved' ? 'Duyệt' : verifyStatus === 'revoked' ? 'Thu hồi' : 'Từ chối'} vé "${ticket.title}"`,
     });
 
-    return res.json(success('Xác minh vé thành công', { ticket }));
+    const formattedTicket = await formatTicketResponse(ticket, req.user, false);
+    return res.json(success('Xác minh vé thành công', { ticket: formattedTicket }));
   } catch (err) {
     next(err);
   }

@@ -148,18 +148,18 @@ const seedData = async () => {
     console.log('🎬 Seeding Movie Tickets...');
 
     const movieImages = {
-      latmat8:   'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
-      avengers:  'https://images.unsplash.com/photo-1531259683007-016a7b628fc3?auto=format&fit=crop&w=600&q=80',
-      kungfu:    'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=600&q=80',
-      insideout: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80',
-      mimosa:    'https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=600&q=80',
-      deadpool:  'https://images.unsplash.com/photo-1578269174936-2709b6aeb913?auto=format&fit=crop&w=600&q=80',
-      interstellar:'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=600&q=80',
-      horror:    'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=600&q=80',
-      anime:     'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80',
-      romance:   'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=600&q=80',
-      cartoon:   'https://images.unsplash.com/photo-1471922694854-ff1b63b20054?auto=format&fit=crop&w=600&q=80',
-      cinema:    'https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=600&q=80',
+      latmat8:   '/private_uploads/ticket_latmat.png',
+      avengers:  '/private_uploads/ticket_avengers.png',
+      kungfu:    '/private_uploads/mock_ticket.png',
+      insideout: '/private_uploads/mock_ticket.png',
+      mimosa:    '/private_uploads/ticket_latmat.png',
+      deadpool:  '/private_uploads/ticket_deadpool.png',
+      interstellar:'/private_uploads/ticket_interstellar.png',
+      horror:    '/private_uploads/ticket_interstellar.png',
+      anime:     '/private_uploads/ticket_avengers.png',
+      romance:   '/private_uploads/ticket_latmat.png',
+      cartoon:   '/private_uploads/mock_ticket.png',
+      cinema:    '/private_uploads/mock_ticket.png',
     };
 
     const otherImages = {
@@ -178,7 +178,7 @@ const seedData = async () => {
     };
 
     function qr(code) {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GOTIX-${code}-${Date.now()}`;
+      return '/private_uploads/mock_qr.png';
     }
 
     const tickets = [];

@@ -4,7 +4,14 @@ const MEDIA_BASE  = import.meta.env.VITE_API_URL  || 'http://localhost:5000';
 export function resolveMediaUrl(path) {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  return `${MEDIA_BASE}${path}`;
+  let url = `${MEDIA_BASE}${path}`;
+  if (path.includes('/media/')) {
+    const token = getToken();
+    if (token) {
+      url += `?token=${token}`;
+    }
+  }
+  return url;
 }
 
 export function getToken() {
@@ -64,11 +71,14 @@ export function normalizeTicket(t) {
     images: [
       t.ticketImage ? resolveMediaUrl(t.ticketImage) : null,
       t.qrImage     ? resolveMediaUrl(t.qrImage)     : null,
-    ].filter(Boolean),
+    ],
+    ticketImage: t.ticketImage ? resolveMediaUrl(t.ticketImage) : '',
+    qrImage:     t.qrImage     ? resolveMediaUrl(t.qrImage)     : '',
     status:
       t.status === 'sold' ? 'sold' :
-      t.verifyStatus === 'verified' ? 'approved' :
+      t.verifyStatus === 'verified' || t.verifyStatus === 'approved' ? 'approved' :
       t.verifyStatus === 'rejected' ? 'rejected' :
+      t.verifyStatus === 'revoked' ? 'revoked' :
       'pending',
     verifyStatus:   t.verifyStatus,
     originalStatus: t.status,
@@ -96,7 +106,7 @@ export function normalizeTransaction(tx) {
     seller:           sellerObj,
     ticketId:         ticketObj?._id?.toString() ?? tx.ticketId?.toString?.() ?? '',
     ticketTitle:      ticketObj?.title ?? tx.ticketTitle ?? '',
-    ticketData:       ticketObj,
+    ticketData:       ticketObj ? normalizeTicket(ticketObj) : null,
     amount:           tx.totalPrice ?? tx.amount ?? 0,
     platformFee:      tx.platformFee ?? 0,
     sellerAmount:     tx.sellerAmount ?? 0,

@@ -91,8 +91,8 @@ export default function PostTicket() {
         <div className="container">
           <div className="submit-success">
             <div className="success-icon">✓</div>
-            <h2>Vé phim đã được gửi duyệt</h2>
-            <p>GoTix sẽ kiểm tra và duyệt vé của bạn trong vòng 24 giờ. Bạn sẽ nhận thông báo khi vé được chấp thuận.</p>
+            <h2>Vé đã được gửi chờ duyệt</h2>
+            <p>Admin sẽ kiểm tra trong vòng 24 giờ.</p>
             <div className="success-actions">
               <button className="btn btn-primary" onClick={() => navigate("/buyer")}>Xem vé của tôi</button>
               <button className="btn btn-ghost" onClick={() => {
@@ -143,7 +143,7 @@ export default function PostTicket() {
                   type="text"
                   list="cinema-list"
                   className={`form-input ${errors.cinemaName ? "input-error" : ""}`}
-                  placeholder="VD: CGV Vincom Đống Đa"
+                  placeholder="VD: CGV Vincom Plaza Đà Nẵng"
                   value={form.cinemaName}
                   onChange={e => set("cinemaName", e.target.value)}
                 />
@@ -171,7 +171,7 @@ export default function PostTicket() {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="VD: Vincom Đống Đa, 187 Giảng Võ, Hà Nội"
+                  placeholder="VD: Vincom Plaza, 910A Ngô Quyền, Sơn Trà, Đà Nẵng"
                   value={form.cinemaAddress}
                   onChange={e => set("cinemaAddress", e.target.value)}
                 />

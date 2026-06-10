@@ -7,8 +7,14 @@ export const LOCATIONS = [
 ];
 
 export const CINEMA_CHAINS = [
-  "CGV", "BHD Star", "Lotte Cinema", "Galaxy Cinema",
-  "Mega GS", "Beta Cinemas", "Cinestar", "Khác",
+  "CGV Vincom Plaza Đà Nẵng",
+  "CGV Vĩnh Trung Plaza",
+  "Lotte Cinema Đà Nẵng",
+  "BHD Star Vincom Đà Nẵng",
+  "Galaxy Coop Mart Đà Nẵng",
+  "Metiz Cinema Đà Nẵng",
+  "Starlight Nguyễn Kim Đà Nẵng",
+  "Khác",
 ];
 
 export const USERS = [

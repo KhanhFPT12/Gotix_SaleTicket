@@ -5,3 +5,12 @@ backend/node_modules
 backend/.env
 backend/src/uploads/*
 !backend/src/uploads/.gitkeep
+
+backend/src/private_uploads/*
+!backend/src/private_uploads/mock_ticket.png
+!backend/src/private_uploads/mock_qr.png
+!backend/src/private_uploads/ticket_latmat.png
+!backend/src/private_uploads/ticket_avengers.png
+!backend/src/private_uploads/ticket_deadpool.png
+!backend/src/private_uploads/ticket_interstellar.png
+

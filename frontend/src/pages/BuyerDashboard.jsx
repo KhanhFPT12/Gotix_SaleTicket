@@ -37,6 +37,7 @@ export default function BuyerDashboard() {
   const [activeTab, setActiveTab] = useState("purchases");
   const [reviewTicketId, setReviewTicketId] = useState(null);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: "" });
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
   const completedPurchases = myPurchases.filter((t) => t.status === "completed");
   const pendingPurchases   = myPurchases.filter((t) => t.status === "pending");
@@ -120,7 +121,7 @@ export default function BuyerDashboard() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Vé</th><th>Ngày</th><th>Số tiền</th><th>Trạng thái</th><th>Đánh giá</th>
+                      <th>Vé</th><th>Ngày</th><th>Số tiền</th><th>Trạng thái</th><th>Đánh giá</th><th>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -183,6 +184,15 @@ export default function BuyerDashboard() {
                               <span className="text-muted text-sm">Đã đánh giá</span>
                             ) : (
                               <span className="text-muted text-sm">–</span>
+                            )}
+                          </td>
+                          <td>
+                            {tx.status === "completed" && tx.ticketId ? (
+                              <button className="btn btn-primary btn-sm" onClick={() => setSelectedPurchase(tx)}>
+                                Xem vé & QR
+                              </button>
+                            ) : (
+                              <span className="text-secondary text-sm">—</span>
                             )}
                           </td>
                         </tr>
@@ -254,6 +264,107 @@ export default function BuyerDashboard() {
           )}
         </div>
       </div>
+
+      {/* ── Buyer Ticket & QR Modal ── */}
+      {selectedPurchase && (
+        <div className="buyer-modal-overlay" onClick={e => e.target === e.currentTarget && setSelectedPurchase(null)}>
+          <div className="buyer-modal">
+            <div className="buyer-modal-header">
+              <h3>Thông tin vé phim (Mã GD: #{selectedPurchase.id})</h3>
+              <button className="buyer-modal-close" onClick={() => setSelectedPurchase(null)}>×</button>
+            </div>
+            <div className="buyer-modal-body">
+              <div className="buyer-modal-grid">
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Tên phim</div>
+                  <div className="buyer-modal-value" style={{ fontWeight: 700, fontSize: "14px" }}>
+                    {selectedPurchase.ticketTitle}
+                  </div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Trạng thái GD</div>
+                  <div className="buyer-modal-value">
+                    <span className={`badge ${STATUS_LABELS[selectedPurchase.status]?.cls}`}>
+                      {STATUS_LABELS[selectedPurchase.status]?.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Rạp chiếu</div>
+                  <div className="buyer-modal-value">{selectedPurchase.ticketData?.cinema || selectedPurchase.ticketData?.location || "–"}</div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Khu vực / Địa chỉ</div>
+                  <div className="buyer-modal-value">
+                    {[selectedPurchase.ticketData?.city, selectedPurchase.ticketData?.cinemaAddress].filter(Boolean).join(" · ") || "–"}
+                  </div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Suất chiếu</div>
+                  <div className="buyer-modal-value">
+                    {[selectedPurchase.ticketData?.date, selectedPurchase.ticketData?.time].filter(Boolean).join(" · ") || "–"}
+                  </div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Phòng / Số ghế</div>
+                  <div className="buyer-modal-value">
+                    {[selectedPurchase.ticketData?.room ? `Phòng ${selectedPurchase.ticketData.room}` : "", selectedPurchase.ticketData?.seats?.length > 0 ? `Ghế ${(selectedPurchase.ticketData.seats).join(", ")}` : ""].filter(Boolean).join(" · ") || "–"}
+                  </div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Số lượng</div>
+                  <div className="buyer-modal-value">{selectedPurchase.quantity} vé</div>
+                </div>
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Số tiền đã trả</div>
+                  <div className="buyer-modal-value" style={{ fontWeight: 700, color: "var(--color-primary)" }}>
+                    {formatPrice(selectedPurchase.amount)}
+                  </div>
+                </div>
+              </div>
+
+              {selectedPurchase.ticketData?.description && (
+                <div className="buyer-modal-field">
+                  <div className="buyer-modal-label">Mô tả thêm</div>
+                  <div className="buyer-modal-value desc">{selectedPurchase.ticketData.description}</div>
+                </div>
+              )}
+
+              {/* Photos Section for Buyer */}
+              <div className="buyer-modal-field">
+                <div className="buyer-modal-label">Hình ảnh vé đã sở hữu</div>
+                <div className="buyer-modal-images">
+                  <div className="buyer-image-card">
+                    <div className="buyer-image-card-title">Ảnh vé xem phim</div>
+                    <div className="buyer-image-card-body">
+                      {selectedPurchase.ticketData?.images?.[0] ? (
+                        <img src={selectedPurchase.ticketData.images[0]} alt="Ảnh vé" onClick={() => window.open(selectedPurchase.ticketData.images[0])} style={{ cursor: "pointer" }} />
+                      ) : (
+                        <div className="buyer-image-placeholder">Chưa được đính kèm ảnh vé</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="buyer-image-card">
+                    <div className="buyer-image-card-title">Mã QR Code vào cổng</div>
+                    <div className="buyer-image-card-body">
+                      {selectedPurchase.ticketData?.images?.[1] ? (
+                        <img src={selectedPurchase.ticketData.images[1]} alt="Mã QR" onClick={() => window.open(selectedPurchase.ticketData.images[1])} style={{ cursor: "pointer" }} />
+                      ) : (
+                        <div className="buyer-image-placeholder">Chưa được đính kèm mã QR</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="buyer-modal-footer">
+              <button className="btn btn-primary btn-sm" onClick={() => setSelectedPurchase(null)}>
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

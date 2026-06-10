@@ -142,14 +142,16 @@ export function TicketProvider({ children }) {
   }
 
   // Admin: approve / reject ticket
-  async function updateTicketStatus(ticketId, frontendStatus) {
+  async function updateTicketStatus(ticketId, frontendStatus, adminNote = "") {
     const verifyStatus =
       frontendStatus === "approved" ? "verified" :
-      frontendStatus === "rejected" ? "rejected" : frontendStatus;
-    const res = await apiPatch(`/admin/tickets/${ticketId}/verify`, { verifyStatus });
+      frontendStatus === "rejected" ? "rejected" :
+      frontendStatus === "revoked" ? "revoked" : frontendStatus;
+    const res = await apiPatch(`/admin/tickets/${ticketId}/verify`, { verifyStatus, adminNote });
     if (!res.success) throw new Error(res.message);
     const updated = normalizeTicket(res.data.ticket);
     setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
+    setMyPosted((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
     return updated;
   }
 
@@ -322,6 +324,8 @@ export function TicketProvider({ children }) {
         // Refresh helpers
         refreshTickets: loadTickets,
         refreshMyPosted: loadMyPosted,
+        refreshMyPurchases: loadMyPurchases,
+        refreshMySales: loadMySales,
       }}
     >
       {children}
