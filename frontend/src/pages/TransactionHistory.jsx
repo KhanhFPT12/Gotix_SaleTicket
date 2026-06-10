@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTickets } from "../context/TicketContext";
 import "./TransactionHistory.css";
@@ -15,14 +15,21 @@ function formatPrice(p) {
 
 export default function TransactionHistory() {
   const { currentUser } = useAuth();
-  const { transactions } = useTickets();
+  const { myPurchases, mySales, refreshMyPurchases, refreshMySales } = useTickets();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
-  const isSeller = currentUser?.role === "seller";
+  useEffect(() => {
+    if (currentUser) {
+      refreshMyPurchases().catch(console.error);
+      refreshMySales().catch(console.error);
+    }
+  }, [currentUser, refreshMyPurchases, refreshMySales]);
 
-  const myTxs = transactions.filter(
-    (t) => t.buyerId === currentUser?.id || t.sellerId === currentUser?.id
+  const isSeller = true;
+
+  const myTxs = [...(myPurchases || []), ...(mySales || [])].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
   const filtered = myTxs.filter((t) => {

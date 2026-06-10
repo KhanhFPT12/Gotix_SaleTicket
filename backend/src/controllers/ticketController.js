@@ -1,8 +1,54 @@
 const { validationResult } = require('express-validator');
+const path = require('path');
+const fs = require('fs');
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 const { notify } = require('../services/notificationService');
 const { success, error } = require('../utils/apiResponse');
+
+// ── Secure Helper Functions ───────────────────────────────────────────────
+
+const formatTicketResponse = async (ticket, user, isList = false) => {
+  if (!ticket) return null;
+  const ticketObj = ticket.toObject ? ticket.toObject() : ticket;
+  
+  let hasAccess = false;
+  if (user) {
+    if (user.role === 'admin') {
+      hasAccess = true;
+    } else if (ticketObj.ownerId && (ticketObj.ownerId._id?.toString() === user.id || ticketObj.ownerId.toString() === user.id)) {
+      hasAccess = true;
+    } else if (!isList) {
+      const tx = await Transaction.findOne({
+        ticketId: ticketObj._id,
+        buyerId: user.id,
+        status: { $in: ['completed', 'paid'] }
+      });
+      if (tx) {
+        hasAccess = true;
+      }
+    }
+  }
+
+  // ticketImage is public and can be viewed by anyone
+  ticketObj.ticketImage = ticketObj.ticketImage ? `/api/tickets/${ticketObj._id}/media/ticketImage` : '';
+
+  // qrImage is restricted and can only be viewed by admin, owner, or buyer
+  if (hasAccess) {
+    ticketObj.qrImage = ticketObj.qrImage ? `/api/tickets/${ticketObj._id}/media/qrImage` : '';
+  } else {
+    ticketObj.qrImage = '';
+  }
+
+  return ticketObj;
+};
+
+const formatTicketsResponse = async (tickets, user, isList = false) => {
+  return Promise.all(tickets.map(t => formatTicketResponse(t, user, isList)));
+};
+
+// ── Controller Methods ─────────────────────────────────────────────────────
 
 const getTickets = async (req, res, next) => {
   try {
@@ -91,9 +137,11 @@ const getTickets = async (req, res, next) => {
       Ticket.countDocuments(filter),
     ]);
 
+    const formattedTickets = await formatTicketsResponse(tickets, req.user, true);
+
     return res.json(
       success('Danh sách vé', {
-        tickets,
+        tickets: formattedTickets,
         pagination: {
           total,
           page: Number(page),
@@ -115,17 +163,19 @@ const getTicketById = async (req, res, next) => {
     );
     if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
     await Ticket.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
-    return res.json(success('Chi tiết vé', { ticket }));
+    
+    const formattedTicket = await formatTicketResponse(ticket, req.user, false);
+    return res.json(success('Chi tiết vé', { ticket: formattedTicket }));
   } catch (err) {
     next(err);
   }
 };
 
-// Vé do user hiện tại đăng (bao gồm cả pending/rejected)
 const getMyPosted = async (req, res, next) => {
   try {
     const tickets = await Ticket.find({ ownerId: req.user.id }).sort({ createdAt: -1 });
-    return res.json(success('Vé đã đăng', { tickets }));
+    const formattedTickets = await formatTicketsResponse(tickets, req.user, false);
+    return res.json(success('Vé đã đăng', { tickets: formattedTickets }));
   } catch (err) {
     next(err);
   }
@@ -142,10 +192,10 @@ const createTicket = async (req, res, next) => {
       try { data.details = JSON.parse(data.details); } catch { delete data.details; }
     }
     if (req.files?.ticketImage?.[0]) {
-      data.ticketImage = `/uploads/${req.files.ticketImage[0].filename}`;
+      data.ticketImage = `/private_uploads/${req.files.ticketImage[0].filename}`;
     }
     if (req.files?.qrImage?.[0]) {
-      data.qrImage = `/uploads/${req.files.qrImage[0].filename}`;
+      data.qrImage = `/private_uploads/${req.files.qrImage[0].filename}`;
     }
     const ticket = await Ticket.create(data);
 
@@ -157,7 +207,6 @@ const createTicket = async (req, res, next) => {
       relatedId: ticket._id.toString(),
     });
 
-    // Also notify all admins
     const admins = await User.find({ role: 'admin' }, '_id');
     for (const admin of admins) {
       await notify({
@@ -169,7 +218,8 @@ const createTicket = async (req, res, next) => {
       });
     }
 
-    return res.status(201).json(success('Đăng vé thành công, đang chờ admin duyệt', { ticket }));
+    const formattedTicket = await formatTicketResponse(ticket, req.user, false);
+    return res.status(201).json(success('Đăng vé thành công, đang chờ admin duyệt', { ticket: formattedTicket }));
   } catch (err) {
     next(err);
   }
@@ -192,11 +242,12 @@ const updateTicket = async (req, res, next) => {
     if (typeof data.details === 'string') {
       try { data.details = JSON.parse(data.details); } catch { delete data.details; }
     }
-    if (req.files?.ticketImage?.[0]) data.ticketImage = `/uploads/${req.files.ticketImage[0].filename}`;
-    if (req.files?.qrImage?.[0]) data.qrImage = `/uploads/${req.files.qrImage[0].filename}`;
+    if (req.files?.ticketImage?.[0]) data.ticketImage = `/private_uploads/${req.files.ticketImage[0].filename}`;
+    if (req.files?.qrImage?.[0]) data.qrImage = `/private_uploads/${req.files.qrImage[0].filename}`;
 
     const updated = await Ticket.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
-    return res.json(success('Cập nhật vé thành công', { ticket: updated }));
+    const formattedTicket = await formatTicketResponse(updated, req.user, false);
+    return res.json(success('Cập nhật vé thành công', { ticket: formattedTicket }));
   } catch (err) {
     next(err);
   }
@@ -233,7 +284,9 @@ const updateTicketStatus = async (req, res, next) => {
     }
     ticket.status = status;
     await ticket.save();
-    return res.json(success('Cập nhật trạng thái thành công', { ticket }));
+    
+    const formattedTicket = await formatTicketResponse(ticket, req.user, false);
+    return res.json(success('Cập nhật trạng thái thành công', { ticket: formattedTicket }));
   } catch (err) {
     next(err);
   }
@@ -244,7 +297,95 @@ const verifyTicket = async (req, res, next) => {
     const { verifyStatus } = req.body;
     const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verifyStatus }, { new: true });
     if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
-    return res.json(success('Xác minh vé thành công', { ticket }));
+    
+    const formattedTicket = await formatTicketResponse(ticket, req.user, false);
+    return res.json(success('Xác minh vé thành công', { ticket: formattedTicket }));
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getTicketMedia = async (req, res, next) => {
+  try {
+    const { id, type } = req.params;
+    if (type !== 'ticketImage' && type !== 'qrImage') {
+      return res.status(400).json(error('Loại file không hợp lệ'));
+    }
+
+    const ticket = await Ticket.findById(id);
+    if (!ticket) return res.status(404).json(error('Không tìm thấy vé'));
+
+    if (type !== 'ticketImage') {
+      let tokenUser = req.user;
+      if (!tokenUser) {
+        let token;
+        if (req.headers.authorization?.startsWith('Bearer ')) {
+          token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies?.token) {
+          token = req.cookies.token;
+        } else if (req.query.token) {
+          token = req.query.token;
+        }
+        if (token) {
+          try {
+            const jwt = require('jsonwebtoken');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findById(decoded.id);
+            if (user && user.isActive) {
+              tokenUser = { id: user._id.toString(), role: user.role, email: user.email };
+            }
+          } catch (err) {
+            // ignore
+          }
+        }
+      }
+
+      if (!tokenUser) {
+        return res.status(401).json(error('Chưa đăng nhập'));
+      }
+
+      let hasAccess = false;
+      if (tokenUser.role === 'admin') {
+        hasAccess = true;
+      } else if (ticket.ownerId.toString() === tokenUser.id) {
+        hasAccess = true;
+      } else {
+        const tx = await Transaction.findOne({
+          ticketId: ticket._id,
+          buyerId: tokenUser.id,
+          status: { $in: ['completed', 'paid'] },
+        });
+        if (tx) {
+          hasAccess = true;
+        }
+      }
+
+      if (!hasAccess) {
+        return res.status(403).json(error('Không có quyền truy cập file này'));
+      }
+    }
+
+    const relativePath = ticket[type];
+    if (!relativePath) {
+      return res.status(404).json(error('File không tồn tại'));
+    }
+
+    let absolutePath;
+    if (relativePath.startsWith('/private_uploads/')) {
+      const filename = relativePath.replace('/private_uploads/', '');
+      absolutePath = path.join(__dirname, '../private_uploads', filename);
+    } else if (relativePath.startsWith('/uploads/')) {
+      const filename = relativePath.replace('/uploads/', '');
+      absolutePath = path.join(__dirname, '../uploads', filename);
+    } else {
+      absolutePath = path.resolve(relativePath);
+    }
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json(error('File vật lý không tồn tại'));
+    }
+
+    return res.sendFile(absolutePath);
   } catch (err) {
     next(err);
   }
@@ -253,5 +394,6 @@ const verifyTicket = async (req, res, next) => {
 module.exports = {
   getTickets, getTicketById, getMyPosted,
   createTicket, updateTicket, deleteTicket,
-  updateTicketStatus, verifyTicket,
+  updateTicketStatus, verifyTicket, getTicketMedia,
+  formatTicketResponse, formatTicketsResponse,
 };

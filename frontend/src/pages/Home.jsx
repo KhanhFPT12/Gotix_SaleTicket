@@ -7,10 +7,11 @@ import "./Home.css";
 const CINEMA_QUICKLINKS = [
   { label: "Tất cả",       cinema: "" },
   { label: "CGV",          cinema: "CGV" },
-  { label: "BHD Star",     cinema: "BHD" },
   { label: "Lotte Cinema", cinema: "Lotte" },
+  { label: "BHD Star",     cinema: "BHD" },
   { label: "Galaxy",       cinema: "Galaxy" },
-  { label: "Mega GS",      cinema: "Mega" },
+  { label: "Metiz",        cinema: "Metiz" },
+  { label: "Starlight",    cinema: "Starlight" },
 ];
 
 export default function Home() {

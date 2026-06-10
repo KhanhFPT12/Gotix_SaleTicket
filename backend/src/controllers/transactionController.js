@@ -5,6 +5,7 @@ const { computeFees, addPendingBalance, releasePendingToAvailable, reversePendin
 const { notify }       = require('../services/notificationService');
 const emailService     = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
+const { formatTicketResponse } = require('./ticketController');
 
 const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -260,10 +261,19 @@ const cancelTransaction = async (req, res, next) => {
 const getMyPurchases = async (req, res, next) => {
   try {
     const transactions = await Transaction.find({ buyerId: req.user.id })
-      .populate('ticketId', 'title category location ticketImage eventDate')
+      .populate('ticketId')
       .populate('sellerId', 'name avatar rating')
       .sort({ createdAt: -1 });
-    return res.json(success('Lịch sử mua vé', { transactions }));
+
+    const formattedTxs = await Promise.all(transactions.map(async (tx) => {
+      const txObj = tx.toObject();
+      if (txObj.ticketId) {
+        txObj.ticketId = await formatTicketResponse(txObj.ticketId, req.user, false);
+      }
+      return txObj;
+    }));
+
+    return res.json(success('Lịch sử mua vé', { transactions: formattedTxs }));
   } catch (err) {
     next(err);
   }
@@ -272,10 +282,19 @@ const getMyPurchases = async (req, res, next) => {
 const getMySales = async (req, res, next) => {
   try {
     const transactions = await Transaction.find({ sellerId: req.user.id })
-      .populate('ticketId', 'title category location ticketImage eventDate')
+      .populate('ticketId')
       .populate('buyerId', 'name avatar')
       .sort({ createdAt: -1 });
-    return res.json(success('Lịch sử bán vé', { transactions }));
+
+    const formattedTxs = await Promise.all(transactions.map(async (tx) => {
+      const txObj = tx.toObject();
+      if (txObj.ticketId) {
+        txObj.ticketId = await formatTicketResponse(txObj.ticketId, req.user, false);
+      }
+      return txObj;
+    }));
+
+    return res.json(success('Lịch sử bán vé', { transactions: formattedTxs }));
   } catch (err) {
     next(err);
   }
@@ -294,7 +313,13 @@ const getTransactionById = async (req, res, next) => {
     if (!isBuyer && !isSeller && req.user.role !== 'admin') {
       return res.status(403).json(error('Không có quyền xem giao dịch này'));
     }
-    return res.json(success('Chi tiết giao dịch', { transaction: tx }));
+
+    const txObj = tx.toObject();
+    if (txObj.ticketId) {
+      txObj.ticketId = await formatTicketResponse(txObj.ticketId, req.user, false);
+    }
+
+    return res.json(success('Chi tiết giao dịch', { transaction: txObj }));
   } catch (err) {
     next(err);
   }
