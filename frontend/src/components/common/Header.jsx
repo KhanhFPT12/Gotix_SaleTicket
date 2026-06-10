@@ -115,7 +115,14 @@ export default function Header() {
     navigate("/");
   }
 
-  const isActive = (path) => location.pathname === path;
+  const searchParams = new URLSearchParams(location.search);
+  const currentCinema = searchParams.get("cinema");
+
+  const isNavActive = (path, cinema = null) => {
+    if (location.pathname !== path) return false;
+    if (cinema) return currentCinema === cinema;
+    return !currentCinema; // Main tab active only if no cinema is selected
+  };
 
   return (
     <header className="header">
@@ -125,13 +132,21 @@ export default function Header() {
         </Link>
 
         <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
-          <Link to="/tickets" className={`nav-link ${isActive("/tickets") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+          <Link to="/tickets" className={`nav-link ${isNavActive("/tickets") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
             Vé phim đang pass
           </Link>
-          <Link to="/tickets?cinema=CGV"   className="nav-link" onClick={() => setMenuOpen(false)}>CGV</Link>
-          <Link to="/tickets?cinema=BHD"   className="nav-link" onClick={() => setMenuOpen(false)}>BHD Star</Link>
-          <Link to="/tickets?cinema=Lotte" className="nav-link" onClick={() => setMenuOpen(false)}>Lotte Cinema</Link>
-          <Link to="/tickets?cinema=Galaxy" className="nav-link" onClick={() => setMenuOpen(false)}>Galaxy</Link>
+          <Link to="/tickets?cinema=CGV" className={`nav-link ${isNavActive("/tickets", "CGV") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            CGV
+          </Link>
+          <Link to="/tickets?cinema=BHD" className={`nav-link ${isNavActive("/tickets", "BHD") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            BHD Star
+          </Link>
+          <Link to="/tickets?cinema=Lotte" className={`nav-link ${isNavActive("/tickets", "Lotte") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            Lotte Cinema
+          </Link>
+          <Link to="/tickets?cinema=Galaxy" className={`nav-link ${isNavActive("/tickets", "Galaxy") ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            Galaxy
+          </Link>
         </nav>
 
         <div className="header-actions">

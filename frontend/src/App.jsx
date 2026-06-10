@@ -3,11 +3,11 @@ import AppRoutes from "./routes/AppRoutes";
 import AIChatBot from "./components/common/AIChatBot";
 import ScrollToTop from "./components/common/ScrollToTop";
 
-function AIChatBotGuard() {
+function PublicGuard({ children }) {
   const { pathname } = useLocation();
-  // Hide on admin and support staff pages
+  // Ẩn trên trang admin và nhân viên
   if (pathname.startsWith("/admin") || pathname.startsWith("/staff")) return null;
-  return <AIChatBot />;
+  return children;
 }
 
 export default function App() {
@@ -15,7 +15,10 @@ export default function App() {
     <>
       <ScrollToTop />
       <AppRoutes />
-      <AIChatBotGuard />
+      <PublicGuard>
+        <AIChatBot />
+      </PublicGuard>
     </>
   );
 }
+
