@@ -97,16 +97,16 @@ export default function AdminDashboard() {
         <div className="dashboard-section">
           <div className="tabs">
             <button className={`tab-btn ${activeTab === "tickets" ? "active" : ""}`} onClick={() => setActiveTab("tickets")}>
-              Vé ({tickets.length}) {pendingTickets.length > 0 && <span className="tab-badge">{pendingTickets.length}</span>}
+              Vé <span className="tab-count-badge">{tickets.length}</span> {pendingTickets.length > 0 && <span className="tab-badge">{pendingTickets.length}</span>}
             </button>
             <button className={`tab-btn ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>
-              Người dùng ({USERS.length})
+              Người dùng <span className="tab-count-badge">{USERS.length}</span>
             </button>
             <button className={`tab-btn ${activeTab === "transactions" ? "active" : ""}`} onClick={() => setActiveTab("transactions")}>
-              Giao dịch ({transactions.length})
+              Giao dịch <span className="tab-count-badge">{transactions.length}</span>
             </button>
             <button className={`tab-btn ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
-              Báo cáo ({reports.length}) {pendingReports.length > 0 && <span className="tab-badge">{pendingReports.length}</span>}
+              Báo cáo <span className="tab-count-badge">{reports.length}</span> {pendingReports.length > 0 && <span className="tab-badge">{pendingReports.length}</span>}
             </button>
           </div>
 
