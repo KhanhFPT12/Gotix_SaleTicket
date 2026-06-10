@@ -65,7 +65,7 @@ const seedData = async () => {
       phone: '0923456789',         role: 'user',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
       bio: 'Sinh viên hay đặt vé xem phim nhưng lịch học hay thay đổi. Giá pass rẻ hơn giá gốc.',
-      location: 'Cầu Giấy, Hà Nội',
+      location: 'Đà Nẵng',
       rating: 4.6, reviewCount: 14, verified: true, isActive: true,
       availableBalance: 540000, pendingBalance: 180000, totalRevenue: 2160000,
       trustScore: 93, isPro: false,
@@ -75,8 +75,8 @@ const seedData = async () => {
       name: 'Lê Hoàng Minh',       email: 'seller3@gotix.com', password: 'password123',
       phone: '0934567890',         role: 'user',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-      bio: 'Thích xem phim cuối tuần. Hay nhượng lại vé Lotte khi bận đột xuất.',
-      location: 'Bình Thạnh, TP. Hồ Chí Minh',
+      bio: 'Thích xem phim cuối tuần. Hay nhượng lại vé khi bận đột xuất.',
+      location: 'Đà Nẵng',
       rating: 4.7, reviewCount: 19, verified: true, isActive: true,
       availableBalance: 860000, pendingBalance: 240000, totalRevenue: 5760000,
       trustScore: 96, isPro: true, proPlan: '1_month',
@@ -87,8 +87,8 @@ const seedData = async () => {
       name: 'Phạm Quỳnh Anh',      email: 'seller4@gotix.com', password: 'password123',
       phone: '0945678901',         role: 'user',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
-      bio: 'Mình mua vé BHD theo cặp, đôi khi bạn cùng đi bận nên cần pass lại 1 vé.',
-      location: 'Hai Bà Trưng, Hà Nội',
+      bio: 'Mình thường đi xem phim cuối tuần tại Đà Nẵng, đôi khi bận cần pass lại vé.',
+      location: 'Đà Nẵng',
       rating: 4.5, reviewCount: 10, verified: true, isActive: true,
       availableBalance: 320000, pendingBalance: 0, totalRevenue: 1680000,
       trustScore: 90, isPro: false,
@@ -183,18 +183,19 @@ const seedData = async () => {
 
     const tickets = [];
 
-    // ── TP. HỒ CHÍ MINH ────────────────────────────────────────────────
+    // ── ĐÀ NẴNG ────────────────────────────────────────────────────────────
 
-    // T01 - Lật Mặt 8 tại CGV Vincom Center (available, verified)
+    // T01 - Lật Mặt 8 tại CGV Vincom Plaza Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Lật Mặt 8: Vòng Tay Nhau - CGV Vincom Center Bà Triệu',
+      title: 'Vé Lật Mặt 8: Vòng Tay Nhau - CGV Vincom Plaza Đà Nẵng',
       category: 'movie',
       description: 'Nhượng lại 2 vé xem phim Lật Mặt 8 suất chiếu cuối tuần do bận việc gia đình đột xuất. Hàng ghế G giữa rạp, tầm nhìn đẹp nhất. Phòng chiếu IMAX âm thanh sống động. Vé điện tử gửi qua Zalo/email ngay sau khi thanh toán.',
-      location: 'CGV Vincom Center Bà Triệu, Hai Bà Trưng, Hà Nội',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-07',
       eventTime: '19:30',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -203,8 +204,8 @@ const seedData = async () => {
       qrImage: qr('MV001'),
       details: {
         movieTitle: 'Lật Mặt 8: Vòng Tay Nhau',
-        cinemaName: 'CGV Vincom Center Bà Triệu',
-        cinemaAddress: '191 Bà Triệu, Hai Bà Trưng, Hà Nội',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 2 (IMAX)',
         seats: ['G07', 'G08'],
         showDate: '2026-06-07',
@@ -213,16 +214,17 @@ const seedData = async () => {
       views: 142,
     }));
 
-    // T02 - Avengers Secret Wars tại CGV Crescent Mall HCM (available, verified)
+    // T02 - Avengers Secret Wars tại CGV Vincom Plaza Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Avengers: Secret Wars - CGV Crescent Mall (Ghế Đôi Sweetbox)',
+      title: 'Vé Avengers: Secret Wars - CGV Vincom Plaza Đà Nẵng (Ghế Đôi Sweetbox)',
       category: 'movie',
       description: 'Pass lại cặp vé ghế đôi Sweetbox xem Avengers: Secret Wars suất chiều tối thứ Bảy. Ghế đôi siêu thoải mái, có gác chân và chỗ kê ly nước. Vé điện tử gửi ngay qua Zalo sau khi xác nhận giao dịch trên GoTix.',
-      location: 'CGV Crescent Mall, Quận 7, TP. Hồ Chí Minh',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-14',
       eventTime: '20:00',
-      originalPrice: 100000,
-      resalePrice: 50000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -231,8 +233,8 @@ const seedData = async () => {
       qrImage: qr('MV002'),
       details: {
         movieTitle: 'Avengers: Secret Wars',
-        cinemaName: 'CGV Crescent Mall',
-        cinemaAddress: '101 Tôn Dật Tiên, Quận 7, TP. Hồ Chí Minh',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 1 (4DX)',
         seats: ['SB01'],
         showDate: '2026-06-14',
@@ -241,16 +243,17 @@ const seedData = async () => {
       views: 315,
     }));
 
-    // T03 - Kung Fu Panda 5 tại Lotte Gò Vấp HCM (available, verified)
+    // T03 - Kung Fu Panda 5 tại Lotte Cinema Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Kung Fu Panda 5 - Lotte Cinema Gò Vấp (Hàng D - Trung Tâm)',
+      title: 'Vé Kung Fu Panda 5 - Lotte Cinema Đà Nẵng (Hàng D - Trung Tâm)',
       category: 'movie',
       description: 'Cần nhượng lại 3 vé xem Kung Fu Panda 5 suất 14h chiều Chủ Nhật. Lý do: con bé bị ốm không đi được. Hàng D trung tâm phòng chiếu, tầm nhìn đẹp. Phù hợp gia đình có trẻ nhỏ.',
-      location: 'Lotte Cinema Gò Vấp, TP. Hồ Chí Minh',
+      location: 'Lotte Cinema Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-08',
       eventTime: '14:00',
       originalPrice: 80000,
-      resalePrice: 40000,
+      resalePrice: 60000,
       quantity: 3,
       status: 'available',
       verifyStatus: 'verified',
@@ -259,8 +262,8 @@ const seedData = async () => {
       qrImage: qr('MV003'),
       details: {
         movieTitle: 'Kung Fu Panda 5',
-        cinemaName: 'Lotte Cinema Gò Vấp',
-        cinemaAddress: 'Lotte Mart Gò Vấp, 242 Nguyễn Văn Nghi, TP. HCM',
+        cinemaName: 'Lotte Cinema Đà Nẵng',
+        cinemaAddress: 'Lotte Mart Đà Nẵng, 6 Nai Nam, Đà Nẵng',
         room: 'Rạp 4',
         seats: ['D05', 'D06', 'D07'],
         showDate: '2026-06-08',
@@ -269,16 +272,17 @@ const seedData = async () => {
       views: 89,
     }));
 
-    // T04 - Inside Out 3 tại BHD Star Vincom Thảo Điền (available, verified)
+    // T04 - Inside Out 3 tại BHD Star Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Inside Out 3 - BHD Star Vincom Thảo Điền (Phòng Premium)',
+      title: 'Vé Inside Out 3 - BHD Star Đà Nẵng (Phòng Premium)',
       category: 'movie',
-      description: 'Nhượng lại 2 vé xem Inside Out 3 phòng Premium tại BHD Vincom Thảo Điền. Suất buổi tối 19:15, ghế hạng E rất rộng và thoải mái. Không gian xem phim sang trọng, có dịch vụ đồ ăn mang vào phòng. Vé chính hãng còn nguyên.',
-      location: 'BHD Star Vincom Thảo Điền, Quận 2, TP. Hồ Chí Minh',
+      description: 'Nhượng lại 2 vé xem Inside Out 3 phòng Premium tại BHD Star Đà Nẵng. Suất buổi tối 19:15, ghế hạng E rất rộng và thoải mái. Không gian xem phim sang trọng. Vé chính hãng còn nguyên.',
+      location: 'BHD Star Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-10',
       eventTime: '19:15',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -287,8 +291,8 @@ const seedData = async () => {
       qrImage: qr('MV004'),
       details: {
         movieTitle: 'Inside Out 3',
-        cinemaName: 'BHD Star Vincom Thảo Điền',
-        cinemaAddress: 'Vincom Mega Mall Thảo Điền, TP. Hồ Chí Minh',
+        cinemaName: 'BHD Star Đà Nẵng',
+        cinemaAddress: 'Viện Bảo Tàng Đà Nẵng, 24 Trần Phú, Đà Nẵng',
         room: 'Phòng Premium 2',
         seats: ['E10', 'E11'],
         showDate: '2026-06-10',
@@ -297,16 +301,17 @@ const seedData = async () => {
       views: 198,
     }));
 
-    // T05 - Mimosa (phim Việt) tại Galaxy Nguyễn Du HCM (available, verified)
+    // T05 - Mimosa (phim Việt) tại Galaxy Cinema Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Phim Mimosa (Phim Việt) - Galaxy Cinema Nguyễn Du',
+      title: 'Vé Phim Mimosa (Phim Việt) - Galaxy Cinema Đà Nẵng',
       category: 'movie',
-      description: 'Pass lại 1 vé xem phim Mimosa – bộ phim tình cảm Việt Nam đang hot. Hàng F giữa rạp, view rất đẹp. Galaxy Cinema Nguyễn Du là rạp nhỏ ấm cúng, âm thanh rất hay. Bán rẻ hơn vì bận không đi được.',
-      location: 'Galaxy Cinema Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
+      description: 'Pass lại 1 vé xem phim Mimosa – bộ phim tình cảm Việt Nam đang hot. Hàng F giữa rạp, view rất đẹp. Galaxy Cinema Đà Nẵng là rạp nhỏ ấm cúng, âm thanh rất hay. Bán rẻ hơn vì bận không đi được.',
+      location: 'Galaxy Cinema Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-06',
       eventTime: '21:00',
       originalPrice: 80000,
-      resalePrice: 40000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -315,8 +320,8 @@ const seedData = async () => {
       qrImage: qr('MV005'),
       details: {
         movieTitle: 'Mimosa',
-        cinemaName: 'Galaxy Cinema Nguyễn Du',
-        cinemaAddress: '116 Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
+        cinemaName: 'Galaxy Cinema Đà Nẵng',
+        cinemaAddress: 'Galaxy Cinema Đà Nẵng, 259 Trần Phú, Đà Nẵng',
         room: 'Rạp 3',
         seats: ['F08'],
         showDate: '2026-06-06',
@@ -325,16 +330,17 @@ const seedData = async () => {
       views: 67,
     }));
 
-    // T06 - Deadpool & Wolverine 2 tại CGV Landmark 81 HCM (available, verified)
+    // T06 - Deadpool & Wolverine 2 tại CGV Vincom Plaza Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Deadpool & Wolverine 2 - CGV Landmark 81 (4DX Premium)',
+      title: 'Vé Deadpool & Wolverine 2 - CGV Vincom Plaza Đà Nẵng (4DX Premium)',
       category: 'movie',
-      description: 'Nhượng lại 1 vé xem Deadpool & Wolverine 2 ở rạp 4DX tầng 5 Landmark 81 – một trong những rạp đẹp nhất Việt Nam với view toàn thành phố. Ghế hàng G, 4DX rung lắc cực đã. Vé mình mua nhầm ngày, bận không đổi được.',
-      location: 'CGV Landmark 81, Bình Thạnh, TP. Hồ Chí Minh',
+      description: 'Nhượng lại 1 vé xem Deadpool & Wolverine 2 ở rạp 4DX CGV Vincom Plaza Đà Nẵng. Ghế hàng G, 4DX rung lắc cực đã. Vé mình mua nhầm ngày, bận không đổi được.',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-21',
       eventTime: '15:45',
-      originalPrice: 100000,
-      resalePrice: 50000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -343,8 +349,8 @@ const seedData = async () => {
       qrImage: qr('MV006'),
       details: {
         movieTitle: 'Deadpool & Wolverine 2',
-        cinemaName: 'CGV Landmark 81',
-        cinemaAddress: '772A Điện Biên Phủ, Bình Thạnh, TP. HCM',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 5 (4DX Premium)',
         seats: ['G09'],
         showDate: '2026-06-21',
@@ -353,18 +359,17 @@ const seedData = async () => {
       views: 241,
     }));
 
-    // ── HÀ NỘI ─────────────────────────────────────────────────────────────
-
-    // T07 - Interstellar 10th Anniversary tại CGV Mipec Tower HN (available, verified)
+    // T07 - Interstellar 10th Anniversary tại CGV Vincom Plaza Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Interstellar 10th Anniversary Re-release - CGV Mipec Tower',
+      title: 'Vé Interstellar 10th Anniversary Re-release - CGV Vincom Plaza Đà Nẵng',
       category: 'movie',
-      description: 'Cần pass lại 2 vé xem Interstellar phiên bản kỷ niệm 10 năm trên màn hình IMAX khổng lồ. Đây là cơ hội hiếm để xem lại kiệt tác của Christopher Nolan trên màn hình lớn nhất Hà Nội. Hàng I, vị trí lý tưởng.',
-      location: 'CGV Mipec Tower, Long Biên, Hà Nội',
+      description: 'Cần pass lại 2 vé xem Interstellar phiên bản kỷ niệm 10 năm trên màn hình IMAX khổng lồ. Đây là cơ hội hiếm để xem lại kiệt tác của Christopher Nolan. Hàng I, vị trí lý tưởng.',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-15',
       eventTime: '18:30',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -373,8 +378,8 @@ const seedData = async () => {
       qrImage: qr('MV007'),
       details: {
         movieTitle: 'Interstellar (10th Anniversary IMAX)',
-        cinemaName: 'CGV Mipec Tower',
-        cinemaAddress: 'Mipec Tower, 229 Tây Sơn, Đống Đa, Hà Nội',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp IMAX',
         seats: ['I08', 'I09'],
         showDate: '2026-06-15',
@@ -383,16 +388,17 @@ const seedData = async () => {
       views: 203,
     }));
 
-    // T08 - Horror Movie - Ác Quỷ Ma Sơ 3 tại Lotte Cinema Hà Nội (available, verified)
+    // T08 - Horror Movie - Ác Quỷ Ma Sơ 3 tại Lotte Cinema Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Ác Quỷ Ma Sơ 3: The Conjuring - Lotte Cinema Hà Nội (Suất Khuya)',
+      title: 'Vé Ác Quỷ Ma Sơ 3: The Conjuring - Lotte Cinema Đà Nẵng (Suất Khuya)',
       category: 'movie',
-      description: 'Pass lại 2 vé xem Ác Quỷ Ma Sơ 3 suất khuya 23:00 thứ Sáu – xem phim kinh dị lúc khuya mới đã! Rạp Lotte Hà Nội có âm thanh Dolby Atmos cực hay. Ghế cuối phòng, hơi tối nhưng cảm giác ma quỷ sẽ càng rõ hơn 😈',
-      location: 'Lotte Cinema Hà Nội, Đống Đa, Hà Nội',
+      description: 'Pass lại 2 vé xem Ác Quỷ Ma Sơ 3 suất khuya 23:00 thứ Sáu – xem phim kinh dị lúc khuya mới đã! Rạp Lotte Đà Nẵng có âm thanh Dolby Atmos cực hay. Ghế cuối phòng, cảm giác ma quỷ sẽ càng rõ hơn 😈',
+      location: 'Lotte Cinema Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-13',
       eventTime: '23:00',
       originalPrice: 80000,
-      resalePrice: 40000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -401,8 +407,8 @@ const seedData = async () => {
       qrImage: qr('MV008'),
       details: {
         movieTitle: 'Ác Quỷ Ma Sơ 3: The Conjuring',
-        cinemaName: 'Lotte Cinema Hà Nội',
-        cinemaAddress: '54 Liễu Giai, Ba Đình, Hà Nội',
+        cinemaName: 'Lotte Cinema Đà Nẵng',
+        cinemaAddress: 'Lotte Mart Đà Nẵng, 6 Nai Nam, Đà Nẵng',
         room: 'Rạp 7 (Dolby Atmos)',
         seats: ['K12', 'K13'],
         showDate: '2026-06-13',
@@ -411,16 +417,17 @@ const seedData = async () => {
       views: 176,
     }));
 
-    // T09 - Anime: Demon Slayer Infinity Castle tại CGV Times City HN (available, verified)
+    // T09 - Anime: Demon Slayer Infinity Castle tại CGV Vincom Plaza Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Demon Slayer: Infinity Castle Movie - CGV Times City',
+      title: 'Vé Demon Slayer: Infinity Castle Movie - CGV Vincom Plaza Đà Nẵng',
       category: 'movie',
       description: 'Bán lại 1 vé xem Demon Slayer: Infinity Castle Movie – bộ phim anime được mong chờ nhất 2026! Suất chiếu sáng sớm thứ Bảy, còn đủ để đi ăn sáng trước. Hàng H trung tâm, tầm nhìn hoàn hảo. Vé điện tử gửi qua QR code ngay.',
-      location: 'CGV Times City, Hai Bà Trưng, Hà Nội',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-28',
       eventTime: '09:30',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -429,8 +436,8 @@ const seedData = async () => {
       qrImage: qr('MV009'),
       details: {
         movieTitle: 'Demon Slayer: Infinity Castle Movie',
-        cinemaName: 'CGV Times City',
-        cinemaAddress: '458 Minh Khai, Hai Bà Trưng, Hà Nội',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 3',
         seats: ['H07'],
         showDate: '2026-06-28',
@@ -439,16 +446,17 @@ const seedData = async () => {
       views: 389,
     }));
 
-    // T10 - Phim lãng mạn Hàn - Past Lives 2 tại Lotte Cinema Cầu Giấy HN (available, verified)
+    // T10 - Phim lãng mạn Hàn - Past Lives 2 tại Lotte Cinema Đà Nẵng (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Past Lives 2 (Phim Hàn) - Lotte Cinema Cầu Giấy',
+      title: 'Vé Past Lives 2 (Phim Hàn) - Lotte Cinema Đà Nẵng',
       category: 'movie',
       description: 'Nhượng lại 2 vé xem Past Lives 2 – phim tình cảm Hàn Quốc đang gây sốt. Suất chiều tối Chủ Nhật lãng mạn, ghế đôi hàng F. Rạp sạch đẹp, điều hoà mát. Mình mua vé hẹn hò nhưng bị hủy nên cần pass gấp.',
-      location: 'Lotte Cinema Cầu Giấy, Hà Nội',
+      location: 'Lotte Cinema Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-22',
       eventTime: '20:30',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -457,8 +465,8 @@ const seedData = async () => {
       qrImage: qr('MV010'),
       details: {
         movieTitle: 'Past Lives 2',
-        cinemaName: 'Lotte Cinema Cầu Giấy',
-        cinemaAddress: 'Lotte Mart Cầu Giấy, Hà Nội',
+        cinemaName: 'Lotte Cinema Đà Nẵng',
+        cinemaAddress: 'Lotte Mart Đà Nẵng, 6 Nai Nam, Đà Nẵng',
         room: 'Rạp 5',
         seats: ['F09', 'F10'],
         showDate: '2026-06-22',
@@ -475,10 +483,11 @@ const seedData = async () => {
       category: 'movie',
       description: 'Nhượng lại 2 vé xem Encanto 2 của Disney tại CGV Đà Nẵng. Phim hoạt hình cho cả gia đình. Suất chiếu 15:00 chiều Thứ Bảy rất thuận tiện. Ghế hàng D giữa rạp. Mình ở Đà Nẵng nên có thể gặp trực tiếp để giao vé nếu bạn cần.',
       location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-06-20',
       eventTime: '15:00',
       originalPrice: 80000,
-      resalePrice: 40000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'verified',
@@ -499,14 +508,15 @@ const seedData = async () => {
 
     // T12 - Phim chiếu rạp đặc biệt - Suất Chiếu Đêm Khuya (available, verified)
     tickets.push(await Ticket.create({
-      title: 'Vé Đặc Biệt: The Dark Knight (Re-release 4K) - CGV Nguyễn Du HCM',
+      title: 'Vé Đặc Biệt: The Dark Knight (Re-release 4K) - CGV Vincom Plaza Đà Nẵng',
       category: 'movie',
       description: 'Cực hiếm! CGV tổ chức chiếu lại The Dark Knight bản 4K nhân dịp kỷ niệm 18 năm ra mắt. Suất đêm 22:30 thứ Sáu, không khí rạp đêm rất đặc biệt. Ghế VIP hàng J, siêu thoải mái. Vé rất hót, pass nhanh giá gốc luôn.',
-      location: 'CGV Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-07-04',
       eventTime: '22:30',
-      originalPrice: 100000,
-      resalePrice: 50000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'available',
       verifyStatus: 'verified',
@@ -515,8 +525,8 @@ const seedData = async () => {
       qrImage: qr('MV012'),
       details: {
         movieTitle: 'The Dark Knight (4K Re-release)',
-        cinemaName: 'CGV Nguyễn Du',
-        cinemaAddress: '116 Nguyễn Du, Quận 1, TP. Hồ Chí Minh',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp VIP 1',
         seats: ['J08'],
         showDate: '2026-07-04',
@@ -527,16 +537,17 @@ const seedData = async () => {
 
     // ── Tickets đã bán (SOLD) ───────────────────────────────────────────────
 
-    // T13 - Đã bán - Spider-Man tại CGV HCM
+    // T13 - Đã bán - Spider-Man tại CGV Đà Nẵng
     const ticketSold1 = await Ticket.create({
-      title: 'Vé Spider-Man: Brand New Day - CGV Vincom Đồng Khởi',
+      title: 'Vé Spider-Man: Brand New Day - CGV Vincom Plaza Đà Nẵng',
       category: 'movie',
       description: 'Đã bán - vé Spider-Man Brand New Day suất VIP tối thứ Sáu.',
-      location: 'CGV Vincom Đồng Khởi, Quận 1, TP. Hồ Chí Minh',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-05-23',
       eventTime: '19:45',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'sold',
       verifyStatus: 'verified',
@@ -545,8 +556,8 @@ const seedData = async () => {
       qrImage: qr('MV013'),
       details: {
         movieTitle: 'Spider-Man: Brand New Day',
-        cinemaName: 'CGV Vincom Đồng Khởi',
-        cinemaAddress: '72 Lê Thánh Tôn, Quận 1, TP. HCM',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 2 (ScreenX)',
         seats: ['H05', 'H06'],
         showDate: '2026-05-23',
@@ -556,16 +567,17 @@ const seedData = async () => {
     });
     tickets.push(ticketSold1);
 
-    // T14 - Đã bán - Lật Mặt 7 tại CGV Hà Nội
+    // T14 - Đã bán - Lật Mặt 7 tại CGV Đà Nẵng
     const ticketSold2 = await Ticket.create({
-      title: 'Vé Lật Mặt 7: Một Điều Ước - CGV Hà Nội (Đã Bán)',
+      title: 'Vé Lật Mặt 7: Một Điều Ước - CGV Vincom Plaza Đà Nẵng (Đã Bán)',
       category: 'movie',
       description: 'Đã bán.',
-      location: 'CGV Mipec Tower, Long Biên, Hà Nội',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-05-18',
       eventTime: '14:00',
       originalPrice: 80000,
-      resalePrice: 40000,
+      resalePrice: 60000,
       quantity: 1,
       status: 'sold',
       verifyStatus: 'verified',
@@ -574,8 +586,8 @@ const seedData = async () => {
       qrImage: qr('MV014'),
       details: {
         movieTitle: 'Lật Mặt 7: Một Điều Ước',
-        cinemaName: 'CGV Mipec Tower',
-        cinemaAddress: '229 Tây Sơn, Đống Đa, Hà Nội',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 1',
         seats: ['F10'],
         showDate: '2026-05-18',
@@ -587,14 +599,15 @@ const seedData = async () => {
 
     // T15 - Đang chờ duyệt
     tickets.push(await Ticket.create({
-      title: 'Vé Avatar 3: Fire and Ash - CGV Hùng Vương HCM (Đang Chờ Duyệt)',
+      title: 'Vé Avatar 3: Fire and Ash - CGV Vincom Plaza Đà Nẵng (Đang Chờ Duyệt)',
       category: 'movie',
       description: 'Nhượng lại 2 vé Avatar 3: Fire and Ash 3D suất chiều tối. Vé chính hãng mua tại quầy CGV, chưa qua sử dụng. Đang chờ admin kiểm duyệt.',
-      location: 'CGV Hùng Vương Plaza, Quận 5, TP. Hồ Chí Minh',
+      location: 'CGV Vincom Plaza Đà Nẵng, Đà Nẵng',
+      city: 'Đà Nẵng',
       eventDate: '2026-07-12',
       eventTime: '17:00',
-      originalPrice: 90000,
-      resalePrice: 45000,
+      originalPrice: 80000,
+      resalePrice: 60000,
       quantity: 2,
       status: 'available',
       verifyStatus: 'pending',
@@ -603,8 +616,8 @@ const seedData = async () => {
       qrImage: qr('MV015'),
       details: {
         movieTitle: 'Avatar 3: Fire and Ash',
-        cinemaName: 'CGV Hùng Vương Plaza',
-        cinemaAddress: '126 Hồng Bàng, Quận 5, TP. HCM',
+        cinemaName: 'CGV Vincom Plaza Đà Nẵng',
+        cinemaAddress: 'Vincom Plaza Đà Nẵng, 910A Ngô Quyền, Đà Nẵng',
         room: 'Rạp 1 (3D)',
         seats: ['H10', 'H11'],
         showDate: '2026-07-12',
@@ -613,33 +626,6 @@ const seedData = async () => {
       views: 28,
     }));
 
-    // T16 - Bị từ chối
-    tickets.push(await Ticket.create({
-      title: 'Vé Phim XYZ Không Rõ Nguồn Gốc - HIDDEN',
-      category: 'movie',
-      description: 'Vé bị từ chối do không đủ bằng chứng xác thực.',
-      location: 'Rạp lạ, Hà Nội',
-      eventDate: '2026-05-01',
-      eventTime: '10:00',
-      originalPrice: 60000,
-      resalePrice: 30000,
-      quantity: 1,
-      status: 'hidden',
-      verifyStatus: 'rejected',
-      ownerId: seller5._id,
-      ticketImage: movieImages.cinema,
-      qrImage: qr('MV016'),
-      details: {
-        movieTitle: 'Phim XYZ',
-        cinemaName: 'Rạp không xác định',
-        cinemaAddress: 'Không rõ',
-        room: 'Rạp 1',
-        seats: ['A01'],
-        showDate: '2026-05-01',
-        showTime: '10:00',
-      },
-      views: 5,
-    }));
 
     console.log(`🎬 Đã tạo ${tickets.length} Movie Tickets.`);
 
@@ -949,11 +935,6 @@ const seedData = async () => {
         adminId: admin._id, action: 'VERIFY_TICKET', targetType: 'Ticket',
         targetId: tickets[6]._id.toString(),
         description: 'Duyệt vé Interstellar 10th Anniversary IMAX - xác minh qua hệ thống CGV hợp lệ.',
-      },
-      {
-        adminId: admin._id, action: 'REJECT_TICKET', targetType: 'Ticket',
-        targetId: tickets[15]._id.toString(),
-        description: 'Từ chối vé "Phim XYZ Không Rõ Nguồn Gốc": không tìm thấy suất chiếu tương ứng trên bất kỳ hệ thống rạp nào, nghi ngờ vé giả mạo.',
       },
       {
         adminId: admin._id, action: 'APPROVE_WITHDRAWAL', targetType: 'Withdrawal',

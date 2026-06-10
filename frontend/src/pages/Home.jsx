@@ -36,7 +36,7 @@ export default function Home() {
       <section className="hero">
         <div className="container">
           <div className="hero-content">
-            <div className="hero-tag">Nền tảng pass vé phim #1 Việt Nam</div>
+
             <h1 className="hero-title">
               Pass vé xem phim dư<br />An toàn · Nhanh chóng
             </h1>
@@ -63,23 +63,14 @@ export default function Home() {
                 className="search-select"
               >
                 <option value="">Tất cả khu vực</option>
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
                 <option value="Đà Nẵng">Đà Nẵng</option>
-                <option value="Cần Thơ">Cần Thơ</option>
               </select>
               <button type="submit" className="btn btn-primary btn-lg search-btn">
                 Tìm vé
               </button>
             </form>
 
-            <div className="hero-stats">
-              <div className="hero-stat"><strong>1,200+</strong><span>Vé đang pass</span></div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat"><strong>8,500+</strong><span>Giao dịch thành công</span></div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat"><strong>4.9/5</strong><span>Độ tin cậy</span></div>
-            </div>
+
           </div>
         </div>
       </section>

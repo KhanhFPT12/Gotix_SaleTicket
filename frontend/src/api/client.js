@@ -78,7 +78,7 @@ export function normalizeTicket(t) {
     cinemaAddress: details.cinemaAddress || '',
     room:          details.room        || '',
     seats:         details.seats       || [],
-    city:          t.city              || '',
+    city:          t.city || (t.location ? t.location.split(',').pop().trim() : ''),
   };
 }
 

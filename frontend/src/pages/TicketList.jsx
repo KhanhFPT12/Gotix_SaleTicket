@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { LOCATIONS } from "../data/mockData";
 import { useTickets } from "../context/TicketContext";
 import TicketCard from "../components/tickets/TicketCard";
 import "./TicketList.css";
@@ -138,9 +137,7 @@ export default function TicketList() {
                 onChange={e => setFilter("city", e.target.value)}
               >
                 <option value="">Tất cả khu vực</option>
-                {LOCATIONS.map(loc => (
-                  <option key={loc} value={loc}>{loc}</option>
-                ))}
+                <option value="Đà Nẵng">Đà Nẵng</option>
               </select>
             </div>
 
