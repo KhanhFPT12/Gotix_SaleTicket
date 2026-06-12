@@ -1,58 +1,59 @@
 :root {
-  /* Colors */
-  --color-primary: #1a2744;
+  /* ── Brand colors ── */
+  --color-primary:       #1a2744;
   --color-primary-hover: #243461;
-  --color-accent: #c0392b;
-  --color-accent-hover: #a93226;
-  --color-success: #27ae60;
-  --color-warning: #e67e22;
-  --color-info: #2980b9;
+  --color-accent:        #c0392b;
+  --color-accent-hover:  #a93226;
+  --color-success:       #16a34a;
+  --color-warning:       #d97706;
+  --color-info:          #2563eb;
 
-  /* Backgrounds */
-  --bg-white: #ffffff;
-  --bg-light: #f8f8f8;
-  --bg-muted: #f2f2f2;
+  /* ── Backgrounds ── */
+  --bg-white:  #ffffff;
+  --bg-light:  #f7f8fa;
+  --bg-muted:  #f0f1f3;
   --bg-border: #e8e8e8;
 
-  /* Text */
-  --text-primary: #1a1a1a;
-  --text-secondary: #555555;
-  --text-muted: #888888;
-  --text-inverse: #ffffff;
+  /* ── Text ── */
+  --text-primary:   #111827;
+  --text-secondary: #4b5563;
+  --text-muted:     #9ca3af;
+  --text-inverse:   #ffffff;
 
-  /* Borders */
-  --border-color: #e0e0e0;
+  /* ── Borders ── */
+  --border-color:     #e2e5ea;
   --border-radius-sm: 4px;
-  --border-radius: 8px;
+  --border-radius:    8px;
   --border-radius-lg: 12px;
 
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
+  /* ── Spacing ── */
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
   --spacing-2xl: 48px;
   --spacing-3xl: 64px;
 
-  /* Typography */
+  /* ── Typography ── */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-size-xs: 11px;
-  --font-size-sm: 13px;
+  --font-size-xs:   11px;
+  --font-size-sm:   13px;
   --font-size-base: 14px;
-  --font-size-md: 15px;
-  --font-size-lg: 17px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 30px;
-  --font-size-4xl: 36px;
+  --font-size-md:   15px;
+  --font-size-lg:   17px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  24px;
+  --font-size-3xl:  30px;
+  --font-size-4xl:  36px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.09);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.12);
 
-  /* Layout */
-  --container-max: 1200px;
-  --header-height: 60px;
-  --sidebar-width: 220px;
+  /* ── Layout ── */
+  --container-max:  1200px;
+  --header-height:  60px;
+  --sidebar-width:  220px;
 }

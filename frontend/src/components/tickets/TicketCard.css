@@ -1,3 +1,8 @@
+/* ════════════════════════════════════════════════════════════════
+   TicketCard — Marketplace listing card
+   Rõ sản phẩm · rõ giá · rõ người bán · rõ trạng thái
+   ════════════════════════════════════════════════════════════════ */
+
 .ticket-card {
   display: flex;
   flex-direction: column;
@@ -5,50 +10,36 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   overflow: hidden;
-  text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
 }
 
 .ticket-card:hover {
-  border-color: #bbb;
+  border-color: #c0c0c0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-/* Image */
+/* ── Image area ── */
 .ticket-card-image {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
-  background-color: var(--bg-muted);
+  background-color: #f0f0f0;
 }
 
 .ticket-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-.ticket-fav-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255,255,255,.88);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #94a3b8;
-  transition: color .15s, background .15s;
-  z-index: 2;
+.ticket-card:hover .ticket-card-image img {
+  transform: scale(1.03);
 }
-.ticket-fav-btn:hover { background: #fff; color: #ef4444; }
-.ticket-fav-btn.saved  { color: #ef4444; }
 
+/* Placeholder khi không có ảnh */
 .ticket-card-placeholder {
   width: 100%;
   height: 100%;
@@ -57,9 +48,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #1a1f2e;
-  color: rgba(255, 255, 255, 0.6);
+  background: #e8ecf0;
+  color: #9ca3af;
   padding: 12px;
+}
+
+.ticket-card-placeholder svg {
+  color: #c5cdd6;
 }
 
 .ticket-card-placeholder p {
@@ -68,22 +63,26 @@
   text-align: center;
   line-height: 1.3;
   max-width: 120px;
+  color: #9ca3af;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
+/* Badges over image */
 .ticket-discount-tag {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: var(--color-accent);
-  color: white;
-  font-size: var(--font-size-xs);
+  top: 8px;
+  left: 8px;
+  background-color: #c0392b;
+  color: #ffffff;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 7px;
-  border-radius: var(--border-radius-sm);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  line-height: 1.5;
 }
 
 .ticket-verified-tag {
@@ -93,134 +92,180 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(22, 163, 74, 0.9);
-  color: #fff;
+  background: rgba(22, 163, 74, 0.92);
+  color: #ffffff;
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 100px;
+  backdrop-filter: blur(4px);
 }
 
-/* Body */
+/* Save/wishlist button */
+.ticket-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #9ca3af;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  z-index: 2;
+}
+
+.ticket-fav-btn:hover {
+  background: #fff;
+  color: #e53e3e;
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.ticket-fav-btn.saved {
+  color: #e53e3e;
+  background: #fff;
+}
+
+/* ── Card body ── */
 .ticket-card-body {
-  padding: var(--spacing-md);
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 6px;
   flex: 1;
 }
 
-.ticket-card-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.verified-badge {
-  font-size: 10px;
-}
-
 .ticket-card-title {
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.35;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 2px;
 }
 
-/* Info rows */
+/* Info rows (rạp, ngày, ghế) */
 .ticket-card-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .ticket-info-row {
   display: flex;
   align-items: flex-start;
   gap: 5px;
-  font-size: var(--font-size-sm);
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
 .ticket-info-row svg {
   flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--text-muted);
+  margin-top: 1px;
+  color: #b0b8c1;
 }
 
 .ticket-info-row span {
   line-height: 1.4;
 }
 
-/* Price */
+/* ── Price section — nổi bật nhất trên card ── */
 .ticket-card-price {
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-sm);
-  margin-top: auto;
-  padding-top: var(--spacing-sm);
+  gap: 8px;
+  margin-top: 4px;
+  padding: 8px 0 4px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .price-pass {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-accent);
+  font-size: 18px;
+  font-weight: 800;
+  color: #c0392b;
+  letter-spacing: -0.3px;
 }
 
 .price-original {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
+  font-size: 12px;
+  color: #b0b8c1;
   text-decoration: line-through;
 }
 
-.ticket-qty {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* Footer */
+/* ── Footer: seller info + quantity ── */
 .ticket-card-footer {
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--bg-border);
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.ticket-seller {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
   gap: 6px;
 }
 
-.seller-rating {
-  font-size: var(--font-size-xs);
-  color: var(--color-warning);
-  font-weight: 600;
+.ticket-seller {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+
+.seller-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .seller-link {
   color: inherit;
   text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
 .seller-link:hover {
   text-decoration: underline;
+  color: var(--color-primary);
+}
+
+.seller-rating {
+  font-size: 11px;
+  color: #e67e22;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .seller-pro-badge {
-  background: #0F172A;
-  color: #fff;
-  font-size: 10px;
+  background: #1a2744;
+  color: #f59e0b;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.ticket-qty {
+  font-size: 11px;
+  color: #9ca3af;
+  background: #f4f5f6;
+  padding: 2px 7px;
   border-radius: 4px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
