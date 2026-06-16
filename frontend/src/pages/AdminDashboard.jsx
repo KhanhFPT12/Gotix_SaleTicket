@@ -65,10 +65,10 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="stats-grid">
-          <StatCard label="Tổng vé" value={tickets.length} sub={`${pendingTickets.length} chờ duyệt`} accent />
+          <StatCard label="Truy cập Web" value="12,450" sub="+15% so với tuần trước" accent />
+          <StatCard label="Tổng vé" value={tickets.length} sub={`${pendingTickets.length} chờ duyệt`} />
           <StatCard label="Người dùng" value={USERS.length} />
-          <StatCard label="Tổng giao dịch" value={transactions.length} sub={`${formatPrice(totalRevenue)} hoàn thành`} />
-          <StatCard label="Báo cáo" value={reports.length} sub={`${pendingReports.length} chờ xử lý`} />
+          <StatCard label="Giao dịch" value={transactions.length} sub={`${formatPrice(totalRevenue)}`} />
         </div>
 
         {/* Alert: pending */}

@@ -11,6 +11,7 @@ const { log: auditLog } = require('../services/auditLogService');
 const emailService = require('../services/emailService');
 const { success, error } = require('../utils/apiResponse');
 const { formatTicketResponse, formatTicketsResponse } = require('./ticketController');
+const { getRealTimeStats } = require('./trackingController');
 
 const getDashboard = async (req, res, next) => {
   try {
@@ -39,6 +40,8 @@ const getDashboard = async (req, res, next) => {
     ]);
     const totalPendingBalance = pendingAgg[0]?.total ?? 0;
 
+    const { realActiveUsers, realTotalVisits } = await getRealTimeStats();
+
     return res.json(success('Dashboard', {
       totalUsers, totalTickets, totalTransactions,
       pendingTickets, pendingReports,
@@ -46,6 +49,7 @@ const getDashboard = async (req, res, next) => {
       completedTransactions: completedTxs.length,
       pendingWithdrawals, pendingTopUps,
       lockedUsers, expiredTickets,
+      realActiveUsers, realTotalVisits,
     }));
   } catch (err) {
     next(err);

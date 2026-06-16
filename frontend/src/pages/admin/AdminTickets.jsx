@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTickets } from "../../context/TicketContext";
+import { apiGet } from "../../api/client";
 import "../../layouts/AdminLayout.css";
 
 const STATUS_CONFIG = {
@@ -28,6 +29,8 @@ export default function AdminTickets() {
   const [showReasonInput, setShowReasonInput] = useState(""); // "reject" or "revoke" or ""
   const [reasonText, setReasonText] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResult, setVerifyResult] = useState(null);
 
   const filtered = tickets
     .filter(t => filterStatus === "all" || t.status === filterStatus)
@@ -48,6 +51,21 @@ export default function AdminTickets() {
     setSelectedTicket(null);
     setShowReasonInput("");
     setReasonText("");
+    setVerifyResult(null);
+  };
+
+  const handleVerifyApi = async () => {
+    if (!selectedTicket) return;
+    setVerifyLoading(true);
+    setVerifyResult(null);
+    try {
+      const res = await apiGet(`/mock-cinema/verify?cinema=${encodeURIComponent(selectedTicket.cinema || '')}`);
+      setVerifyResult(res);
+    } catch (err) {
+      setVerifyResult({ success: false, message: "Lỗi kết nối API rạp" });
+    } finally {
+      setVerifyLoading(false);
+    }
   };
 
   const handleApprove = async (ticketId) => {
@@ -314,6 +332,48 @@ export default function AdminTickets() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Mock Cinema API Verification Section */}
+              <div className="admin-modal-field" style={{ background: "#f8fafc", padding: "16px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div className="admin-modal-field-label" style={{ margin: 0 }}>Xác thực tự động (Third-Party API)</div>
+                  <button 
+                    className="admin-btn admin-btn-neutral admin-btn-sm" 
+                    onClick={handleVerifyApi}
+                    disabled={verifyLoading}
+                    style={{ background: "#0f172a", color: "white" }}
+                  >
+                    {verifyLoading ? "Đang gọi API..." : "Kiểm tra mã vé qua API rạp"}
+                  </button>
+                </div>
+                {verifyLoading && (
+                  <div style={{ fontSize: 13, color: "#64748b", display: "flex", alignItems: "center", gap: 6 }}>
+                    <svg className="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+                      <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
+                      <path d="M12 2a10 10 0 0 1 10 10"/>
+                    </svg>
+                    Đang thiết lập kết nối mã hóa tới máy chủ rạp...
+                  </div>
+                )}
+                {verifyResult && (
+                  <div style={{ marginTop: 12, padding: "12px", borderRadius: "6px", background: verifyResult.valid ? "#ecfdf5" : "#fef2f2", border: `1px solid ${verifyResult.valid ? "#a7f3d0" : "#fecaca"}` }}>
+                    <div style={{ fontWeight: 600, color: verifyResult.valid ? "#065f46" : "#991b1b", marginBottom: 6 }}>
+                      {verifyResult.valid ? "✅ " : "❌ "} {verifyResult.message}
+                    </div>
+                    {verifyResult.data && (
+                      <div style={{ fontSize: 13, color: "#334155", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+                        <div><strong>Phim:</strong> {verifyResult.data.movie}</div>
+                        <div><strong>Rạp:</strong> {verifyResult.data.cinema}</div>
+                        <div><strong>Suất:</strong> {verifyResult.data.showtime}</div>
+                        <div><strong>Ghế:</strong> {verifyResult.data.seats.join(", ")}</div>
+                        <div style={{ gridColumn: "1 / -1", color: "#64748b", marginTop: 4, fontStyle: "italic" }}>
+                          Mã nội bộ rạp: {verifyResult.data.bookingCode}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Form Input for Reject/Revoke reasons */}
