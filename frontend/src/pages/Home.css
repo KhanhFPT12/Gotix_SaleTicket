@@ -400,10 +400,10 @@
   color: var(--text-muted);
 }
 
-/* CTA */
+/* ── CTA section — dark marketplace banner ── */
 .cta-section {
-  background-color: var(--bg-light);
-  border-top: 1px solid var(--border-color);
+  background-color: #1a2744;
+  border-top: none;
 }
 
 .cta-box {
@@ -411,28 +411,52 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-xl);
-  padding: var(--spacing-xl);
-  background-color: var(--bg-white);
-  border: 1px solid var(--border-color);
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-lg);
 }
 
 .cta-box h3 {
   font-size: var(--font-size-xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: var(--spacing-xs);
 }
 
 .cta-box p {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .cta-actions {
   display: flex;
   gap: var(--spacing-sm);
   flex-shrink: 0;
+}
+
+/* Button overrides for dark CTA background */
+.cta-section .btn-primary {
+  background-color: #c0392b;
+  border-color: #c0392b;
+  color: #ffffff;
+}
+
+.cta-section .btn-primary:hover {
+  background-color: #a93226;
+  border-color: #a93226;
+}
+
+.cta-section .btn-outline {
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.cta-section .btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #ffffff;
 }
 
 /* Responsive */
@@ -517,6 +541,10 @@
   .cta-actions {
     width: 100%;
     flex-direction: column;
+  }
+  .cta-actions .btn {
+    text-align: center;
+    justify-content: center;
   }
 
   .testimonials-grid {
