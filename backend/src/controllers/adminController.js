@@ -25,7 +25,7 @@ const getDashboard = async (req, res, next) => {
       Transaction.countDocuments(),
       Ticket.countDocuments({ verifyStatus: 'pending' }),
       Report.countDocuments({ status: 'pending' }),
-      Transaction.find({ transactionStatus: 'completed' }, 'totalPrice platformFee'),
+      Transaction.find({ status: 'completed' }, 'totalPrice platformFee'),
       Withdrawal.countDocuments({ status: 'pending' }),
       TopUp.countDocuments({ status: 'pending' }),
       User.countDocuments({ isActive: false }),
