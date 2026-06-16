@@ -24,13 +24,14 @@ function getClientId() {
 export default function App() {
   useEffect(() => {
     // Check if this is a new visit (session based)
-    const isNewVisit = !sessionStorage.getItem("gotix_visited");
+    let isNewVisit = !sessionStorage.getItem("gotix_visited");
     if (isNewVisit) {
       sessionStorage.setItem("gotix_visited", "true");
     }
 
     const ping = () => {
       apiPost("/tracking/ping", { isNewVisit, clientId: getClientId() }).catch(() => {});
+      isNewVisit = false; // Set to false after first ping so it doesn't increment on every interval
     };
 
     // Initial ping
